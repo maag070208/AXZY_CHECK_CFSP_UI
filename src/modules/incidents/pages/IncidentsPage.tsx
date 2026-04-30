@@ -317,7 +317,7 @@ const IncidentsPage = () => {
       </div>
 
     {viewingIncident && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+      <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 pt-12 sm:pt-20">
         <div 
           className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
           onClick={() => setViewingIncident(null)}
