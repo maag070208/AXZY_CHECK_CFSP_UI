@@ -9,6 +9,8 @@ export interface Maintenance {
   status: "PENDING" | "ATTENDED";
   createdAt: string;
   resolvedAt?: string;
+  latitude?: number;
+  longitude?: number;
   media?: { type: "IMAGE" | "VIDEO"; url: string; key?: string }[];
   guard?: { 
       id: number;

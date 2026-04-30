@@ -1,18 +1,16 @@
 import { AppState } from "@app/core/store/store";
 import LOGO from "@assets/logo.png";
 import {
+  FaBook,
   FaChild,
+  FaClock,
+  FaExclamationTriangle,
   FaHome,
   FaListAlt,
-  FaExclamationTriangle,
-  FaBook,
-  FaClock,
   FaMapMarkedAlt,
   FaSearchLocation,
   FaUserShield,
-  FaUsers,
-  FaIdBadge,
-  FaWrench,
+  FaWrench
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -48,27 +46,27 @@ export const useNavigationItems = (): any[] => {
       isActive: isRouteActive("/locations"),
       icon: <FaSearchLocation  />,
     },
-    {
-      id: "properties",
-      label: "Propiedades",
-      action: () => navigate("/properties"),
-      isActive: isRouteActive("/properties"),
-      icon: <FaHome />,
-    },
-    {
-      id: "residents",
-      label: "Residentes",
-      action: () => navigate("/residents"),
-      isActive: isRouteActive("/residents"),
-      icon: <FaUsers />,
-    },
-    {
-      id: "invitations",
-      label: "Invitados",
-      action: () => navigate("/invitations"),
-      isActive: isRouteActive("/invitations"),
-      icon: <FaIdBadge />,
-    },
+    // {
+    //   id: "properties",
+    //   label: "Propiedades",
+    //   action: () => navigate("/properties"),
+    //   isActive: isRouteActive("/properties"),
+    //   icon: <FaHome />,
+    // },
+    // {
+    //   id: "residents",
+    //   label: "Residentes",
+    //   action: () => navigate("/residents"),
+    //   isActive: isRouteActive("/residents"),
+    //   icon: <FaUsers />,
+    // },
+    // {
+    //   id: "invitations",
+    //   label: "Invitados",
+    //   action: () => navigate("/invitations"),
+    //   isActive: isRouteActive("/invitations"),
+    //   icon: <FaIdBadge />,
+    // },
     {
       id: "incidents",
       label: "Incidencias",

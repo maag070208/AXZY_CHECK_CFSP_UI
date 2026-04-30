@@ -10,10 +10,7 @@ import { logout } from "../store/auth/auth.slice";
 import store from "../store/store";
 
 const axiosInstance = axios.create({
-  // baseURL: 'http://localhost:4444/api/v1',
-  // baseURL: 'https://axzy-checkapp-bonaterra-prod-api.up.railway.app/api/v1',
-  baseURL: 'https://glorious-quietude-production-77ab.up.railway.app/api/v1',
-  // timeout: 30000,
+  baseURL: import.meta.env.VITE_BASE_URL || 'http://localhost:4444/api/v2',
 });
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {

@@ -3,6 +3,7 @@ import { AppState } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import { ITBadget, ITButton, ITDataTable, ITDialog, ITInput, ITLoader } from "@axzydev/axzy_ui_system";
 import { MediaCarousel } from "@core/components/MediaCarousel";
+import { GoogleMapComponent } from "@core/components/GoogleMapComponent";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaCheck, FaCheckCircle, FaEye, FaFileAlt, FaFilter, FaSync, FaTimes, FaTrash, FaUserShield, FaWrench } from "react-icons/fa";
@@ -379,6 +380,23 @@ const MaintenancesPage = () => {
                     </div>
                   )}
                 </section>
+                
+                {/* Location Section */}
+                {viewingMaintenance.latitude && viewingMaintenance.longitude && (
+                   <section>
+                     <div className="flex items-center justify-between mb-4">
+                       <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                           <span className="w-1 h-4 bg-emerald-500 rounded-full block"></span>
+                           Ubicación Reportada
+                       </h4>
+                     </div>
+                     <GoogleMapComponent 
+                         lat={viewingMaintenance.latitude} 
+                         lng={viewingMaintenance.longitude} 
+                         height="300px" 
+                     />
+                   </section>
+                )}
               </div>
     
               <div className="lg:col-span-4 space-y-6">

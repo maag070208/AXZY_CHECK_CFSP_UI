@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { FaCheck, FaCheckCircle, FaExclamationTriangle, FaEye, FaFileAlt, FaUserShield, FaSync, FaTrash, FaTimes, FaFilter } from "react-icons/fa";
 import { deleteIncident, deleteIncidentMedia, getPaginatedIncidents, Incident, resolveIncident } from "../services/IncidentService";
 import { MediaCarousel } from "@core/components/MediaCarousel";
+import { GoogleMapComponent } from "@core/components/GoogleMapComponent";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { useDispatch, useSelector } from "react-redux";
 import { showToast } from "@app/core/store/toast/toast.slice";
@@ -388,6 +389,23 @@ const IncidentsPage = () => {
                     </div>
                   )}
                 </section>
+                
+                {/* Location Section */}
+                {viewingIncident.latitude && viewingIncident.longitude && (
+                   <section>
+                     <div className="flex items-center justify-between mb-4">
+                       <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                           <span className="w-1 h-4 bg-emerald-500 rounded-full block"></span>
+                           Ubicación Reportada
+                       </h4>
+                     </div>
+                     <GoogleMapComponent 
+                         lat={viewingIncident.latitude} 
+                         lng={viewingIncident.longitude} 
+                         height="300px" 
+                     />
+                   </section>
+                )}
               </div>
     
               <div className="lg:col-span-4 space-y-6">
