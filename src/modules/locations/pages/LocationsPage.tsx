@@ -29,7 +29,7 @@ const LocationsPage = () => {
     }
   }, [searchParams]);
 
-  const { data: clients, loading: loadingClients } = useCatalog("client");
+  const { data: clients } = useCatalog("client");
 
   // Debounce search to trigger refresh
   useEffect(() => {

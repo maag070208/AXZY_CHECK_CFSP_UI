@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ITButton, ITDataTable, ITDialog, ITInput } from "@axzydev/axzy_ui_system";
+import { ITButton, ITDialog, ITInput } from "@axzydev/axzy_ui_system";
 import { FaPlus, FaTrash, FaEdit, FaTimes } from "react-icons/fa";
 import { getZonesByClient, createZone, updateZone, deleteZone, Zone } from "../services/ZonesService";
 import { showToast } from "@app/core/store/toast/toast.slice";

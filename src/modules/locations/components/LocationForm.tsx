@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
-  const { data: clients, loading: loadingClients } = useCatalog("client");
+  const { data: clients } = useCatalog("client");
   const [zones, setZones] = useState<Zone[]>([]);
   const [loadingZones, setLoadingZones] = useState(false);
 
