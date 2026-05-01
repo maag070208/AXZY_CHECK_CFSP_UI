@@ -10,10 +10,8 @@ import { setAuth } from "./core/store/auth/auth.slice";
 import HomePage from "./modules/home/pages/HomePage";
 
 import LocationsPage from "./modules/locations/pages/LocationsPage";
-import PropertiesPage from "./modules/properties/pages/PropertiesPage";
+import ClientsPage from "./modules/clients/pages/ClientsPage";
 
-import ResidentsPage from "./modules/residents/pages/ResidentsPage";
-import InvitationsPage from "./modules/invitations/pages/InvitationsPage";
 import UsersPage from "./modules/users/pages/UsersPage";
 import IncidentsPage from "./modules/incidents/pages/IncidentsPage";
 import MaintenancesPage from "./modules/maintenances/pages/MaintenancesPage";
@@ -21,9 +19,8 @@ import KardexPage from "./modules/kardex/pages/KardexPage";
 import RoundsPage from "./modules/rounds/pages/RoundsPage";
 import RoundDetailPage from "./modules/rounds/pages/RoundDetailPage";
 import SchedulesPage from "./modules/schedules/pages/SchedulesPage";
-import RoutesPage from "./modules/routes/pages/RoutesPage";
 import GuardsPage from "./modules/guards/pages/GuardsPage";
-import PropertyDetailPage from "./modules/properties/pages/PropertyDetailPage";
+import RoutesPage from "./modules/routes/pages/RoutesPage";
 
 
 function App() {
@@ -79,11 +76,9 @@ function App() {
         <Route path="/guards" element={<GuardsPage />} />
         
         <Route path="/locations" element={<LocationsPage />} />
-        <Route path="/properties" element={<PropertiesPage />} />
-        <Route path="/properties/:id" element={<PropertyDetailPage />} />
+        <Route path="/clients" element={<ClientsPage />} />
+        <Route path="/routes" element={<RoutesPage />} />
 
-        <Route path="/residents" element={<ResidentsPage />} />
-        <Route path="/invitations" element={<InvitationsPage />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/incidents" element={<IncidentsPage />} />
         <Route path="/maintenances" element={<MaintenancesPage />} />
@@ -92,8 +87,6 @@ function App() {
         
         <Route path="/rounds" element={<RoundsPage />} />
         <Route path="/rounds/:id" element={<RoundDetailPage />} />
-        <Route path="/routes" element={<RoutesPage />} />
-        <Route path="/guards" element={<GuardsPage />} />
 
       </Route>
       <Route path="*" element={<Navigate to="/home" />} />

@@ -1,10 +1,11 @@
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITButton, ITDataTable, ITDialog } from "@axzydev/axzy_ui_system";
+import { ITButton, ITDataTable, ITDialog, ITSearchSelect } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaEdit, FaPlus, FaRoute, FaSearch, FaSync, FaTimes, FaTrash } from "react-icons/fa";
+import { FaEdit, FaPlus, FaRoute, FaSearch, FaSync, FaTimes, FaTrash, FaBuilding } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { CreateRouteModal } from "../components/CreateRouteModal";
 import { deleteRoute, getPaginatedRoutes } from "../services/RoutesService";
+import { useCatalog } from "@app/core/hooks/catalog.hook";
 
 const RoutesPage = () => {
   const dispatch = useDispatch();
@@ -13,18 +14,24 @@ const RoutesPage = () => {
   const [editConfig, setEditConfig] = useState<any>(null);
   const [routeToDeleteId, setRouteToDeleteId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState<string | number>("");
+
+  const { data: clients } = useCatalog("client");
 
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
         setRefreshKey(prev => prev + 1);
-    }, 500);
+    }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
   const externalFilters = useMemo(() => {
-    return { title: searchTerm };
-  }, [searchTerm]);
+    return { 
+        title: searchTerm,
+        clientId: selectedClientId
+    };
+  }, [searchTerm, selectedClientId]);
 
   const memoizedFetch = useCallback((params: any) => {
     return getPaginatedRoutes(params);
@@ -58,6 +65,12 @@ const RoutesPage = () => {
     setIsCreateModalOpen(true);
   };
 
+  const clearFilters = () => {
+    setSelectedClientId("");
+    setSearchTerm("");
+    setRefreshKey(prev => prev + 1);
+  };
+
   return (
     <div className="p-6 bg-[#f8fafc] min-h-screen">
       <div className="flex justify-between items-center mb-8">
@@ -69,25 +82,54 @@ const RoutesPage = () => {
            <p className="text-slate-500 text-sm mt-1">Gestión de recorridos y puntos de control (Catálogo de Rondas)</p>
         </div>
         
-        <div className="flex items-center gap-3">
-            <div className="w-64 relative">
-                <input 
-                    type="text"
-                    placeholder="Buscar por nombre..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-100 rounded-xl focus:border-[#065911] outline-none text-sm transition-all shadow-sm font-medium h-[42px]"
+        <div className="flex items-end gap-3">
+            {(selectedClientId || searchTerm) && (
+                <ITButton
+                    onClick={clearFilters}
+                    variant="outlined"
+                    color="secondary"
+                    className="h-[42px] px-4 !rounded-xl border-red-100 bg-red-50/30 text-red-600 hover:bg-red-50 transition-all flex items-center gap-2"
+                    size="small"
+                >
+                    <FaTimes className="text-xs" />
+                    Limpiar Filtros
+                </ITButton>
+            )}
+
+            <div className="flex flex-col gap-1.5 min-w-[200px]">
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Filtrar por Cliente</label>
+                <ITSearchSelect
+                    placeholder="Todos los clientes"
+                    options={(clients || []).map((c: any) => ({ label: c.name, value: c.id }))}
+                    value={selectedClientId}
+                    onChange={(val) => {
+                        setSelectedClientId(val);
+                        setRefreshKey(prev => prev + 1);
+                    }}
                 />
-                {searchTerm ? (
-                    <button 
-                        onClick={() => setSearchTerm("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
-                    >
-                        <FaTimes size={14} />
-                    </button>
-                ) : (
-                    <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-200" />
-                )}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Buscar por nombre</label>
+                <div className="w-64 relative">
+                    <input 
+                        type="text"
+                        placeholder="Nombre de la ruta..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-[#065911] outline-none text-sm transition-all shadow-sm font-medium h-[42px]"
+                    />
+                    {searchTerm ? (
+                        <button 
+                            onClick={() => setSearchTerm("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+                        >
+                            <FaTimes size={14} />
+                        </button>
+                    ) : (
+                        <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-200" />
+                    )}
+                </div>
             </div>
 
             <ITButton
@@ -99,7 +141,7 @@ const RoutesPage = () => {
                title="Actualizar datos"
             >
               <FaSync className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? '' : 'rotate-180'}`} /> 
-              <span className="text-xs font-bold text-slate-500">Refrescar</span>
+              Refrescar
             </ITButton>
 
             <ITButton
@@ -130,6 +172,19 @@ const RoutesPage = () => {
                   #{row.id}
                 </div>
               ),
+            },
+            {
+              key: "client",
+              label: "CLIENTE",
+              type: "string",
+              render: (row: any) => (
+                <div className="flex items-center gap-2">
+                    <FaBuilding className="text-slate-400 text-xs" />
+                    <span className="font-bold text-slate-700 uppercase text-[11px] tracking-tight">
+                        {row.recurringLocations?.[0]?.location?.client?.name || "Sin Cliente"}
+                    </span>
+                </div>
+              )
             },
             {
               key: "title",

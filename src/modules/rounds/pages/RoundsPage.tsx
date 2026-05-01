@@ -5,11 +5,12 @@ import {
   ITDataTable,
   ITDatePicker,
   ITDialog,
+  ITSearchSelect,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaClock, FaEye, FaStop, FaSync, FaTimesCircle, FaUser } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { FaClock, FaEye, FaStop, FaSync, FaTimesCircle, FaUser, FaBuilding } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getRoutesList } from "../../routes/services/RoutesService";
 import { getUsers } from "../../users/services/UserService";
 import {
@@ -20,19 +21,27 @@ import {
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import tz from "dayjs/plugin/timezone";
+import { useCatalog } from "@app/core/hooks/catalog.hook";
 
 dayjs.extend(utc);
 dayjs.extend(tz);
 
 const RoundsPage = () => {
+  const [searchParams] = useSearchParams();
   const [selectedDate, setSelectedDate] = useState<any>([
     dayjs().tz("America/Tijuana").toDate(),
     dayjs().tz("America/Tijuana").toDate(),
   ]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [selectedClientId, setSelectedClientId] = useState<string | number>(searchParams.get("clientId") ? Number(searchParams.get("clientId")) : "");
   const [refreshKey, setRefreshKey] = useState(0);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { data: clients } = useCatalog("client");
+  const user = useSelector((state: any) => state.auth);
+  const isResident = user?.role === "RESDN";
 
   // Debounce search
   useEffect(() => {
@@ -42,12 +51,19 @@ const RoundsPage = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Snappy & 100% Guaranteed sync.
+  // Sync selectedClientId with URL
+  useEffect(() => {
+    const cid = searchParams.get("clientId");
+    if (cid) {
+      setSelectedClientId(Number(cid));
+      setRefreshKey(prev => prev + 1);
+    }
+  }, [searchParams]);
+
   const externalFilters = useMemo(() => {
     const filters: any = { refreshKey };
 
     if (Array.isArray(selectedDate) && selectedDate[0] && selectedDate[1]) {
-      // Usamos ISO para que el backend reciba strings limpios
       filters.date = [
         dayjs(selectedDate[0]).tz("America/Tijuana").startOf("day").format(),
         dayjs(selectedDate[1]).tz("America/Tijuana").endOf("day").format(),
@@ -62,26 +78,23 @@ const RoundsPage = () => {
         filters.status = statusFilter;
     }
 
-    return filters;
-  }, [selectedDate, refreshKey, searchTerm, statusFilter]);
+    if (selectedClientId) {
+        filters.clientId = selectedClientId;
+    } else if (isResident && user?.clientId) {
+        filters.clientId = user.clientId;
+    }
 
-  // Envolvemos el fetch para ver qué se manda exactamente
+    return filters;
+  }, [selectedDate, refreshKey, searchTerm, statusFilter, selectedClientId, isResident, user?.id]);
+
   const memoizedFetch = useCallback((params: any) => {
-    console.log('--- PARÁMETROS ENVIADOS A LA API ---', params);
     return getPaginatedRounds(params);
   }, []);
 
-  // Config IDs Map
   const [routesMap, setRoutesMap] = useState<Record<number, string>>({});
-  const navigate = useNavigate();
-
-  // Start Round Modal State
   const [guards, setGuards] = useState<any[]>([]);
-
-  // End Round Confirmation Modal State
   const [roundToFinishId, setRoundToFinishId] = useState<number | null>(null);
 
-  // Fetch Routes to build Map and Guards for Filter
   useEffect(() => {
     getRoutesList().then((res) => {
       if (res.success && res.data) {
@@ -104,38 +117,24 @@ const RoundsPage = () => {
     });
   }, []);
 
-
   const handleEndRound = (roundId: number) => {
     setRoundToFinishId(roundId);
   };
 
   const confirmEndRound = async () => {
     if (!roundToFinishId) return;
-
     try {
       const res = await endRound(roundToFinishId);
       setRoundToFinishId(null);
       if (res.success) {
-        dispatch(
-          showToast({
-            message: "Ronda finalizada correctamente",
-            type: "success",
-          }),
-        );
+        dispatch(showToast({ message: "Ronda finalizada correctamente", type: "success" }));
         setRefreshKey((prev) => prev + 1);
       } else {
-        dispatch(
-          showToast({
-            message: res.messages?.join("\n") || "Error al finalizar ronda",
-            type: "error",
-          }),
-        );
+        dispatch(showToast({ message: res.messages?.join("\n") || "Error al finalizar ronda", type: "error" }));
       }
     } catch (e) {
       setRoundToFinishId(null);
-      dispatch(
-        showToast({ message: "Error al finalizar ronda", type: "error" }),
-      );
+      dispatch(showToast({ message: "Error al finalizar ronda", type: "error" }));
     }
   };
 
@@ -147,6 +146,19 @@ const RoundsPage = () => {
         type: "number",
         sortable: true,
       },
+      ...(isResident ? [] : [{
+        key: "client",
+        label: "Cliente",
+        type: "string",
+        render: (row: any) => (
+          <div className="flex items-center gap-2">
+            <FaBuilding className="text-slate-400 text-xs" />
+            <span className="font-bold text-slate-700 uppercase text-[11px] tracking-tight">
+                {row.client?.name || row.recurringConfiguration?.client?.name || "Sin Cliente"}
+            </span>
+          </div>
+        )
+      }]),
       {
         key: "recurringConfiguration",
         label: "Ronda",
@@ -252,13 +264,28 @@ const RoundsPage = () => {
             Historial de recorridos
           </h1>
           <p className="text-slate-500 text-sm mt-1">
-            Historial y supervisión de recorridos de seguridad
+            Historial y supervisión de recorridos por cliente
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-end gap-3">
+            {!isResident && (
+                <div className="flex flex-col gap-1.5 min-w-[200px]">
+                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Filtrar por Cliente</label>
+                    <ITSearchSelect
+                        placeholder="Todos los clientes"
+                        options={(clients || []).map((c: any) => ({ label: c.name, value: c.id }))}
+                        value={selectedClientId}
+                        onChange={(val) => {
+                            setSelectedClientId(val);
+                            setRefreshKey(prev => prev + 1);
+                        }}
+                    />
+                </div>
+            )}
+
             <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Buscar Guardia</label>
-                <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 h-[42px] min-w-[240px] shadow-sm focus-within:border-emerald-500/50 transition-all">
+                <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 h-[42px] min-w-[200px] shadow-sm focus-within:border-emerald-500/50 transition-all">
                     <FaUser className="text-slate-300 text-xs mr-2" />
                     <input 
                         type="text"
@@ -271,7 +298,6 @@ const RoundsPage = () => {
                         <button 
                             onClick={() => setSearchTerm("")}
                             className="text-slate-300 hover:text-red-400 transition-all"
-                            title="Limpiar búsqueda"
                         >
                             <FaTimesCircle className="text-xs" />
                         </button>
@@ -281,7 +307,7 @@ const RoundsPage = () => {
 
             <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Estado</label>
-                <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 h-[42px] min-w-[150px] shadow-sm">
+                <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 h-[42px] min-w-[130px] shadow-sm">
                     <select 
                         value={statusFilter}
                         onChange={(e) => {
@@ -299,48 +325,38 @@ const RoundsPage = () => {
 
             <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Periodo</label>
-                <div className="flex items-center gap-3">
-          <ITDatePicker
-            label=""
-            name="date"
-            value={selectedDate as any}
-            range
-            onChange={(e) => {
-              const val = e.target.value as any;
-
-              if (Array.isArray(val)) {
-                // El DatePicker regresa strings ISO, los convertimos a Date para la UI
-                const parsedDates = val.map((d) => (d ? new Date(d) : null));
-                setSelectedDate(parsedDates);
-                
-                // Si el rango se completó (dos fechas seleccionadas), refrescamos la tabla
-                if (parsedDates[0] && parsedDates[1]) {
-                    setRefreshKey(prev => prev + 1);
-                }
-              } else if (val) {
-                // Caso un solo día o string ISO directo
-                const date = new Date(val);
-                setSelectedDate([date, date]);
-                setRefreshKey(prev => prev + 1);
-              } else {
-                // Caso limpiar filtro
-                setSelectedDate(null);
-                setRefreshKey(prev => prev + 1);
-              }
-            }}
-            className="text-sm text-slate-600 outline-none font-medium"
-          />
-          <ITButton
-                onClick={() => setRefreshKey(prev => prev + 1)}
-                color="secondary"
-                variant="outlined"
-                className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2"
-                size="small"
-                title="Actualizar tabla"
-              >
-                <FaSync className={`text-xs text-slate-500`} />
-                <span className="text-xs font-bold text-slate-600">Refrescar</span>
-          </ITButton>
+                <div className="flex items-center gap-2">
+                    <ITDatePicker
+                        label=""
+                        name="date"
+                        value={selectedDate as any}
+                        range
+                        onChange={(e) => {
+                            const val = e.target.value as any;
+                            if (Array.isArray(val)) {
+                                const parsedDates = val.map((d) => (d ? new Date(d) : null));
+                                setSelectedDate(parsedDates);
+                                if (parsedDates[0] && parsedDates[1]) setRefreshKey(prev => prev + 1);
+                            } else if (val) {
+                                const date = new Date(val);
+                                setSelectedDate([date, date]);
+                                setRefreshKey(prev => prev + 1);
+                            } else {
+                                setSelectedDate(null);
+                                setRefreshKey(prev => prev + 1);
+                            }
+                        }}
+                        className="text-sm text-slate-600 outline-none font-medium h-[42px]"
+                    />
+                    <ITButton
+                        onClick={() => setRefreshKey(prev => prev + 1)}
+                        color="secondary"
+                        variant="outlined"
+                        className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all"
+                        size="small"
+                    >
+                        <FaSync className={`text-xs text-slate-500`} />
+                    </ITButton>
                 </div>
             </div>
         </div>
@@ -356,8 +372,6 @@ const RoundsPage = () => {
         />
       </div>
 
-
-      {/* End Round Confirmation Modal */}
       <ITDialog
         isOpen={!!roundToFinishId}
         onClose={() => setRoundToFinishId(null)}
@@ -365,20 +379,11 @@ const RoundsPage = () => {
       >
         <div className="p-6">
           <p className="text-[#1b1b1f] text-base mb-6">
-            ¿Seguro que deseas FINALIZAR esta ronda manualmente? Esta acción no
-            se puede deshacer.
+            ¿Seguro que deseas FINALIZAR esta ronda manualmente? Esta acción no se puede deshacer.
           </p>
           <div className="flex justify-end gap-3">
-            <ITButton
-              variant="outlined"
-              color="secondary"
-              onClick={() => setRoundToFinishId(null)}
-            >
-              Cancelar
-            </ITButton>
-            <ITButton variant="solid" color="danger" onClick={confirmEndRound}>
-              Finalizar Ronda
-            </ITButton>
+            <ITButton variant="outlined" color="secondary" onClick={() => setRoundToFinishId(null)}>Cancelar</ITButton>
+            <ITButton variant="solid" color="danger" onClick={confirmEndRound}>Finalizar Ronda</ITButton>
           </div>
         </div>
       </ITDialog>

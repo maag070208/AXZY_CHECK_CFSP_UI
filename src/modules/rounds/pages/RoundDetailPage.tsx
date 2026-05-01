@@ -121,13 +121,21 @@ const RoundDetailPage = () => {
             const isDuplicate = visitedLocations.has(locId);
             visitedLocations.add(locId);
 
-            // Check evidence (naive check on media array)
+            // Check evidence
             const hasEvidence = scan.data?.media && Array.isArray(scan.data.media) && scan.data.media.length > 0;
             
-            let status = 'SUCCESS';
-            if (isDuplicate) status = 'DUPLICATE';
-            else if (!hasEvidence) status = 'INCOMPLETE';
-            else validScansCount++; // Only count if unique and complete? Or just valid? User said "no contar 2 veces".
+            let status = hasEvidence ? 'SUCCESS' : 'INCOMPLETE';
+            
+            // If it's a duplicate AND it has the same status as before, we could call it duplicate
+            // but the user wants to see the sequence. So let's only mark as duplicate if it's redundant.
+            // For now, let's prioritize the actual status to show the "Incomplete -> Success" transition.
+            if (isDuplicate && hasEvidence) {
+                // If we already had a success for this location, this one is a true duplicate
+                const alreadyHadSuccess = mapNodes.some(n => n.label === scan.data?.location?.name && n.status === 'SUCCESS');
+                if (alreadyHadSuccess) status = 'DUPLICATE';
+            }
+            
+            if (status === 'SUCCESS' && !isDuplicate) validScansCount++;
 
             mapNodes.push({
                 type: 'POINT',
@@ -141,7 +149,7 @@ const RoundDetailPage = () => {
         });
 
         // Computed expected points
-        const expectedLocs = data.round.recurringConfiguration?.recurringLocations || [];
+        const expectedLocs = data.round.recurringConfiguration?.recurringLocations || (data.round.client?.locations?.map((l: any) => ({ location: l })) || []);
         const missingLocs = expectedLocs.filter((l: any) => !visitedLocations.has(String(l.location.id)));
         
         missingLocs.forEach((loc: any) => {
@@ -283,6 +291,17 @@ const RoundDetailPage = () => {
                         </button>
                         
                         <div className="flex items-center gap-3">
+                            <button 
+                                onClick={() => {
+                                    const token = localStorage.getItem('token');
+                                    window.open(`${import.meta.env.VITE_BASE_URL}/rounds/${id}/report?token=${token}`, '_blank');
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-all font-bold text-sm border border-emerald-200"
+                            >
+                                <FaFileAlt className="text-emerald-500" />
+                                <span>Descargar PDF</span>
+                            </button>
+
                             <ITBadget 
                                 color={data.round.status === "COMPLETED" ? "success" : "warning"}
                                 variant="filled"
@@ -310,6 +329,18 @@ const RoundDetailPage = () => {
                             <div>
                                 <p className="text-xs text-slate-400">Guardia</p>
                                 <p className="font-semibold text-slate-700">{data.round.guard.name} {data.round.guard.lastName}</p>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-slate-600">
+                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                <FaBuilding className="text-slate-600 text-sm" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-400">Cliente</p>
+                                <p className="font-semibold text-slate-700">
+                                    {data.round.client?.name || data.round.recurringConfiguration?.client?.name || 'Sin Cliente'}
+                                </p>
                             </div>
                         </div>
                         

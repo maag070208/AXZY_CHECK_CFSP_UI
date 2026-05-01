@@ -1,14 +1,10 @@
 export type CatalogOptionsType = 
-    | 'property_type' 
-    | 'property_status' 
-    | 'invitation_type' 
-    | 'resident_relationship'
     | 'role'
-    | 'property'
+    | 'client'
+    | 'location'
     | 'guard'
     | 'incident_category'
-    | 'incident_type'
-    | 'invitation_status';
+    | 'incident_type';
 
 export interface ICatalogItem {
     id: number | string;

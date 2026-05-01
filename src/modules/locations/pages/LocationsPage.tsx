@@ -1,17 +1,35 @@
+import { post } from "@app/core/axios/axios";
+import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { AppState } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITButton, ITDataTable, ITDialog, ITInput } from "@axzydev/axzy_ui_system";
-import QRCode from "qrcode";
+import { ITButton, ITDataTable, ITDialog, ITInput, ITSearchSelect } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaCar, FaEdit, FaPlus, FaQrcode, FaSync, FaTimes, FaTrash } from "react-icons/fa";
+import { FaBuilding, FaEdit, FaMapMarkedAlt, FaPlus, FaPrint, FaQrcode, FaSearchLocation, FaSync, FaTimes, FaTrash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
+import { ZonesModal } from "../../zones/components/ZonesModal";
+import { BulkPrintModal } from "../components/BulkPrintModal";
 import { LocationForm } from "../components/LocationForm";
 import { createLocation, deleteLocation, getPaginatedLocations, Location, updateLocation } from "../service/locations.service";
 
 const LocationsPage = () => {
+  const [searchParams] = useSearchParams();
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState<string | number>(searchParams.get("clientId") ? Number(searchParams.get("clientId")) : "");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isZonesModalOpen, setIsZonesModalOpen] = useState(false);
+  const [isBulkPrintModalOpen, setIsBulkPrintModalOpen] = useState(false);
+
+  // Sync selectedClientId with URL search params
+  useEffect(() => {
+    const cid = searchParams.get("clientId");
+    if (cid) {
+      setSelectedClientId(Number(cid));
+    }
+  }, [searchParams]);
+
+  const { data: clients, loading: loadingClients } = useCatalog("client");
 
   // Debounce search to trigger refresh
   useEffect(() => {
@@ -19,13 +37,13 @@ const LocationsPage = () => {
       setRefreshKey(prev => prev + 1);
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, selectedClientId]);
+  
   const dispatch = useDispatch();
   const user = useSelector((state: AppState) => state.auth);
 
   /* Filters/Modals State */
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
-  const [viewingLocation, setViewingLocation] = useState<Location | null>(null);
   const [locationToDelete, setLocationToDelete] = useState<Location | null>(null);
 
   const memoizedFetch = useCallback((params: any) => {
@@ -33,19 +51,18 @@ const LocationsPage = () => {
   }, []);
 
   const externalFilters = useMemo(() => {
-    return { name: searchTerm };
-  }, [searchTerm]);
+    return { name: searchTerm, clientId: selectedClientId };
+  }, [searchTerm, selectedClientId]);
 
-  const handleCreate = async (data: { aisle: string; spot: string; number: string }) => {
+  const handleCreate = async (data: any) => {
     await createLocation(data);
     setIsModalOpen(false);
     setRefreshKey(prev => prev + 1);
   };
 
-  const handleEdit = async (data: { aisle: string; spot: string; number: string }) => {
+  const handleEdit = async (data: any) => {
       if (!editingLocation) return;
-      const name = `${data.aisle}-${data.spot}-${data.number}`;
-      await updateLocation(editingLocation.id, { ...data, name });
+      await updateLocation(editingLocation.id, data);
       setEditingLocation(null);
       setRefreshKey(prev => prev + 1);
   };
@@ -72,73 +89,18 @@ const LocationsPage = () => {
 
   const handlePrintQR = async (location: Location) => {
       try {
-          // Generate QR Code
-          // We can encode the ID or a specific JSON structure depending on what the scanner expects.
-          // For now, assuming simply the ID or Name is sufficient.
-          const qrDataUrl = await QRCode.toDataURL(JSON.stringify({
-              id: location.id,
-              type: 'LOCATION'
-          }), { width: 300 });
-
-          // Open print window
-          const printWindow = window.open('', '_blank');
-          if (!printWindow) {
-              dispatch(showToast({ message: "Por favor habilita los pop-ups para imprimir.", type: "warning" }));
-              return;
-          }
-
-          printWindow.document.write(`
-              <html>
-                  <head>
-                      <style>
-                          body {
-                              display: flex;
-                              flex-direction: column;
-                              align-items: center;
-                              justify-content: center;
-                              height: 100vh;
-                              margin: 0;
-                              font-family: Arial, sans-serif;
-                          }
-                          .container {
-                              text-align: center;
-                              border: 2px solid #000;
-                              padding: 40px;
-                              border-radius: 20px;
-                          }
-                          img {
-                              margin-bottom: 20px;
-                          }
-                          h1 {
-                              font-size: 32px;
-                              margin: 0;
-                          }
-                          p {
-                              font-size: 18px;
-                              color: #555;
-                          }
-                      </style>
-                  </head>
-                  <body>
-                      <div class="container">
-                          <img src="${qrDataUrl}" alt="QR Code" />
-                          <h1>${location.name}</h1>
-                      </div>
-                      <script>
-                          window.onload = function() {
-                              window.print();
-                              window.onafterprint = function() {
-                                  window.close();
-                              }
-                          }
-                      </script>
-                  </body>
-              </html>
-          `);
-          printWindow.document.close();
-
+          const res = await post<any>("/locations/print-qrs", { ids: [location.id] }, { responseType: 'blob' });
+          const blob = new Blob([res as any], { type: 'application/pdf' });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `qr_${location.name.replace(/\s+/g, '_')}.pdf`);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode?.removeChild(link);
+          dispatch(showToast({ message: "PDF generado correctamente", type: "success" }));
       } catch (error) {
-          console.error("Error generating QR", error);
+          console.error("Error generating individual PDF", error);
           dispatch(showToast({ message: "Error al generar el código QR", type: "error" }));
       }
   };
@@ -160,30 +122,27 @@ const LocationsPage = () => {
           label: "Ubicación", 
           type: "string", 
           sortable: true,
-          render: (row: Location) => (
-              <div className="font-bold text-slate-800">{row.name}</div>
+          render: (row: any) => (
+              <div>
+                  <div className="font-bold text-slate-800">{row.name}</div>
+                  <div className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-1">
+                      <FaBuilding className="text-slate-400" />
+                      {row.client?.name || row.clientName || 'Sin Cliente'}
+                  </div>
+              </div>
           )
       },
       { 
-          key: "aisle", 
-          label: "Sección", 
+          key: "zone", 
+          label: "Recurrente", 
           type: "string", 
-          sortable: true,
-          render: (row: any) => <div className="text-slate-600 font-medium">{row.aisle}</div>
-      },
-      { 
-          key: "spot", 
-          label: "# Consecutivo", 
-          type: "string", 
-          sortable: true,
-          render: (row: any) => <div className="text-slate-500">{row.spot}</div>
-      },
-      { 
-          key: "number", 
-          label: "Referencia", 
-          type: "string", 
-          sortable: true,
-          render: (row: any) => <div className="text-xs text-slate-400 italic">{row.number}</div>
+          render: (row: any) => (
+              <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded text-[10px] font-bold uppercase border border-emerald-100">
+                      {row.zone?.name || 'S/Z'}
+                  </span>
+              </div>
+          )
       },
       {
           key: "actions",
@@ -197,7 +156,7 @@ const LocationsPage = () => {
                       variant="outlined"
                       color="primary"
                       className="!p-2"
-                      title="Imprimir QR"
+                      title="Imprimir QR Individual"
                   >
                       <FaQrcode />
                   </ITButton>
@@ -232,10 +191,31 @@ const LocationsPage = () => {
     <div className="p-6 bg-[#f8fafc] min-h-screen">
       <div className="flex justify-between items-center mb-8">
         <div>
-           <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Ubicaciones</h1>
-           <p className="text-slate-500 text-sm mt-1">Gestión de zonas y puntos de control</p>
+           <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+                <FaSearchLocation className="text-emerald-600" />
+                Ubicaciones
+           </h1>
+           <p className="text-slate-500 text-sm mt-1">Gestión de zonas y puntos de control de clientes</p>
         </div>
         <div className="flex items-center gap-3">
+            <ITButton
+                onClick={() => setIsBulkPrintModalOpen(true)}
+                color="primary"
+                variant="outlined"
+                className="h-[42px] px-5 !rounded-xl border-emerald-600 text-emerald-600 hover:bg-emerald-50 shadow-sm flex items-center gap-2 transition-all font-bold"
+            >
+                <FaPrint className="text-xs" />
+                <span>Impresión Masiva</span>
+            </ITButton>
+            
+            <div className="w-64">
+                <ITSearchSelect
+                    placeholder="Filtrar por Cliente"
+                    options={(clients || []).map((c: any) => ({ label: c.name || c.label, value: c.id }))}
+                    value={selectedClientId}
+                    onChange={(val: any) => setSelectedClientId(val)}
+                />
+            </div>
             <div className="w-64 relative">
                 <ITInput
                     placeholder="Buscar por nombre..."
@@ -263,9 +243,18 @@ const LocationsPage = () => {
                 size="small"
                 title="Actualizar tabla"
             >
-                <FaSync className={`text-xs text-slate-500`} />
-                <span className="text-xs font-bold text-slate-500">Actualizar</span>
+                <FaSync className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? '' : 'rotate-180'}`} />
             </ITButton>
+            {selectedClientId && (
+                <ITButton
+                    onClick={() => setIsZonesModalOpen(true)}
+                    variant="outlined"
+                    className="h-[42px] px-3 !rounded-xl border-emerald-100 text-emerald-600 hover:bg-emerald-50 transition-all flex items-center gap-2"
+                    size="small"
+                >
+                    <FaMapMarkedAlt className="text-xs" />
+                </ITButton>
+            )}
             {user?.role !== "OPERATOR" && (
                 <button 
                     onClick={() => setIsModalOpen(true)}
@@ -288,13 +277,29 @@ const LocationsPage = () => {
         />
       </div>
 
+      <BulkPrintModal 
+        isOpen={isBulkPrintModalOpen} 
+        onClose={() => setIsBulkPrintModalOpen(false)} 
+      />
+
+      <ZonesModal 
+        isOpen={isZonesModalOpen} 
+        onClose={() => setIsZonesModalOpen(false)} 
+        clientId={Number(selectedClientId)} 
+        clientName={clients?.find((c: any) => Number(c.id) === Number(selectedClientId))?.name || "Cliente"}
+      />
+
       {/* Create Modal */}
-      <ITDialog isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Nueva Locación">
-        <LocationForm onSubmit={handleCreate} onCancel={() => setIsModalOpen(false)} />
+      <ITDialog isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Nueva Ubicación">
+        <LocationForm 
+          initialData={selectedClientId ? { clientId: Number(selectedClientId), aisle: '', spot: '', number: '', name: '' } : undefined}
+          onSubmit={handleCreate} 
+          onCancel={() => setIsModalOpen(false)} 
+        />
       </ITDialog>
 
       {/* Edit Modal */}
-      <ITDialog isOpen={!!editingLocation} onClose={() => setEditingLocation(null)} title="Editar Locación">
+      <ITDialog isOpen={!!editingLocation} onClose={() => setEditingLocation(null)} title="Editar Ubicación">
         {editingLocation && (
             <LocationForm 
                 initialData={editingLocation}
@@ -304,45 +309,11 @@ const LocationsPage = () => {
         )}
       </ITDialog>
 
-        {/* View Cars Modal */}
-      <ITDialog 
-        isOpen={!!viewingLocation} 
-        onClose={() => setViewingLocation(null)} 
-        title={`Autos en ${viewingLocation?.name}`}
-        className="max-w-3xl w-full"
-      >
-        <div className="p-4">
-            {viewingLocation?.entries && viewingLocation.entries.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
-                    {viewingLocation.entries.map((entry: any) => (
-                        <div key={entry.id} className="border rounded-lg p-3 flex gap-3 items-center bg-gray-50 border-[#e1e4d5]">
-                            <div className="bg-[#f1f6eb] p-2.5 rounded-full text-[#065911]">
-                                <FaCar />
-                            </div>
-                            <div>
-                                <p className="font-bold text-[#1b1b1f]">{entry.brand} {entry.model}</p>
-                                <p className="text-sm text-[#54634d]">Placas: <span className="font-mono font-bold">{entry.plates}</span></p>
-                                <p className="text-xs text-gray-500">Color: {entry.color}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center py-10 text-gray-500">
-                    <p>No hay vehículos en esta zona.</p>
-                </div>
-            )}
-            <div className="mt-6 flex justify-end">
-                <ITButton color="secondary" onClick={() => setViewingLocation(null)}>Cerrar</ITButton>
-            </div>
-        </div>
-      </ITDialog>
-
       {/* Delete Confirmation Modal */}
       <ITDialog isOpen={!!locationToDelete} onClose={() => setLocationToDelete(null)} title="Confirmar Eliminación">
         <div className="p-6">
             <p className="text-[#1b1b1f] text-base mb-6">
-                ¿Estás seguro de que deseas eliminar la zona <span className="font-bold text-red-600">{locationToDelete?.name}</span>? Esta acción no se puede deshacer.
+                ¿Estás seguro de que deseas eliminar la ubicación <span className="font-bold text-red-600">{locationToDelete?.name}</span>? Esta acción no se puede deshacer.
             </p>
             <div className="flex justify-end gap-3">
                 <ITButton variant="outlined" color="secondary" onClick={() => setLocationToDelete(null)}>

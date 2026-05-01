@@ -22,6 +22,10 @@ export const getRoutesList = async (): Promise<TResult<any[]>> => {
     return await get<any[]>('/recurring');
 };
 
+export const getRouteById = async (id: number): Promise<TResult<any>> => {
+    return await get<any>(`/recurring/${id}`);
+};
+
 export const getPaginatedRoutes = async (params: any): Promise<{ data: any[], total: number }> => {
     const res = await post<any>('/recurring/datatable', params);
     if (res.success && res.data) {

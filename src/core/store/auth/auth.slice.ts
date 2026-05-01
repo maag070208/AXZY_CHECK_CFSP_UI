@@ -6,6 +6,7 @@ interface AuthState {
   name: string | null;
   email: string | null;
   role: string | null;
+  clientId: number | null;
   token: string | null;
 }
 
@@ -14,6 +15,7 @@ const initialState: AuthState = {
   name: null,
   email: null,
   role: null,
+  clientId: null,
   token: null,
 };
 
@@ -33,6 +35,7 @@ const authSlice = createSlice({
         state.name = null;
         state.email = null;
         state.role = null;
+        state.clientId = null;
         state.token = null;
         return;
       }
@@ -42,6 +45,7 @@ const authSlice = createSlice({
       state.name = decoded.name ?? "Usuario";
       state.email = decoded.email ?? null;
       state.role = decoded.role ?? null;
+      state.clientId = decoded.clientId ?? null;
       state.token = token;
     },
 
@@ -50,6 +54,7 @@ const authSlice = createSlice({
       state.name = null;
       state.email = null;
       state.role = null;
+      state.clientId = null;
       state.token = null;
     },
   },

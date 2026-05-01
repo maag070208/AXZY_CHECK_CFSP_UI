@@ -2,12 +2,13 @@ import { AppState } from "@app/core/store/store";
 import LOGO from "@assets/logo.png";
 import {
   FaBook,
+  FaBuilding,
   FaChild,
   FaClock,
   FaExclamationTriangle,
   FaHome,
   FaListAlt,
-  FaMapMarkedAlt,
+  FaRoute,
   FaSearchLocation,
   FaUserShield,
   FaWrench
@@ -40,33 +41,26 @@ export const useNavigationItems = (): any[] => {
       icon: <FaHome  />,
     },
     {
+      id: "clients",
+      label: "Clientes",
+      action: () => navigate("/clients"),
+      isActive: isRouteActive("/clients"),
+      icon: <FaBuilding  />,
+    },
+    {
       id: "locations",
       label: "Ubicaciones",
       action: () => navigate("/locations"),
       isActive: isRouteActive("/locations"),
       icon: <FaSearchLocation  />,
     },
-    // {
-    //   id: "properties",
-    //   label: "Propiedades",
-    //   action: () => navigate("/properties"),
-    //   isActive: isRouteActive("/properties"),
-    //   icon: <FaHome />,
-    // },
-    // {
-    //   id: "residents",
-    //   label: "Residentes",
-    //   action: () => navigate("/residents"),
-    //   isActive: isRouteActive("/residents"),
-    //   icon: <FaUsers />,
-    // },
-    // {
-    //   id: "invitations",
-    //   label: "Invitados",
-    //   action: () => navigate("/invitations"),
-    //   isActive: isRouteActive("/invitations"),
-    //   icon: <FaIdBadge />,
-    // },
+    {
+      id: "routes",
+      label: "Configuración de Rondas",
+      action: () => navigate("/routes"),
+      isActive: isRouteActive("/routes"),
+      icon: <FaRoute  />,
+    },
     {
       id: "incidents",
       label: "Incidencias",
@@ -96,13 +90,6 @@ export const useNavigationItems = (): any[] => {
       icon: <FaClock  />,
     },
     {
-      id: "routes",
-      label: "Rutas",
-      action: () => navigate("/routes"),
-      isActive: isRouteActive("/routes"),
-      icon: <FaMapMarkedAlt  />,
-    },
-    {
       id: "guards",
       label: "Guardias",
       action: () => navigate("/guards"),
@@ -117,6 +104,10 @@ export const useNavigationItems = (): any[] => {
       icon: <FaListAlt  />,
     }
   ];
+
+  if (user?.role === "RESDN") {
+    return baseItems.filter(item => item.id === "home" || item.id === "rounds");
+  }
 
   if (user?.role === "ADMIN" || user?.role === "LIDER") {
     baseItems.push({

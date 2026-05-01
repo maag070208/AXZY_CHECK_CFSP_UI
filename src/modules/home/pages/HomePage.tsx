@@ -14,7 +14,7 @@ const HomePage = () => {
   const [homeCardItem, setHomeCardItem] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"nav" | "analytics" | "detail">("nav");
 
-  const isPrivileged = user.role === "ADMIN" || user.role === "LIDER";
+  const canViewMetrics = user.role === "ADMIN" || user.role === "LIDER" || user.role === "RESDN";
 
   useEffect(() => {
     if (!user || !user.token) {
@@ -22,94 +22,84 @@ const HomePage = () => {
       return;
     }
 
-    const cards = [
+    const allCards = [
       {
         title: "Ubicaciones",
         description: "Espacios de estacionamiento y locales",
         icon: <FaListAlt className="text-white" />,
         action: () => navigate("/locations"),
+        roles: ["ADMIN", "LIDER", "SHIFT"]
       },
-      // {
-      //   title: "Propiedades",
-      //   description: "Catálogo de casas y departamentos",
-      //   icon: <FaBuilding className="text-white" />,
-      //   action: () => navigate("/properties"),
-      // },
-      // {
-      //   title: "Residentes",
-      //   description: "Directorio y expedientes de vecinos",
-      //   icon: <FaAddressBook className="text-white" />,
-      //   action: () => navigate("/residents"),
-      // },
-      // {
-      //   title: "Invitaciones",
-      //   description: "Control de accesos y pases QR",
-      //   icon: <FaIdCard className="text-white" />,
-      //   action: () => navigate("/invitations"),
-      // },
       {
         title: "Recorridos",
         description: "Supervisión de rondas en tiempo real",
         icon: <FaClock className="text-white" />,
         action: () => navigate("/rounds"),
+        roles: ["ADMIN", "LIDER", "SHIFT", "RESDN"]
       },
       {
         title: "Rutas",
         description: "Configuración de rutas de vigilancia",
         icon: <FaRoute className="text-white" />,
         action: () => navigate("/routes"),
+        roles: ["ADMIN", "LIDER", "SHIFT"]
       },
       {
         title: "Incidencias",
         description: "Reportes de novedades y emergencias",
         icon: <FaExclamationTriangle className="text-white" />,
         action: () => navigate("/incidents"),
+        roles: ["ADMIN", "LIDER", "SHIFT"]
       },
       {
         title: "Mantenimiento",
         description: "Gestión de reportes técnicos",
         icon: <FaWrench className="text-white" />,
         action: () => navigate("/maintenances"),
+        roles: ["ADMIN", "LIDER", "SHIFT"]
       },
       {
         title: "Kardex",
         description: "Historial de movimientos y bitácora",
         icon: <FaBook className="text-white" />,
         action: () => navigate("/kardex"),
+        roles: ["ADMIN", "LIDER", "SHIFT"]
       },
       {
         title: "Guardias",
         description: "Gestión de personal operativo",
         icon: <FaUserShield className="text-white" />,
         action: () => navigate("/guards"),
+        roles: ["ADMIN", "LIDER", "SHIFT"]
       },
       {
         title: "Horarios",
         description: "Configuración de turnos y roles",
         icon: <FaListAlt className="text-white" />,
         action: () => navigate("/schedules"),
+        roles: ["ADMIN", "LIDER", "SHIFT"]
+      },
+      {
+        title: "Usuarios",
+        description: "Administrar usuarios del sistema",
+        icon: <FaChild className="text-white" />,
+        action: () => navigate("/users"),
+        roles: ["ADMIN", "LIDER"]
       }
     ];
 
-    if (user.role === "ADMIN" || user.role === "LIDER") {
-        cards.push(
-            {
-              title: "Usuarios",
-              description: "Administrar usuarios del sistema",
-              icon: <FaChild className="text-white" />,
-              action: () => navigate("/users"),
-            }
-        );
-    }
+    const filteredCards = allCards.filter(card => 
+      card.roles.includes(user.role || "")
+    );
     
-    setHomeCardItem(cards);
-  }, [user]);
+    setHomeCardItem(filteredCards);
+  }, [user, navigate]);
 
   return (
     <div className="bg-[#f8fafc] min-h-screen p-6">
         <div className="max-w-6xl mx-auto space-y-8 relative z-10">
           
-          {isPrivileged && (
+          {canViewMetrics && (
             <div className="flex items-center justify-center p-1 bg-white border border-slate-100 rounded-2xl shadow-sm w-fit mx-auto sticky top-4 z-50 backdrop-blur-md bg-white/80">
                 <TabButton 
                     active={activeTab === "nav"} 
@@ -141,11 +131,11 @@ const HomePage = () => {
                 </div>
             )}
 
-            {isPrivileged && activeTab === "analytics" && (
+            {canViewMetrics && activeTab === "analytics" && (
                 <AnalyticsTab />
             )}
 
-            {isPrivileged && activeTab === "detail" && (
+            {canViewMetrics && activeTab === "detail" && (
                 <OperationalDetailTab />
             )}
           </div>

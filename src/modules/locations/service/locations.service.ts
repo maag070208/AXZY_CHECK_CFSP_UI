@@ -2,23 +2,30 @@ import { get, post, put, remove } from "@app/core/axios/axios";
 
 export interface Location {
   id: number;
-  aisle: string;
-  spot: string;
-  number: string;
+  clientId?: number;
+  zoneId?: number;
+  client?: { name: string };
+  zone?: { name: string };
+  clientName?: string;
   name: string;
+  reference?: string;
+  aisle?: string;
+  spot?: string;
+  number?: string;
   isOccupied: boolean;
   entries?: any[]; // For count
+  _count?: { tasks: number };
 }
 
 export const getLocations = async () => {
   return await get<Location[]>("/locations");
 };
 
-export const createLocation = async (data: { aisle: string; spot: string; number: string; name?: string }) => {
+export const createLocation = async (data: any) => {
   return await post<Location>("/locations", data);
 };
 
-export const updateLocation = async (id: number, data: { aisle: string; spot: string; number: string; name: string }) => {
+export const updateLocation = async (id: number, data: any) => {
   return await put<Location>(`/locations/${id}`, data);
 };
 
