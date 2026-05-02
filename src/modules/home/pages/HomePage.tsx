@@ -1,6 +1,6 @@
 import { AppState } from "@app/core/store/store";
 import { useEffect, useState } from "react";
-import { FaBook, FaChartBar, FaChild, FaClock, FaExclamationTriangle, FaListAlt, FaRoute, FaTable, FaThLarge, FaUserShield, FaWrench } from "react-icons/fa";
+import { FaBook, FaBuilding, FaChartBar, FaChild, FaClock, FaExclamationTriangle, FaListAlt, FaRoute, FaTable, FaThLarge, FaUserShield, FaWrench } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { HomeCardItem } from "../components/HomeCardItem";
@@ -31,6 +31,13 @@ const HomePage = () => {
         roles: ["ADMIN", "LIDER", "SHIFT"]
       },
       {
+        title: "Clientes",
+        description: "Gestión de organizaciones y cuentas",
+        icon: <FaBuilding className="text-white" />,
+        action: () => navigate("/clients"),
+        roles: ["ADMIN", "LIDER"]
+      },
+      {
         title: "Recorridos",
         description: "Supervisión de rondas en tiempo real",
         icon: <FaClock className="text-white" />,
@@ -38,7 +45,7 @@ const HomePage = () => {
         roles: ["ADMIN", "LIDER", "SHIFT", "RESDN"]
       },
       {
-        title: "Rutas",
+        title: "Configuración de rondas",
         description: "Configuración de rutas de vigilancia",
         icon: <FaRoute className="text-white" />,
         action: () => navigate("/routes"),
