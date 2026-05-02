@@ -174,79 +174,71 @@ const KardexPage = () => {
 
   return (
     <div className="p-6 min-h-screen">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-           <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-              <FaBook className="text-indigo-500" />
-              Kardex
-           </h1>
-           <p className="text-slate-500 text-sm mt-1">Historial de actividades y reportes en tiempo real</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-            <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Filtrar por Guardia</label>
-                <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 h-[42px] min-w-[260px] shadow-sm">
-                    <FaUser className="text-slate-300 text-xs mr-2" />
-                    <input 
-                        type="text"
-                        placeholder="Nombre de guardia..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="bg-transparent text-sm font-bold text-slate-600 outline-none w-full"
-                    />
-                    {searchTerm.length > 0 && (
-                        <button 
-                            onClick={() => setSearchTerm("")}
-                            className="text-slate-300 hover:text-red-400 transition-all"
-                            title="Limpiar búsqueda"
-                        >
-                            <FaTimesCircle className="text-xs" />
-                        </button>
-                    )}
-                </div>
-            </div>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+          <FaBook className="text-indigo-500" />
+          Kardex
+        </h1>
+        <p className="text-slate-500 text-sm mt-1">Historial de actividades y reportes en tiempo real</p>
+      </div>
 
-            <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Periodo</label>
-                <div className="flex items-center gap-3">
-                    <ITDatePicker
-                        label=""
-                        name="date"
-                        value={selectedDate as any}
-                        range
-                        onChange={(e) => {
-                        const val = e.target.value as any;
-                        if (Array.isArray(val)) {
-                            const parsedDates = val.map((d) => (d ? new Date(d) : null));
-                            setSelectedDate(parsedDates);
-                            if (parsedDates[0] && parsedDates[1]) {
-                                setRefreshKey(prev => prev + 1);
-                            }
-                        } else if (val) {
-                            const date = new Date(val);
-                            setSelectedDate([date, date]);
-                            setRefreshKey(prev => prev + 1);
-                        } else {
-                            setSelectedDate(null);
-                            setRefreshKey(prev => prev + 1);
-                        }
-                        }}
-                        className="text-sm text-slate-600 outline-none font-medium h-[42px] !border-slate-200"
-                    />
-                    <ITButton
-                        onClick={() => setRefreshKey(prev => prev + 1)}
-                        color="secondary"
-                        variant="outlined"
-                        className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2"
-                        size="small"
-                        title="Actualizar tabla"
-                    >
-                        <FaSync className={`text-xs text-slate-500`} />
-                        <span className="text-xs font-bold text-slate-600">Refrescar</span>
-                    </ITButton>
-                </div>
-            </div>
+      <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
+        <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 h-[42px] w-full sm:w-64 shadow-sm focus-within:border-emerald-500/50 transition-all">
+          <FaUser className="text-slate-300 text-xs mr-2" />
+          <input
+            type="text"
+            placeholder="Buscar por Guardia..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-transparent text-sm font-bold text-slate-600 outline-none w-full placeholder:text-slate-300 placeholder:font-normal"
+          />
+          {searchTerm.length > 0 && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="text-slate-300 hover:text-red-400 transition-all"
+              title="Limpiar búsqueda"
+            >
+              <FaTimesCircle className="text-xs" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <ITDatePicker
+            label=""
+            name="date"
+            value={selectedDate as any}
+            range
+            onChange={(e) => {
+              const val = e.target.value as any;
+              if (Array.isArray(val)) {
+                const parsedDates = val.map((d) => (d ? new Date(d) : null));
+                setSelectedDate(parsedDates);
+                if (parsedDates[0] && parsedDates[1]) {
+                  setRefreshKey(prev => prev + 1);
+                }
+              } else if (val) {
+                const date = new Date(val);
+                setSelectedDate([date, date]);
+                setRefreshKey(prev => prev + 1);
+              } else {
+                setSelectedDate(null);
+                setRefreshKey(prev => prev + 1);
+              }
+            }}
+            className="text-sm text-slate-600 outline-none font-medium h-[42px] !border-slate-200"
+          />
+          <ITButton
+            onClick={() => setRefreshKey(prev => prev + 1)}
+            color="secondary"
+            variant="outlined"
+            className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+            size="small"
+            title="Actualizar tabla"
+          >
+            <FaSync className={`text-xs text-slate-500`} />
+            <span className="text-xs font-bold text-slate-600">Refrescar</span>
+          </ITButton>
         </div>
       </div>
 

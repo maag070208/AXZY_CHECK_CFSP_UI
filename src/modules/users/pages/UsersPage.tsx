@@ -12,7 +12,7 @@ const UsersPage = () => {
     const dispatch = useDispatch();
     const [refreshKey, setRefreshKey] = useState(0);
     const [searchTerm, setSearchTerm] = useState("");
-    
+
     // Catalog for roles filter
     const { data: rolesCatalog, loading: loadingRoles } = useCatalog('role');
 
@@ -62,50 +62,49 @@ const UsersPage = () => {
     return (
         <div className="p-6 bg-[#f8fafc] min-h-screen">
             {/* Header following the screenshot exactly */}
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                   <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-                        <FaUserShield className="text-emerald-600" />
-                        Directorio de Usuarios
-                   </h1>
-                   <p className="text-slate-500 text-sm mt-1">Gestión de usuarios vecinales, expedientes y controles de acceso</p>
+            <div className="mb-6">
+                <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+                    <FaUserShield className="text-emerald-600" />
+                    Directorio de Usuarios
+                </h1>
+                <p className="text-slate-500 text-sm mt-1">Gestión de usuarios vecinales, expedientes y controles de acceso</p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
+                <div className="w-full sm:w-64 relative">
+                    <input
+                        type="text"
+                        placeholder="Buscar usuario..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full py-2 h-[42px] px-4 pr-10 bg-white border border-slate-100 rounded-xl outline-none text-sm focus:border-emerald-500 transition-all shadow-sm font-medium text-slate-600"
+                    />
+                    {searchTerm && (
+                        <button
+                            onClick={() => setSearchTerm("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
+                        >
+                            <FaTimes size={14} />
+                        </button>
+                    )}
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="w-64 relative">
-                        <input 
-                            type="text"
-                            placeholder="Buscar usuario..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full py-2 h-[42px] px-4 pr-10 bg-white border border-slate-100 rounded-xl outline-none text-sm focus:border-emerald-500 transition-all shadow-sm font-medium text-slate-600"
-                        />
-                        {searchTerm && (
-                            <button 
-                                onClick={() => setSearchTerm("")}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
-                            >
-                                <FaTimes size={14} />
-                            </button>
-                        )}
-                    </div>
-                    <ITButton
-                        onClick={refreshTable}
-                        color="secondary"
-                        variant="outlined"
-                        className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2"
-                        size="small"
-                    >
-                        <FaSync className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? '' : 'rotate-180'}`} />
-                        <span className="text-xs font-bold text-slate-500">Actualizar</span>
-                    </ITButton>
-                    <button 
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 h-[42px] rounded-xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-105 transition-all"
-                    >
-                        <FaPlus className="text-xs" />
-                        <span>Nuevo Usuario</span>
-                    </button>
-                </div>
+                <ITButton
+                    onClick={refreshTable}
+                    color="secondary"
+                    variant="outlined"
+                    className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
+                    size="small"
+                >
+                    <FaSync className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? '' : 'rotate-180'}`} />
+                    <span className="text-xs font-bold text-slate-500">Actualizar</span>
+                </ITButton>
+                <button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2.5 h-[42px] rounded-xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-105 transition-all w-full sm:w-auto"
+                >
+                    <FaPlus className="text-xs" />
+                    <span>Nuevo Usuario</span>
+                </button>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -145,9 +144,9 @@ const UsersPage = () => {
                             render: (row: User) => {
                                 const roleName = row.role?.name || '';
                                 const roleValue = row.role?.value || 'S/R';
-                                
+
                                 let badgeClass = "bg-slate-50 text-slate-500 border-slate-100"; // Default
-                                
+
                                 if (roleName === 'ADMIN') badgeClass = "bg-blue-50 text-blue-700 border-blue-100";
                                 if (roleName === 'GUARD') badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-100";
                                 if (roleName === 'SHIFT') badgeClass = "bg-indigo-50 text-indigo-700 border-indigo-100";
@@ -200,28 +199,28 @@ const UsersPage = () => {
                             type: "actions",
                             actions: (row: User) => (
                                 <div className="flex items-center gap-2">
-                                    <ITButton 
-                                        onClick={() => setChangingPasswordUser(row)} 
-                                        size="small" 
-                                        variant="outlined" 
+                                    <ITButton
+                                        onClick={() => setChangingPasswordUser(row)}
+                                        size="small"
+                                        variant="outlined"
                                         className="border-emerald-200 text-emerald-500 hover:bg-emerald-50"
                                         title="Contraseña"
                                     >
                                         <FaKey />
                                     </ITButton>
-                                    <ITButton 
-                                        onClick={() => setEditingUser(row)} 
-                                        size="small" 
-                                        variant="ghost" 
+                                    <ITButton
+                                        onClick={() => setEditingUser(row)}
+                                        size="small"
+                                        variant="ghost"
                                         className="text-slate-400 hover:text-slate-600"
                                         title="Editar"
                                     >
                                         <FaEdit />
                                     </ITButton>
-                                    <ITButton 
-                                        onClick={() => setUserToDeleteId(row.id)} 
-                                        size="small" 
-                                        variant="ghost" 
+                                    <ITButton
+                                        onClick={() => setUserToDeleteId(row.id)}
+                                        size="small"
+                                        variant="ghost"
                                         className="text-red-300 hover:text-red-500"
                                         title="Eliminar"
                                     >
@@ -235,22 +234,22 @@ const UsersPage = () => {
             </div>
 
             {/* Modals matching the high-end style */}
-            <ITDialog 
-                isOpen={isCreateModalOpen || !!editingUser} 
+            <ITDialog
+                isOpen={isCreateModalOpen || !!editingUser}
                 onClose={() => {
                     setIsCreateModalOpen(false);
                     setEditingUser(null);
-                }} 
+                }}
                 title={editingUser ? `Editar Usuario: ${editingUser.name}` : "Nuevo Usuario"}
                 className="!w-full !max-w-4xl"
             >
-                <CreateUserWizard 
+                <CreateUserWizard
                     userToEdit={editingUser || undefined}
                     onCancel={() => {
                         setIsCreateModalOpen(false);
                         setEditingUser(null);
-                    }} 
-                    onSuccess={handleSuccess} 
+                    }}
+                    onSuccess={handleSuccess}
                 />
             </ITDialog>
 
@@ -269,9 +268,9 @@ const UsersPage = () => {
                 )}
             </ITDialog>
 
-            <ITDialog 
-                isOpen={!!userToDeleteId} 
-                onClose={() => setUserToDeleteId(null)} 
+            <ITDialog
+                isOpen={!!userToDeleteId}
+                onClose={() => setUserToDeleteId(null)}
                 title="Confirmar Eliminación"
             >
                 <div className="p-6">

@@ -92,50 +92,48 @@ const SchedulesPage = () => {
   return (
     <div className="p-8 bg-white min-h-screen">
       {/* Header aligned with the provided image */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
-        <div>
-            <h1 className="text-2xl font-bold text-[#1e293b] flex items-center gap-2">
-                <FaClock className="text-[#065911]" /> Directorio de Horarios
-            </h1>
-            <p className="text-slate-500 text-sm mt-1 font-medium">Gestión de turnos operativos, entradas, salidas y controles de asistencia</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-            <div className="relative">
-                <input 
-                    type="text"
-                    placeholder="Buscar horario..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-4 pr-10 py-2.5 bg-white border border-slate-300 rounded-lg w-64 focus:border-[#065911] outline-none text-sm transition-all shadow-sm"
-                />
-                {searchTerm ? (
-                    <FaTimes 
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer" 
-                        onClick={() => setSearchTerm("")}
-                    />
-                ) : (
-                    <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300" />
-                )}
-            </div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-[#1e293b] flex items-center gap-2">
+          <FaClock className="text-[#065911]" /> Directorio de Horarios
+        </h1>
+        <p className="text-slate-500 text-sm mt-1 font-medium">Gestión de turnos operativos, entradas, salidas y controles de asistencia</p>
+      </div>
 
-            <ITButton
-               onClick={refreshTable}
-               variant="outlined"
-               color="secondary"
-               className="!px-4 !py-2.5 !rounded-lg !border-slate-400 !text-slate-600 flex items-center gap-2 font-bold text-sm bg-white hover:bg-slate-50"
-            >
-              <FaSync className={refreshKey % 2 === 0 ? '' : 'rotate-180'} /> Actualizar
-            </ITButton>
-
-            <ITButton
-               onClick={() => openModal()}
-               color="primary"
-               className="!px-6 !py-2.5 !rounded-lg !bg-[#065911] hover:!bg-[#04400c] font-bold text-sm flex items-center gap-2 shadow-sm"
-            >
-              <FaPlus className="text-xs" /> Alta de Horario
-            </ITButton>
+      <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
+        <div className="relative w-full sm:w-64">
+          <input
+            type="text"
+            placeholder="Buscar horario..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-4 pr-10 py-2.5 bg-white border border-slate-300 rounded-lg w-full focus:border-[#065911] outline-none text-sm transition-all shadow-sm"
+          />
+          {searchTerm ? (
+            <FaTimes
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer"
+              onClick={() => setSearchTerm("")}
+            />
+          ) : (
+            <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300" />
+          )}
         </div>
+
+        <ITButton
+          onClick={refreshTable}
+          variant="outlined"
+          color="secondary"
+          className="h-[42px] !px-4 !py-2.5 !rounded-lg !border-slate-400 !text-slate-600 flex items-center justify-center gap-2 font-bold text-sm bg-white hover:bg-slate-50 w-full sm:w-auto"
+        >
+          <FaSync className={refreshKey % 2 === 0 ? '' : 'rotate-180'} /> Actualizar
+        </ITButton>
+
+        <ITButton
+          onClick={() => openModal()}
+          color="primary"
+          className="h-[42px] !px-6 !py-2.5 !rounded-lg !bg-[#065911] hover:!bg-[#04400c] font-bold text-sm flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto"
+        >
+          <FaPlus className="text-xs" /> Alta de Horario
+        </ITButton>
       </div>
 
       {/* Table Container */}

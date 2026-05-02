@@ -55,46 +55,44 @@ const GuardsPage = () => {
     return (
         <div className="p-8 bg-[#F8FAFC] min-h-screen">
             {/* Header matching the ResidentsPage feel */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-                        <FaUserShield className="text-[#065911]" />
-                        Módulo de Guardias
-                    </h1>
-                    <p className="text-slate-500 text-sm mt-1">Gestión de personal operativo, turnos y controles de seguridad</p>
+            <div className="mb-6">
+                <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+                    <FaUserShield className="text-[#065911]" />
+                    Módulo de Guardias
+                </h1>
+                <p className="text-slate-500 text-sm mt-1">Gestión de personal operativo, turnos y controles de seguridad</p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
+                <div className="w-full sm:w-64 relative">
+                    <input
+                        type="text"
+                        placeholder="Buscar guardia..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full py-2 h-[42px] px-4 pr-10 bg-white border border-slate-100 rounded-xl outline-none text-sm focus:border-[#065911] transition-all shadow-sm font-medium text-slate-600"
+                    />
+                    {searchTerm ? (
+                        <button
+                            onClick={() => setSearchTerm("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
+                        >
+                            <FaTimes size={14} />
+                        </button>
+                    ) : (
+                        <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-200" size={14} />
+                    )}
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="w-64 relative">
-                        <input 
-                            type="text"
-                            placeholder="Buscar guardia..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full py-2 h-[42px] px-4 pr-10 bg-white border border-slate-100 rounded-xl outline-none text-sm focus:border-[#065911] transition-all shadow-sm font-medium text-slate-600"
-                        />
-                        {searchTerm ? (
-                            <button 
-                                onClick={() => setSearchTerm("")}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
-                            >
-                                <FaTimes size={14} />
-                            </button>
-                        ) : (
-                            <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-200" size={14} />
-                        )}
-                    </div>
-
-                    <ITButton
-                        onClick={refreshTable}
-                        variant="outlined"
-                        color="secondary"
-                        className="h-[42px] !px-4 !rounded-xl !border-slate-200 !bg-white hover:!bg-slate-50 transition-all flex items-center gap-2"
-                    >
-                        <FaSync className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? '' : 'rotate-180'}`} />
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Actualizar</span>
-                    </ITButton>
-                </div>
+                <ITButton
+                    onClick={refreshTable}
+                    variant="outlined"
+                    color="secondary"
+                    className="h-[42px] !px-4 !rounded-xl !border-slate-200 !bg-white hover:!bg-slate-50 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
+                >
+                    <FaSync className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? '' : 'rotate-180'}`} />
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Actualizar</span>
+                </ITButton>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">

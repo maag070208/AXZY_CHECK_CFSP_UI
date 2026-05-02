@@ -1,6 +1,6 @@
 import { AppState } from "@app/core/store/store";
 import { useEffect, useState } from "react";
-import { FaBook, FaBuilding, FaChartBar, FaChild, FaClock, FaExclamationTriangle, FaListAlt, FaRoute, FaTable, FaThLarge, FaUserShield, FaWrench } from "react-icons/fa";
+import { FaBook, FaBuilding, FaChartBar, FaChild, FaClock, FaCogs, FaExclamationTriangle, FaListAlt, FaRoute, FaTable, FaThLarge, FaUserShield, FaWrench } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { HomeCardItem } from "../components/HomeCardItem";
@@ -91,6 +91,13 @@ const HomePage = () => {
         description: "Administrar usuarios del sistema",
         icon: <FaChild className="text-white" />,
         action: () => navigate("/users"),
+        roles: ["ADMIN", "LIDER"]
+      },
+      {
+        title: "Catálogos",
+        description: "Ajustes de incidentes y tipos",
+        icon: <FaCogs className="text-white" />,
+        action: () => navigate("/settings"),
         roles: ["ADMIN", "LIDER"]
       }
     ];

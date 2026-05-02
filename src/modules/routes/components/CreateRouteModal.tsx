@@ -262,10 +262,10 @@ export const CreateRouteModal = ({ isOpen, onClose, onSuccess, editConfig }: Cre
                     <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Sincronizando información...</p>
                 </div>
             ) : (
-                <div className="flex flex-col lg:flex-row gap-10 max-h-[75vh] overflow-hidden p-1">
+                <div className="flex flex-col lg:flex-row gap-10 max-h-[80vh] lg:max-h-[75vh] overflow-y-auto lg:overflow-hidden p-1 custom-scrollbar">
                     
                     {/* Left Side: General Info & Guards */}
-                    <div className="lg:w-1/3 flex flex-col gap-8 border-r border-slate-100 pr-6 overflow-hidden">
+                    <div className="w-full lg:w-1/3 flex flex-col gap-8 lg:border-r border-slate-100 lg:pr-6 lg:overflow-hidden">
                         {/* Fixed Section */}
                         <div className="space-y-6">
                             <div className="flex items-center gap-3">
@@ -298,7 +298,7 @@ export const CreateRouteModal = ({ isOpen, onClose, onSuccess, editConfig }: Cre
                                 </button>
                             </div>
                             
-                            <div className="space-y-2 overflow-y-auto pr-2 custom-scrollbar">
+                            <div className="space-y-2 overflow-y-auto lg:max-h-none max-h-[300px] pr-2 custom-scrollbar">
                                 {allGuards.map(guard => (
                                     <div 
                                         key={guard.id} 
@@ -422,7 +422,7 @@ export const CreateRouteModal = ({ isOpen, onClose, onSuccess, editConfig }: Cre
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto pr-4 space-y-6 pb-6 custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto lg:max-h-none max-h-[500px] pr-4 space-y-6 pb-6 custom-scrollbar">
                             {addedLocations.map((loc, idx) => (
                                 <div key={loc.locationId} className="group bg-white border-2 border-slate-100 rounded-2xl overflow-hidden hover:border-slate-200 transition-all">
                                     <div className="flex justify-between items-center p-4 bg-slate-50/50">
@@ -502,12 +502,12 @@ export const CreateRouteModal = ({ isOpen, onClose, onSuccess, editConfig }: Cre
             )}
 
             {/* Footer */}
-            <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
                 <ITButton 
                     onClick={onClose} 
                     variant="outlined" 
                     color="secondary" 
-                    className="!px-6 !py-2.5 !rounded-xl font-bold text-xs uppercase tracking-widest !border-slate-200 !text-slate-400 hover:!bg-slate-50 transition-colors"
+                    className="!px-6 !py-2.5 !rounded-xl font-bold text-xs uppercase tracking-widest !border-slate-200 !text-slate-400 hover:!bg-slate-50 transition-colors w-full sm:w-auto"
                 >
                     Descartar
                 </ITButton>
@@ -515,7 +515,7 @@ export const CreateRouteModal = ({ isOpen, onClose, onSuccess, editConfig }: Cre
                     onClick={handleSave} 
                     color="primary"
                     disabled={loading || fetchingData || !title || addedLocations.length === 0}
-                    className="!px-8 !py-2.5 !rounded-xl !bg-[#065911] font-bold text-xs uppercase tracking-widest shadow-lg shadow-emerald-50 hover:!bg-[#04400c] transition-all active:scale-95 disabled:!opacity-30"
+                    className="!px-8 !py-2.5 !rounded-xl !bg-[#065911] font-bold text-xs uppercase tracking-widest shadow-lg shadow-emerald-50 hover:!bg-[#04400c] transition-all active:scale-95 disabled:!opacity-30 w-full sm:w-auto"
                 >
                     {loading ? "Sincronizando..." : editConfig ? "Actualizar" : "Guardar Ruta"}
                 </ITButton>

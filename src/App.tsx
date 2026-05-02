@@ -21,6 +21,7 @@ import RoundDetailPage from "./modules/rounds/pages/RoundDetailPage";
 import SchedulesPage from "./modules/schedules/pages/SchedulesPage";
 import GuardsPage from "./modules/guards/pages/GuardsPage";
 import RoutesPage from "./modules/routes/pages/RoutesPage";
+import SettingsPage from "@app/modules/settings/pages/SettingsPage";
 
 
 function App() {
@@ -87,6 +88,7 @@ function App() {
         
         <Route path="/rounds" element={<RoundsPage />} />
         <Route path="/rounds/:id" element={<RoundDetailPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
 
       </Route>
       <Route path="*" element={<Navigate to="/home" />} />

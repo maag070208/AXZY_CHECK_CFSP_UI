@@ -4,7 +4,7 @@ import { AppState } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import { ITButton, ITDataTable, ITDialog, ITInput, ITSearchSelect } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaBuilding, FaEdit, FaMapMarkedAlt, FaPlus, FaPrint, FaQrcode, FaSearchLocation, FaSync, FaTimes, FaTrash } from "react-icons/fa";
+import { FaBuilding, FaEdit, FaFilter, FaMapMarkedAlt, FaPlus, FaPrint, FaQrcode, FaSearchLocation, FaSync, FaTimes, FaTrash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import { ZonesModal } from "../../zones/components/ZonesModal";
@@ -188,86 +188,102 @@ const LocationsPage = () => {
   ], [user]);
 
   return (
-    <div className="p-6 bg-[#f8fafc] min-h-screen">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-           <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-                <FaSearchLocation className="text-emerald-600" />
-                Ubicaciones
-           </h1>
-           <p className="text-slate-500 text-sm mt-1">Gestión de zonas y puntos de control de clientes</p>
-        </div>
-        <div className="flex items-center gap-3">
-            <ITButton
-                onClick={() => setIsBulkPrintModalOpen(true)}
-                color="primary"
-                variant="outlined"
-                className="h-[42px] px-5 !rounded-xl border-emerald-600 text-emerald-600 hover:bg-emerald-50 shadow-sm flex items-center gap-2 transition-all font-bold"
-            >
-                <FaPrint className="text-xs" />
-                <span>Impresión Masiva</span>
-            </ITButton>
-            
-            <div className="w-64">
-                <ITSearchSelect
-                    placeholder="Filtrar por Cliente"
-                    options={(clients || []).map((c: any) => ({ label: c.name || c.label, value: c.id }))}
-                    value={selectedClientId}
-                    onChange={(val: any) => setSelectedClientId(val)}
-                />
-            </div>
-            <div className="w-64 relative">
-                <ITInput
-                    placeholder="Buscar por nombre..."
-                    name="search"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onBlur={() => {}}
-                    className="!py-2 !h-[42px] !rounded-xl border-slate-100 !pr-10 bg-white"
-                />
-                {searchTerm && (
-                    <button 
-                        onClick={() => setSearchTerm("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
-                        title="Limpiar búsqueda"
-                    >
-                        <FaTimes size={14} />
-                    </button>
-                )}
-            </div>
-            <ITButton
-                onClick={() => setRefreshKey(prev => prev + 1)}
-                color="secondary"
-                variant="outlined"
-                className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2"
-                size="small"
-                title="Actualizar tabla"
-            >
-                <FaSync className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? '' : 'rotate-180'}`} />
-            </ITButton>
-            {selectedClientId && (
-                <ITButton
-                    onClick={() => setIsZonesModalOpen(true)}
-                    variant="outlined"
-                    className="h-[42px] px-3 !rounded-xl border-emerald-100 text-emerald-600 hover:bg-emerald-50 transition-all flex items-center gap-2"
-                    size="small"
-                >
-                    <FaMapMarkedAlt className="text-xs" />
-                </ITButton>
-            )}
-            {user?.role !== "OPERATOR" && (
-                <button 
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 h-[42px] rounded-xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-105 transition-all"
-                >
-                    <FaPlus className="text-xs" />
-                    <span>Nueva Ubicación</span>
-                </button>
-            )}
-        </div>
+    <div className="p-4 md:p-6 bg-[#f8fafc] min-h-screen">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+          <FaSearchLocation className="text-emerald-600" />
+          Ubicaciones
+        </h1>
+        <p className="text-slate-500 text-sm mt-1">Gestión de zonas y puntos de control de clientes</p>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
+        <ITButton
+          onClick={() => setIsBulkPrintModalOpen(true)}
+          color="primary"
+          variant="outlined"
+          className="h-[42px] px-5 !rounded-xl border-emerald-600 text-emerald-600 hover:bg-emerald-50 shadow-sm flex items-center justify-center gap-2 transition-all font-bold w-full sm:w-auto"
+        >
+          <FaPrint className="text-xs" />
+          <span>Impresión Masiva</span>
+        </ITButton>
+
+        <div className="w-full sm:w-64">
+          <ITSearchSelect
+            placeholder="Filtrar por Cliente"
+            options={(clients || []).map((c: any) => ({ label: c.name || c.label, value: c.id }))}
+            value={selectedClientId}
+            onChange={(val: any) => setSelectedClientId(val)}
+          />
+        </div>
+        <div className="w-full sm:w-64 relative">
+          <ITInput
+            placeholder="Buscar por nombre..."
+            name="search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onBlur={() => { }}
+            className="!py-2 !h-[42px] !rounded-xl border-slate-100 !pr-10 bg-white"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
+              title="Limpiar búsqueda"
+            >
+              <FaTimes size={14} />
+            </button>
+          )}
+        </div>
+        <ITButton
+          onClick={() => setRefreshKey(prev => prev + 1)}
+          color="secondary"
+          variant="outlined"
+          className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
+          size="small"
+          title="Actualizar tabla"
+        >
+          <FaSync className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? '' : 'rotate-180'}`} />
+        </ITButton>
+        {(searchTerm || selectedClientId) && (
+          <ITButton
+            onClick={() => {
+              setSearchTerm("");
+              setSelectedClientId("");
+            }}
+            color="secondary"
+            variant="outlined"
+            className="h-[42px] px-3 !rounded-xl border-red-100 text-red-600 hover:bg-red-50 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
+            size="small"
+            title="Limpiar filtros"
+          >
+            <FaFilter className="text-xs" />
+            <span className="text-xs font-bold">Limpiar</span>
+          </ITButton>
+        )}
+        {selectedClientId && (
+          <ITButton
+            onClick={() => setIsZonesModalOpen(true)}
+            variant="outlined"
+            className="h-[42px] px-3 !rounded-xl border-emerald-100 text-emerald-600 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
+            size="small"
+          >
+            <FaMapMarkedAlt className="text-xs" />
+            <span className="text-xs font-bold sm:hidden">Ver Zonas</span>
+          </ITButton>
+        )}
+        {user?.role !== "OPERATOR" && (
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2.5 h-[42px] rounded-xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-105 transition-all w-full sm:w-auto"
+          >
+            <FaPlus className="text-xs" />
+            <span>Nueva Ubicación</span>
+          </button>
+        )}
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
         <ITDataTable
             key={refreshKey}
             columns={columns as any}

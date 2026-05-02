@@ -76,7 +76,7 @@ export const ZonesModal = ({ isOpen, onClose, clientId, clientName }: Props) => 
     return (
         <ITDialog isOpen={isOpen} onClose={onClose} title={`Administrar Zonas - ${clientName}`}>
             <div className="p-6">
-                <div className="flex gap-2 mb-6">
+                <div className="flex flex-col sm:flex-row gap-2 mb-6">
                     <ITInput
                         placeholder="Nombre del nuevo recurrente (ej: BAJA, NIVEL 1)"
                         value={newZoneName}
@@ -85,8 +85,9 @@ export const ZonesModal = ({ isOpen, onClose, clientId, clientName }: Props) => 
                         onBlur={() => {}}
                         className="flex-1"
                     />
-                    <ITButton onClick={handleCreate} className="bg-emerald-600 text-white">
-                        <FaPlus className="mr-2" /> 
+                    <ITButton onClick={handleCreate} className="bg-emerald-600 text-white w-full sm:w-auto flex justify-center items-center">
+                        <FaPlus className="sm:mr-2" /> 
+                        <span className="sm:hidden font-bold">Agregar Recurrente</span>
                     </ITButton>
                 </div>
 

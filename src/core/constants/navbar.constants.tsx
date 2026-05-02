@@ -5,6 +5,7 @@ import {
   FaBuilding,
   FaChild,
   FaClock,
+  FaCogs,
   FaExclamationTriangle,
   FaHome,
   FaListAlt,
@@ -116,6 +117,13 @@ export const useNavigationItems = (): any[] => {
       action: () => navigate("/users"),
       isActive: isRouteActive("/users"),
       icon: <FaChild  />,
+    });
+    baseItems.push({
+      id: "settings",
+      label: "Catálogos",
+      action: () => navigate("/settings"),
+      isActive: isRouteActive("/settings"),
+      icon: <FaCogs />,
     });
   }
 

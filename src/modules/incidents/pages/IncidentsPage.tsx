@@ -252,57 +252,56 @@ const IncidentsPage = () => {
 
   return (
     <div className="p-6 bg-[#f8fafc] min-h-screen">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-           <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-              <FaExclamationTriangle className="text-red-500" />
-              Gestión de Incidencias
-           </h1>
-           <p className="text-slate-500 text-sm mt-1">Seguimiento y resolución de reportes de seguridad en sitio</p>
-        </div>
-        <div className="flex gap-3 items-center">
-            <div className="w-64 relative">
-                <ITInput
-                    placeholder="Buscar por título..."
-                    name="search"
-                    value={searchTerm}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-                    onBlur={() => {}}
-                    className="!py-2 !h-[42px] !rounded-xl border-slate-100 !pr-10 bg-white"
-                />
-                {searchTerm && (
-                    <button 
-                        onClick={() => setSearchTerm("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
-                    >
-                        <FaTimes size={14} />
-                    </button>
-                )}
-            </div>
-            <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 py-2">
-                <FaFilter className="text-slate-400 text-xs mr-2" />
-                <select 
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="bg-transparent text-sm font-medium text-slate-700 outline-none min-w-[120px]"
-                >
-                    <option value="ALL">Todos los estados</option>
-                    <option value="PENDING">Pendientes</option>
-                    <option value="ATTENDED">Atendidas</option>
-                </select>
-            </div>
-            <ITButton 
-                onClick={() => setRefreshKey(prev => prev + 1)}
-                color="secondary"
-                variant="outlined"
-                className="h-[42px] px-4 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2"
-                size="small"
-                title="Actualizar datos"
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+          <FaExclamationTriangle className="text-red-500" />
+          Gestión de Incidencias
+        </h1>
+        <p className="text-slate-500 text-sm mt-1">Seguimiento y resolución de reportes de seguridad en sitio</p>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
+        <div className="w-full sm:w-64 relative">
+          <ITInput
+            placeholder="Buscar por título..."
+            name="search"
+            value={searchTerm}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+            onBlur={() => { }}
+            className="!py-2 !h-[42px] !rounded-xl border-slate-100 !pr-10 bg-white"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
             >
-                <FaSync className="text-xs text-slate-500" />
-                <span className="text-xs font-bold text-slate-500">Refrescar</span>
-            </ITButton>
+              <FaTimes size={14} />
+            </button>
+          )}
         </div>
+        <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 py-2 h-[42px]">
+          <FaFilter className="text-slate-400 text-xs mr-2" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-transparent text-sm font-medium text-slate-700 outline-none min-w-[120px]"
+          >
+            <option value="ALL">Todos los estados</option>
+            <option value="PENDING">Pendientes</option>
+            <option value="ATTENDED">Atendidas</option>
+          </select>
+        </div>
+        <ITButton
+          onClick={() => setRefreshKey(prev => prev + 1)}
+          color="secondary"
+          variant="outlined"
+          className="h-[42px] px-4 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
+          size="small"
+          title="Actualizar datos"
+        >
+          <FaSync className="text-xs text-slate-500" />
+          <span className="text-xs font-bold text-slate-500">Refrescar</span>
+        </ITButton>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
