@@ -1,165 +1,234 @@
+import { useCatalog } from "@app/core/hooks/catalog.hook";
+import { showToast } from "@app/core/store/toast/toast.slice";
+import {
+  ITButton,
+  ITDataTable,
+  ITDialog,
+  ITSelect,
+} from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ITButton, ITDataTable } from "@axzydev/axzy_ui_system";
-import { FaUserShield, FaClipboardList, FaClock, FaEye, FaSync, FaSearch, FaTimes } from "react-icons/fa";
-import { getPaginatedUsers, User } from "../../users/services/UserService";
+import {
+  FaClipboardList,
+  FaClock,
+  FaEye,
+  FaSearch,
+  FaSync,
+  FaTimes,
+  FaUserShield,
+} from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { getSchedules } from "../../schedules/SchedulesService";
+import {
+  getPaginatedUsers,
+  updateUser,
+  User,
+} from "../../users/services/UserService";
 import { AssignmentModal } from "../components/AssignmentModal";
 import { ViewAssignmentsModal } from "../components/ViewAssignmentsModal";
 
 const GuardsPage = () => {
-    const [refreshKey, setRefreshKey] = useState(0);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [selectedGuard, setSelectedGuard] = useState<User | null>(null);
-    const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
-    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const dispatch = useDispatch();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedGuard, setSelectedGuard] = useState<User | null>(null);
+  const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setRefreshKey(prev => prev + 1);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchTerm]);
+  const [changingClientUser, setChangingClientUser] = useState<User | null>(
+    null,
+  );
+  const [changingScheduleUser, setChangingScheduleUser] = useState<User | null>(
+    null,
+  );
 
-    const externalFilters = useMemo(() => {
-        return { 
-            name: searchTerm,
-            role: { 
-                name: { 
-                    in: ['GUARD', 'SHIFT', 'MAINT'] 
-                } 
-            } 
-        };
-    }, [searchTerm]);
+  const { data: clients } = useCatalog("client");
+  const [schedules, setSchedules] = useState<any[]>([]);
 
-    const memoizedFetch = useCallback((params: any) => {
-        return getPaginatedUsers(params);
-    }, []);
+  useEffect(() => {
+    getSchedules().then(setSchedules);
+  }, []);
 
-    const refreshTable = () => setRefreshKey(prev => prev + 1);
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setRefreshKey((prev) => prev + 1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-    const handleOpenAssignment = (guard: User) => {
-        setSelectedGuard(guard);
-        setIsAssignmentModalOpen(true);
+  const externalFilters = useMemo(() => {
+    return {
+      name: searchTerm,
+      role: {
+        name: {
+          in: ["GUARD", "SHIFT", "MAINT"],
+        },
+      },
     };
+  }, [searchTerm]);
 
-    const handleViewAssignments = (guard: User) => {
-        setSelectedGuard(guard);
-        setIsViewModalOpen(true);
-    };
+  const memoizedFetch = useCallback((params: any) => {
+    return getPaginatedUsers(params);
+  }, []);
 
-    const handleSuccess = () => {
-        setIsAssignmentModalOpen(false);
-        refreshTable();
-    };
+  const refreshTable = () => setRefreshKey((prev) => prev + 1);
 
-    return (
-        <div className="p-8 bg-[#F8FAFC] min-h-screen">
-            {/* Header matching the ResidentsPage feel */}
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-                    <FaUserShield className="text-[#065911]" />
-                    Módulo de Guardias
-                </h1>
-                <p className="text-slate-500 text-sm mt-1">Gestión de personal operativo, turnos y controles de seguridad</p>
-            </div>
+  const handleOpenAssignment = (guard: User) => {
+    setSelectedGuard(guard);
+    setIsAssignmentModalOpen(true);
+  };
 
-            <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
-                <div className="w-full sm:w-64 relative">
-                    <input
-                        type="text"
-                        placeholder="Buscar guardia..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full py-2 h-[42px] px-4 pr-10 bg-white border border-slate-100 rounded-xl outline-none text-sm focus:border-[#065911] transition-all shadow-sm font-medium text-slate-600"
-                    />
-                    {searchTerm ? (
-                        <button
-                            onClick={() => setSearchTerm("")}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
-                        >
-                            <FaTimes size={14} />
-                        </button>
-                    ) : (
-                        <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-200" size={14} />
-                    )}
+  const handleViewAssignments = (guard: User) => {
+    setSelectedGuard(guard);
+    setIsViewModalOpen(true);
+  };
+
+  const handleSuccess = () => {
+    setIsAssignmentModalOpen(false);
+    refreshTable();
+  };
+
+  return (
+    <div className="p-8 bg-[#F8FAFC] min-h-screen">
+      {/* Header matching the ResidentsPage feel */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+          <FaUserShield className="text-[#065911]" />
+          Módulo de Guardias
+        </h1>
+        <p className="text-slate-500 text-sm mt-1">
+          Gestión de personal operativo, turnos y controles de seguridad
+        </p>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
+        <div className="w-full sm:w-64 relative">
+          <input
+            type="text"
+            placeholder="Buscar guardia..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full py-2 h-[42px] px-4 pr-10 bg-white border border-slate-100 rounded-xl outline-none text-sm focus:border-[#065911] transition-all shadow-sm font-medium text-slate-600"
+          />
+          {searchTerm ? (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
+            >
+              <FaTimes size={14} />
+            </button>
+          ) : (
+            <FaSearch
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-200"
+              size={14}
+            />
+          )}
+        </div>
+
+        <ITButton
+          onClick={refreshTable}
+          variant="outlined"
+          color="secondary"
+          className="h-[42px] !px-4 !rounded-xl !border-slate-200 !bg-white hover:!bg-slate-50 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
+        >
+          <FaSync
+            className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? "" : "rotate-180"}`}
+          />
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            Actualizar
+          </span>
+        </ITButton>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <ITDataTable
+          key={refreshKey}
+          fetchData={memoizedFetch as any}
+          externalFilters={externalFilters as any}
+          defaultItemsPerPage={10}
+          columns={[
+            {
+              key: "user",
+              label: "GUARDIA",
+              type: "string",
+              render: (row: any) => (
+                <div className="flex items-center gap-3 py-2">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold border border-slate-200 text-sm">
+                    {row.name.charAt(0)}
+                    {row.lastName?.charAt(0) || ""}
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-800 text-sm uppercase">
+                      {row.name} {row.lastName}
+                    </div>
+                    <div className="text-xs text-slate-500 font-medium">
+                      @{row.username}
+                    </div>
+                  </div>
                 </div>
-
-                <ITButton
-                    onClick={refreshTable}
-                    variant="outlined"
-                    color="secondary"
-                    className="h-[42px] !px-4 !rounded-xl !border-slate-200 !bg-white hover:!bg-slate-50 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
-                >
-                    <FaSync className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? '' : 'rotate-180'}`} />
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Actualizar</span>
-                </ITButton>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <ITDataTable
-                    key={refreshKey}
-                    fetchData={memoizedFetch as any}
-                    externalFilters={externalFilters as any}
-                    defaultItemsPerPage={10}
-                    columns={[
-                        {
-                            key: "user",
-                            label: "GUARDIA",
-                            type: "string",
-                            render: (row: any) => (
-                                <div className="flex items-center gap-3 py-2">
-                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold border border-slate-200 text-sm">
-                                        {row.name.charAt(0)}{row.lastName?.charAt(0) || ''}
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-slate-800 text-sm uppercase">{row.name} {row.lastName}</div>
-                                        <div className="text-xs text-slate-500 font-medium">@{row.username}</div>
-                                    </div>
-                                </div>
-                            )
-                        },
-                        {
-                            key: "role",
-                            label: "CATEGORÍA",
-                            type: "string",
-                            render: (row: any) => {
-                                const roleValue = typeof row.role === 'object' ? row.role.value : row.role;
-                                return (
-                                    <div className="flex items-center">
-                                        <span className="px-2 py-1 bg-[#F1F5F9] text-[#475569] font-bold text-[10px] rounded border border-slate-100 uppercase tracking-wider">
-                                            {roleValue}
-                                        </span>
-                                    </div>
-                                );
-                            }
-                        },
-                        {
-                            key: "schedule",
-                            label: "TURNO",
-                            type: "string",
-                            render: (row: any) => (
-                                row.schedule ? (
-                                    <div className="text-sm text-slate-600">
-                                        <div className="flex items-center gap-1.5 font-bold text-slate-700 text-xs uppercase">
-                                            {row.schedule.name}
-                                        </div>
-                                        <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-                                            <FaClock className="text-[10px]" /> {row.schedule.startTime} - {row.schedule.endTime}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <span className="text-[11px] italic text-slate-300">Sin Horario</span>
-                                )
-                            )
-                        },
-                        {
-                            key: "activity",
-                            label: "ACTIVIDAD",
-                            type: "string",
-                            render: (row: any) => (
-                                <div className="text-sm text-slate-600">
-                                    <div className="font-bold text-xs">Tareas: {row.assignments?.length || 0}</div>
-                                    {/* <div className="mt-1">
+              ),
+            },
+            {
+              key: "role",
+              label: "CATEGORÍA",
+              type: "string",
+              render: (row: any) => {
+                const roleValue =
+                  typeof row.role === "object" ? row.role.value : row.role;
+                return (
+                  <div className="flex items-center">
+                    <span className="px-2 py-1 bg-[#F1F5F9] text-[#475569] font-bold text-[10px] rounded border border-slate-100 uppercase tracking-wider">
+                      {roleValue}
+                    </span>
+                  </div>
+                );
+              },
+            },
+            {
+              key: "client",
+              label: "CLIENTE ASIGNADO",
+              type: "string",
+              render: (row: any) => (
+                <div className="text-xs font-bold text-[#065911] uppercase tracking-tight">
+                  {row.client?.name || (
+                    <span className="text-slate-300 italic font-normal">
+                      Sin asignar
+                    </span>
+                  )}
+                </div>
+              ),
+            },
+            {
+              key: "schedule",
+              label: "TURNO",
+              type: "string",
+              render: (row: any) =>
+                row.schedule ? (
+                  <div className="text-sm text-slate-600">
+                    <div className="flex items-center gap-1.5 font-bold text-slate-700 text-xs uppercase">
+                      {row.schedule.name}
+                    </div>
+                    <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+                      <FaClock className="text-[10px]" />{" "}
+                      {row.schedule.startTime} - {row.schedule.endTime}
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-[11px] italic text-slate-300">
+                    Sin Horario
+                  </span>
+                ),
+            },
+            {
+              key: "activity",
+              label: "ACTIVIDAD",
+              type: "string",
+              render: (row: any) => (
+                <div className="text-sm text-slate-600">
+                  <div className="font-bold text-xs">
+                    Tareas: {row.assignments?.length || 0}
+                  </div>
+                  {/* <div className="mt-1">
                                         <ITBadget 
                                             color={row.isLoggedIn ? "success" : "secondary"} 
                                             size="small" 
@@ -171,59 +240,202 @@ const GuardsPage = () => {
                                             </span>
                                         </ITBadget>
                                     </div> */}
-                                </div>
-                            )
-                        },
-                        {
-                            key: "actions",
-                            label: "ACCIONES",
-                            type: "actions",
-                            actions: (row: any) => (
-                                <div className="flex items-center gap-2">
-                                    <ITButton 
-                                        onClick={() => handleViewAssignments(row)} 
-                                        size="small" 
-                                        variant="outlined" 
-                                        className="border-emerald-200 text-emerald-600 hover:bg-emerald-50 !rounded-lg"
-                                        title="Ver Tareas"
-                                    >
-                                        <FaEye />
-                                    </ITButton>
-                                    <ITButton 
-                                        onClick={() => handleOpenAssignment(row)} 
-                                        size="small" 
-                                        variant="outlined" 
-                                        color="secondary"
-                                        title="Asignar Tarea"
-                                    >
-                                        <FaClipboardList />
-                                    </ITButton>
-                                </div>
-                            )
-                        }
-                    ]}
-                />
-            </div>
+                </div>
+              ),
+            },
+            {
+              key: "actions",
+              label: "ACCIONES",
+              type: "actions",
+              actions: (row: any) => (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100 mr-2">
+                    <ITButton
+                      onClick={() => setChangingScheduleUser(row)}
+                      size="small"
+                      variant="ghost"
+                      className="text-amber-500 hover:bg-amber-50 !p-2"
+                      title="Cambiar Horario"
+                    >
+                      <FaClock />
+                    </ITButton>
+                    <ITButton
+                      onClick={() => setChangingClientUser(row)}
+                      size="small"
+                      variant="ghost"
+                      className="text-indigo-500 hover:bg-indigo-50 !p-2"
+                      title="Cambiar Cliente"
+                    >
+                      <FaUserShield />
+                    </ITButton>
+                  </div>
+                  <ITButton
+                    onClick={() => handleViewAssignments(row)}
+                    size="small"
+                    variant="outlined"
+                    className="border-emerald-200 text-emerald-600 hover:bg-emerald-50 !rounded-lg"
+                    title="Ver Tareas"
+                  >
+                    <FaEye />
+                  </ITButton>
+                  <ITButton
+                    onClick={() => handleOpenAssignment(row)}
+                    size="small"
+                    variant="outlined"
+                    color="secondary"
+                    title="Asignar Tarea"
+                  >
+                    <FaClipboardList />
+                  </ITButton>
+                </div>
+              ),
+            },
+          ]}
+        />
+      </div>
 
-            {selectedGuard && (
-                <>
-                    <AssignmentModal
-                        isOpen={isAssignmentModalOpen}
-                        onClose={() => setIsAssignmentModalOpen(false)}
-                        guardId={selectedGuard.id}
-                        guardName={`${selectedGuard.name} ${selectedGuard.lastName}`}
-                        onSuccess={handleSuccess}
-                    />
-                    <ViewAssignmentsModal
-                        isOpen={isViewModalOpen}
-                        onClose={() => setIsViewModalOpen(false)}
-                        guardId={selectedGuard.id}
-                        guardName={`${selectedGuard.name} ${selectedGuard.lastName}`}
-                    />
-                </>
-            )}
+      <ITDialog
+        isOpen={!!changingClientUser}
+        onClose={() => setChangingClientUser(null)}
+        title={`Reasignar Cliente`}
+        className="!max-w-md"
+      >
+        <div className="p-8 space-y-8">
+          <div className="flex flex-col items-center text-center space-y-3">
+            <div className="w-16 h-16 rounded-3xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
+              <FaUserShield size={32} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                Cambiar Cliente
+              </h3>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
+                {changingClientUser?.name} {changingClientUser?.lastName}
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full">
+            <ITSelect
+              label=""
+              placeholder="Seleccionar cliente..."
+              options={clients.map((c) => ({ label: c.name, value: c.id }))}
+              value={changingClientUser?.clientId || ""}
+              onChange={(e: any) => {
+                const val = e.target.value;
+                if (!changingClientUser) return;
+                updateUser(changingClientUser.id, {
+                  clientId: val as string,
+                }).then((res) => {
+                  if (res.success) {
+                    dispatch(
+                      showToast({
+                        message: "Cliente actualizado",
+                        type: "success",
+                      }),
+                    );
+                    refreshTable();
+                    setChangingClientUser(null);
+                  }
+                });
+              }}
+            />
+          </div>
+
+          <div className="flex justify-center">
+            <ITButton
+              variant="outlined"
+              onClick={() => setChangingClientUser(null)}
+              className="!rounded-2xl !px-10 border-slate-200 text-slate-400 font-bold uppercase text-[10px] tracking-widest hover:bg-slate-50"
+            >
+              Cancelar
+            </ITButton>
+          </div>
         </div>
-    );
+      </ITDialog>
+
+      <ITDialog
+        isOpen={!!changingScheduleUser}
+        onClose={() => setChangingScheduleUser(null)}
+        title={`Reasignar Horario`}
+        className="!max-w-md"
+      >
+        <div className="p-8 space-y-8">
+          <div className="flex flex-col items-center text-center space-y-3">
+            <div className="w-16 h-16 rounded-3xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
+              <FaClock size={32} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                Cambiar Horario
+              </h3>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
+                {changingScheduleUser?.name} {changingScheduleUser?.lastName}
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full">
+            <ITSelect
+              label=""
+              placeholder="Seleccionar horario..."
+              options={schedules.map((s) => ({
+                label: `${s.name} (${s.startTime} - ${s.endTime})`,
+                value: s.id,
+              }))}
+              value={changingScheduleUser?.scheduleId || ""}
+              onChange={(e: any) => {
+                const val = e.target.value;
+                if (!changingScheduleUser) return;
+                updateUser(changingScheduleUser.id, {
+                  scheduleId: val as string,
+                }).then((res) => {
+                  if (res.success) {
+                    dispatch(
+                      showToast({
+                        message: "Horario actualizado",
+                        type: "success",
+                      }),
+                    );
+                    refreshTable();
+                    setChangingScheduleUser(null);
+                  }
+                });
+              }}
+            />
+          </div>
+
+          <div className="flex justify-center">
+            <ITButton
+              variant="outlined"
+              onClick={() => setChangingScheduleUser(null)}
+              className="!rounded-2xl !px-10 border-slate-200 text-slate-400 font-bold uppercase text-[10px] tracking-widest hover:bg-slate-50"
+            >
+              Cancelar
+            </ITButton>
+          </div>
+        </div>
+      </ITDialog>
+
+      {selectedGuard && (
+        <>
+          <AssignmentModal
+            isOpen={isAssignmentModalOpen}
+            onClose={() => setIsAssignmentModalOpen(false)}
+            guardId={selectedGuard.id}
+            guardName={`${selectedGuard.name} ${selectedGuard.lastName}`}
+            onSuccess={handleSuccess}
+          />
+          <ViewAssignmentsModal
+            isOpen={isViewModalOpen}
+            onClose={() => setIsViewModalOpen(false)}
+            guardId={selectedGuard.id}
+            guardName={`${selectedGuard.name} ${selectedGuard.lastName}`}
+          />
+        </>
+      )}
+    </div>
+  );
 };
 
 export default GuardsPage;

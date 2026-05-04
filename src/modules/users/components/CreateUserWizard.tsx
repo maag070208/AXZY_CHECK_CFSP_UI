@@ -7,7 +7,15 @@ import * as Yup from "yup";
 import { createUser, updateUser, User } from "../services/UserService";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { getSchedules, Schedule } from "../../schedules/SchedulesService";
-import { FaCheck, FaUser, FaShieldAlt, FaClipboardCheck, FaClock } from "react-icons/fa";
+import {
+  FaCheck,
+  FaUser,
+  FaShieldAlt,
+  FaClipboardCheck,
+  FaClock,
+  FaIdCard,
+  FaLock,
+} from "react-icons/fa";
 
 interface Props {
   userToEdit?: User;
@@ -15,22 +23,27 @@ interface Props {
   onSuccess: () => void;
 }
 
-export const CreateUserWizard: React.FC<Props> = ({ userToEdit, onCancel, onSuccess }) => {
+export const CreateUserWizard: React.FC<Props> = ({
+  userToEdit,
+  onCancel,
+  onSuccess,
+}) => {
   const isEditing = !!userToEdit;
   const dispatch = useDispatch();
   const [currentStep, setCurrentStep] = useState(0);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
 
-  const { data: roles } = useCatalog('role');
+  const { data: roles } = useCatalog("role");
+  const { data: clients } = useCatalog("client");
 
   useEffect(() => {
     getSchedules().then(setSchedules);
   }, []);
 
-  const roleOptions = useMemo(() => {
-    return roles.map(r => ({ label: r.value, value: String(r.id) }));
-  }, [roles]);
-
+  const roleOptions = useMemo(
+    () => roles.map((r) => ({ label: r.value, value: String(r.id) })),
+    [roles],
+  );
   const formik = useFormik({
     initialValues: {
       name: userToEdit?.name || "",
@@ -40,69 +53,71 @@ export const CreateUserWizard: React.FC<Props> = ({ userToEdit, onCancel, onSucc
       confirmPassword: "",
       roleId: userToEdit?.roleId ? String(userToEdit.roleId) : "",
       scheduleId: userToEdit?.scheduleId ? String(userToEdit.scheduleId) : "",
+      clientId: userToEdit?.clientId ? String(userToEdit.clientId) : "",
+      active: userToEdit ? userToEdit.active : true,
     },
     validationSchema: Yup.object({
-      name: Yup.string().required("El nombre es requerido"),
-      lastName: Yup.string().required("Los apellidos son requeridos"),
-      username: Yup.string().required("El nombre de usuario es requerido"),
-      password: isEditing 
-        ? Yup.string().notRequired() 
-        : Yup.string().min(6, "Mínimo 6 caracteres").required("La contraseña es requerida"),
-      confirmPassword: isEditing 
-        ? Yup.string().notRequired() 
+      name: Yup.string().required("Requerido"),
+      lastName: Yup.string().required("Requerido"),
+      username: Yup.string().required("Requerido"),
+      password: isEditing
+        ? Yup.string()
+        : Yup.string().min(6, "Mínimo 6").required("Requerido"),
+      confirmPassword: isEditing
+        ? Yup.string()
         : Yup.string()
-        .oneOf([Yup.ref("password")], "Las contraseñas no coinciden")
-        .required("Debes confirmar la contraseña"),
+            .oneOf([Yup.ref("password")], "No coinciden")
+            .required("Requerido"),
       roleId: Yup.string().required("Selecciona un rol"),
       scheduleId: Yup.string().when("roleId", {
-        is: (val: string) => {
-            const role = roles.find(r => String(r.id) === val);
-            return role?.name === "GUARD" || role?.name === "SHIFT" || role?.name === "MAINT";
-        },
-        then: () => Yup.string().required("El horario es obligatorio para personal operativo"),
-        otherwise: () => Yup.string().notRequired(),
+        is: () => isOperationalRole,
+        then: () => Yup.string().required("Horario obligatorio"),
+      }),
+      clientId: Yup.string().when("roleId", {
+        is: () => isOperationalRole,
+        then: () => Yup.string().required("Cliente obligatorio"),
       }),
     }),
     onSubmit: async (values) => {
       try {
-        let res;
-        if (isEditing && userToEdit) {
-            res = await updateUser(userToEdit.id, {
-              name: values.name,
-              lastName: values.lastName,
-              username: values.username,
-              roleId: Number(values.roleId),
-              scheduleId: values.scheduleId ? Number(values.scheduleId) : undefined
-            });
-        } else {
-            res = await createUser({
-              name: values.name,
-              lastName: values.lastName,
-              username: values.username,
-              password: values.password,
-              roleId: Number(values.roleId),
-              scheduleId: values.scheduleId ? Number(values.scheduleId) : undefined
-            });
-        }
+        const payload = {
+          ...values,
+          scheduleId: values.scheduleId || undefined,
+          clientId: values.clientId || undefined,
+        };
+        const res =
+          isEditing && userToEdit
+            ? await updateUser(userToEdit.id, payload)
+            : await createUser(payload);
 
         if (res.success) {
-          dispatch(showToast({ message: isEditing ? "Usuario editado correctamente" : "Usuario creado correctamente", type: "success" }));
+          dispatch(
+            showToast({
+              message: `Usuario ${isEditing ? "editado" : "creado"} con éxito`,
+              type: "success",
+            }),
+          );
           onSuccess();
         } else {
-          dispatch(showToast({ message: res.messages?.[0] || "Error al procesar usuario", type: "error" }));
+          dispatch(
+            showToast({ message: res.messages?.[0] || "Error", type: "error" }),
+          );
         }
       } catch (error: any) {
-        // Axios service throws the TResult directly on error
-        const message = error?.messages?.[0] || "Ocurrió un error inesperado";
-        dispatch(showToast({ message, type: "error" }));
+        dispatch(
+          showToast({
+            message: error?.messages?.[0] || "Error inesperado",
+            type: "error",
+          }),
+        );
       }
     },
   });
-
   const isOperationalRole = useMemo(() => {
-    const selectedRole = roles.find(r => String(r.id) === String(formik.values.roleId));
-    if (!selectedRole) return false;
-    return selectedRole.name === 'GUARD' || selectedRole.name === 'SHIFT' || selectedRole.name === 'MAINT';
+    const selectedRole = roles.find(
+      (r) => String(r.id) === String(formik.values.roleId),
+    );
+    return ["GUARD", "SHIFT", "MAINT"].includes(selectedRole?.name || "");
   }, [roles, formik.values.roleId]);
 
   const steps = [
@@ -110,116 +125,155 @@ export const CreateUserWizard: React.FC<Props> = ({ userToEdit, onCancel, onSucc
       label: "Identidad",
       icon: <FaUser />,
       content: (
-        <div className="flex flex-col gap-6 p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ITInput
-                    label="Nombre(s)"
-                    name="name"
-                    value={formik.values.name}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={formik.errors.name}
-                    touched={formik.touched.name}
-                    placeholder="Ej. Roberto"
-                />
-                <ITInput
-                    label="Apellidos"
-                    name="lastName"
-                    value={formik.values.lastName}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={formik.errors.lastName}
-                    touched={formik.touched.lastName}
-                    placeholder="Ej. Garcia Lopez"
-                />
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <ITInput
+              label="Nombre(s)"
+              name="name"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              onBlur={() => {}}
+              error={formik.errors.name}
+              touched={formik.touched.name}
+              placeholder="Ej. Roberto"
+            />
+            <ITInput
+              label="Apellidos"
+              name="lastName"
+              value={formik.values.lastName}
+              onChange={formik.handleChange}
+              error={formik.errors.lastName}
+              onBlur={() => {}}
+              touched={formik.touched.lastName}
+              placeholder="Ej. García"
+            />
+          </div>
+
+          <div className="bg-slate-50 p-5 rounded-2xl border border-dashed border-slate-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-white rounded-lg border border-slate-100 shadow-sm text-slate-400">
+                <FaIdCard size={14} />
+              </div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Identificador del Sistema
+              </span>
             </div>
-            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
-                    <FaUser size={18} />
-                </div>
-                <div>
-                    <h4 className="text-sm font-bold text-slate-700">Identificador de Usuario</h4>
-                    <p className="text-xs text-slate-400 mb-4">Este será el alias único con el que el usuario se identificará en el sistema.</p>
-                    <ITInput
-                        label=""
-                        name="username"
-                        value={formik.values.username}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        error={formik.errors.username}
-                        touched={formik.touched.username}
-                        placeholder="Ej. rgarcia"
-                        className="!bg-white"
-                    />
-                </div>
-            </div>
+            <ITInput
+              label="Nombre de Usuario"
+              name="username"
+              value={formik.values.username}
+              onChange={formik.handleChange}
+              onBlur={() => {}}
+              error={formik.errors.username}
+              touched={formik.touched.username}
+              placeholder="Ej. rgarcia"
+              className="!bg-white"
+            />
+            <p className="text-[10px] text-slate-400 mt-2 ml-1 italic">
+              Este nombre será el login oficial para la plataforma.
+            </p>
+          </div>
         </div>
       ),
     },
     {
-      label: "Acceso y Rol",
+      label: "Acceso y Seguridad",
       icon: <FaShieldAlt />,
       content: (
-        <div className="flex flex-col gap-6 p-6">
-            <div className="space-y-4">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Configuración de Seguridad</label>
-                <ITSelect
-                    label="Rol Administrativo"
-                    name="roleId"
-                    value={formik.values.roleId}
-                    onChange={formik.handleChange}
-                    options={roleOptions}
-                    error={formik.errors.roleId}
-                    touched={formik.touched.roleId}
-                />
-                
-                {!isEditing && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-emerald-50/30 p-5 rounded-2xl border border-emerald-100/50">
-                        <ITInput
-                            label="Contraseña Temporal"
-                            name="password"
-                            type="password"
-                            value={formik.values.password}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.errors.password}
-                            touched={formik.touched.password}
-                            placeholder="Mínimo 6 caracteres"
-                            className="!bg-white"
-                        />
-                        <ITInput
-                            label="Confirmar Contraseña"
-                            name="confirmPassword"
-                            type="password"
-                            value={formik.values.confirmPassword}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.errors.confirmPassword}
-                            touched={formik.touched.confirmPassword}
-                            placeholder="Repite la contraseña"
-                            className="!bg-white"
-                        />
-                    </div>
-                )}
-            </div>
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <ITSelect
+              label="Rol de Usuario"
+              name="roleId"
+              value={formik.values.roleId}
+              onChange={formik.handleChange}
+              options={roleOptions}
+              error={formik.errors.roleId}
+              touched={formik.touched.roleId}
+            />
 
-            {isOperationalRole && (
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                    <div className="flex items-center gap-2 mb-1">
-                        <FaClock className="text-emerald-500" />
-                        <label className="text-xs font-bold text-slate-700 uppercase tracking-tight">Horario Laboral</label>
-                    </div>
-                    <ITSelect
-                        label=""
-                        name="scheduleId"
-                        value={formik.values.scheduleId}
-                        onChange={formik.handleChange}
-                        options={schedules.map(s => ({ label: `${s.name} (${s.startTime} - ${s.endTime})`, value: String(s.id) }))}
-                        error={formik.errors.scheduleId}
-                        touched={formik.touched.scheduleId}
-                    />
-                </div>
+            {!isEditing && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <ITInput
+                  label="Contraseña"
+                  name="password"
+                  type="password"
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={() => {}}
+                  error={formik.errors.password}
+                  touched={formik.touched.password}
+                  placeholder="••••••"
+                />
+                <ITInput
+                  label="Confirmar"
+                  name="confirmPassword"
+                  type="password"
+                  value={formik.values.confirmPassword}
+                  onChange={formik.handleChange}
+                  error={formik.errors.confirmPassword}
+                  onBlur={() => {}}
+                  touched={formik.touched.confirmPassword}
+                  placeholder="••••••"
+                />
+              </div>
             )}
+          </div>
+
+          {isOperationalRole && (
+            <div className="bg-emerald-50/40 p-5 rounded-2xl border border-emerald-100 space-y-5">
+              <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{" "}
+                Asignación Operativa
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ITSelect
+                  label="Horario Laboral"
+                  name="scheduleId"
+                  value={formik.values.scheduleId}
+                  onChange={formik.handleChange}
+                  options={schedules.map((s) => ({
+                    label: `${s.name}`,
+                    value: String(s.id),
+                  }))}
+                  error={formik.errors.scheduleId}
+                  touched={formik.touched.scheduleId}
+                />
+                <ITSelect
+                  label="Cliente"
+                  name="clientId"
+                  value={formik.values.clientId}
+                  onChange={formik.handleChange}
+                  options={clients.map((c) => ({
+                    label: c.name,
+                    value: String(c.id),
+                  }))}
+                  error={formik.errors.clientId}
+                  touched={formik.touched.clientId}
+                />
+              </div>
+            </div>
+          )}
+
+          {isEditing && (
+            <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+              <input
+                type="checkbox"
+                name="active"
+                checked={formik.values.active}
+                onChange={formik.handleChange}
+                className="w-5 h-5 accent-emerald-600 rounded-lg"
+              />
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-slate-700">
+                  Usuario habilitado
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  Permitir el acceso a la aplicación
+                </span>
+              </div>
+            </label>
+          )}
         </div>
       ),
     },
@@ -227,163 +281,176 @@ export const CreateUserWizard: React.FC<Props> = ({ userToEdit, onCancel, onSucc
       label: "Confirmación",
       icon: <FaClipboardCheck />,
       content: (
-        <div className="flex flex-col gap-6 p-6">
-            <div className="bg-[#F8FAFC] rounded-3xl p-8 border border-slate-100 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-10 opacity-5">
-                    <FaClipboardCheck size={120} />
-                </div>
-                
-                <h3 className="text-xl font-black text-slate-800 mb-6">Resumen del Perfil</h3>
-                
-                <div className="space-y-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-emerald-600 font-black text-lg">
-                            {formik.values.name.charAt(0)}{formik.values.lastName.charAt(0)}
-                        </div>
-                        <div>
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nombre Completo</div>
-                            <div className="text-lg font-bold text-slate-700">{formik.values.name} {formik.values.lastName}</div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-8 pt-4 border-t border-slate-100/50">
-                        <div>
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Usuario</div>
-                            <div className="text-sm font-bold text-slate-600">@{formik.values.username}</div>
-                        </div>
-                        <div>
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Rol</div>
-                            <div className="text-sm font-bold text-slate-600">
-                                {roles.find(r => String(r.id) === formik.values.roleId)?.value || 'N/A'}
-                            </div>
-                        </div>
-                    </div>
-
-                    {isOperationalRole && (
-                        <div className="pt-4 border-t border-slate-100/50">
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Turno Asignado</div>
-                            <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                                <FaClock className="text-emerald-500" />
-                                {schedules.find(s => String(s.id) === formik.values.scheduleId)?.name || 'Sin seleccionar'}
-                            </div>
-                        </div>
-                    )}
-                </div>
+        <div className="animate-in zoom-in-95 duration-300">
+          <div className="bg-slate-900 rounded-3xl p-6 text-white relative overflow-hidden shadow-2xl">
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl" />
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center text-xl font-black">
+                {formik.values.name.charAt(0)}
+                {formik.values.lastName.charAt(0)}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold">
+                  {formik.values.name} {formik.values.lastName}
+                </h3>
+                <p className="text-emerald-400 text-xs font-medium">
+                  @{formik.values.username}
+                </p>
+              </div>
             </div>
-            <p className="text-[11px] text-slate-400 text-center font-medium">Al confirmar, el usuario tendrá acceso inmediato según los permisos de su rol.</p>
+
+            <div className="grid grid-cols-2 gap-y-6 gap-x-4 border-t border-white/10 pt-6">
+              <SummaryItem
+                label="Rol Asignado"
+                value={
+                  roles.find((r) => String(r.id) === formik.values.roleId)
+                    ?.value
+                }
+                icon={<FaShieldAlt className="text-emerald-400" />}
+              />
+              {isOperationalRole && (
+                <>
+                  <SummaryItem
+                    label="Turno"
+                    value={
+                      schedules.find(
+                        (s) => String(s.id) === formik.values.scheduleId,
+                      )?.name
+                    }
+                    icon={<FaClock className="text-emerald-400" />}
+                  />
+                  <SummaryItem
+                    label="Cliente"
+                    value={
+                      clients.find(
+                        (c) => String(c.id) === formik.values.clientId,
+                      )?.name
+                    }
+                    icon={<FaUser className="text-emerald-400" />}
+                  />
+                </>
+              )}
+              <SummaryItem
+                label="Estado"
+                value={formik.values.active ? "Activo" : "Inactivo"}
+                icon={
+                  <div
+                    className={`w-2 h-2 rounded-full ${formik.values.active ? "bg-emerald-400" : "bg-red-400"}`}
+                  />
+                }
+              />
+            </div>
+          </div>
+          <p className="text-center text-[10px] text-slate-400 mt-6 font-medium">
+            Verifica que los datos sean correctos antes de procesar el registro.
+          </p>
         </div>
       ),
     },
   ];
 
-  const validateCurrentStep = async () => {
-    const errors = await formik.validateForm();
-    const touchedObj: any = {};
-    let hasError = false;
-
-    if (currentStep === 0) {
-        ['name', 'lastName', 'username'].forEach(field => {
-            if ((errors as any)[field]) {
-                touchedObj[field] = true;
-                hasError = true;
-            }
-        });
-    }
-
-    if (currentStep === 1) {
-        ['roleId', ...(!isEditing ? ['password', 'confirmPassword'] : []), ...(isOperationalRole ? ['scheduleId'] : [])].forEach(field => {
-            if ((errors as any)[field]) {
-                touchedObj[field] = true;
-                hasError = true;
-            }
-        });
-    }
-
-    if (hasError) {
-        formik.setTouched({ ...formik.touched, ...touchedObj });
-        return false;
-    }
-    return true;
-  };
-
   const handleNext = async () => {
-      const isValid = await validateCurrentStep();
-      if (!isValid) {
-          dispatch(showToast({ message: "Revisa los campos obligatorios", type: "error" }));
-          return;
-      }
+    const errors = await formik.validateForm();
+    const currentFields =
+      currentStep === 0
+        ? ["name", "lastName", "username"]
+        : ["roleId", "password", "confirmPassword", "scheduleId", "clientId"];
+    const hasErrors = currentFields.some((f) => (errors as any)[f]);
 
-      if (currentStep < steps.length - 1) {
-          setCurrentStep(currentStep + 1);
-      } else {
-          formik.submitForm();
-      }
-  };
+    if (hasErrors) {
+      const touched = currentFields.reduce(
+        (acc, f) => ({ ...acc, [f]: true }),
+        {},
+      );
+      formik.setTouched({ ...formik.touched, ...touched });
+      dispatch(
+        showToast({
+          message: "Completa los campos obligatorios",
+          type: "error",
+        }),
+      );
+      return;
+    }
 
-  const handleBack = () => {
-      if (currentStep > 0) {
-          setCurrentStep(currentStep - 1);
-      }
+    currentStep < steps.length - 1
+      ? setCurrentStep((prev) => prev + 1)
+      : formik.submitForm();
   };
 
   return (
-    <div className="w-full">
-        {/* Stepper Header (Exactly like Resident) */}
-        <div className="flex justify-between mb-10 px-6 mt-6 relative">
-            {/* Progress Line Background */}
-            <div className="absolute top-5 left-0 w-full h-[2px] bg-slate-100 -z-0 mx-auto px-12" style={{ width: 'calc(100% - 4rem)', left: '2rem' }} />
-            
-            {/* Active Progress Line */}
-            <div 
-                className="absolute top-5 left-0 h-[2px] bg-emerald-500 transition-all duration-500 ease-in-out -z-0" 
-                style={{ 
-                    width: `calc(${(currentStep / (steps.length - 1)) * 100}% - ${currentStep === 0 ? '0px' : '2rem'})`,
-                    left: '2rem'
-                }} 
-            />
+    <div className="w-full max-w-2xl mx-auto py-4">
+      {/* Progress Stepper */}
+      <div className="flex justify-between px-8 mb-12 relative">
+        <div className="absolute top-5 left-12 right-12 h-[2px] bg-slate-100 -z-0" />
+        <div
+          className="absolute top-5 left-12 h-[2px] bg-emerald-500 transition-all duration-500 ease-out -z-0"
+          style={{ width: `${(currentStep / (steps.length - 1)) * 80}%` }}
+        />
 
-            {steps.map((step, index) => (
-                <div key={index} className="flex flex-col items-center flex-1 relative z-10">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300 ${
-                        index === currentStep ? 'border-emerald-600 bg-emerald-600 text-white shadow-lg shadow-emerald-100 scale-110' : 
-                        index < currentStep ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-200 bg-white text-slate-400'
-                    }`}>
-                        {index < currentStep ? <FaCheck className="text-xs" /> : index + 1}
-                    </div>
-                    <div className="absolute -bottom-7 w-max">
-                        <span className={`text-[10px] uppercase tracking-wider font-bold transition-colors duration-300 ${index === currentStep ? 'text-emerald-700' : 'text-slate-400'}`}>
-                            {step.label}
-                        </span>
-                    </div>
-                </div>
-            ))}
-        </div>
-
-        {/* Step Content */}
-        <div className="min-h-[300px] mt-10">
-            {steps[currentStep].content}
-        </div>
-
-        {/* Navigation Buttons (Exactly like Resident) */}
-        <div className="flex justify-between px-4 pt-6 pb-2 border-t border-slate-100 mt-4 rounded-b-xl">
-            <div>
-                 {currentStep === 0 ? (
-                    <ITButton type="button" color="secondary" variant="outlined" onClick={onCancel}>Cancelar</ITButton>
-                 ) : (
-                    <ITButton type="button" color="secondary" variant="outlined" onClick={handleBack}>Atrás</ITButton>
-                 )}
-            </div>
-            <ITButton 
-                type="button" 
-                onClick={handleNext} 
-                disabled={formik.isSubmitting}
-                className={currentStep === steps.length - 1 ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-emerald-600 hover:bg-emerald-700 text-white"}
+        {steps.map((step, index) => (
+          <div key={index} className="flex flex-col items-center relative z-10">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300 ${
+                index <= currentStep
+                  ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-100"
+                  : "bg-white border-slate-200 text-slate-400"
+              }`}
             >
-                {currentStep === steps.length - 1 ? (
-                    formik.isSubmitting ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : 'Confirmar Registro')
-                ) : 'Siguiente'}
-            </ITButton>
-        </div>
+              {index < currentStep ? <FaCheck size={12} /> : index + 1}
+            </div>
+            <span
+              className={`absolute -bottom-7 text-[9px] font-black uppercase tracking-tighter w-max ${index === currentStep ? "text-emerald-600" : "text-slate-300"}`}
+            >
+              {step.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="px-6 py-4 min-h-[380px]">
+        {steps[currentStep].content}
+      </div>
+
+      <div className="flex justify-between items-center px-6 pt-8 mt-4 border-t border-slate-100">
+        <ITButton
+          type="button"
+          variant="ghost"
+          onClick={
+            currentStep === 0
+              ? onCancel
+              : () => setCurrentStep((prev) => prev - 1)
+          }
+          className="!text-slate-400 !px-0"
+        >
+          {currentStep === 0 ? "Cancelar" : "Volver atrás"}
+        </ITButton>
+        <ITButton
+          type="button"
+          onClick={handleNext}
+          disabled={formik.isSubmitting}
+          className="!bg-slate-900 !rounded-xl !px-10 shadow-xl shadow-slate-200"
+        >
+          {currentStep === steps.length - 1
+            ? formik.isSubmitting
+              ? "Procesando..."
+              : "Confirmar"
+            : "Continuar"}
+        </ITButton>
+      </div>
     </div>
   );
 };
+
+const SummaryItem = ({ label, value, icon }: any) => (
+  <div className="flex flex-col gap-1.5">
+    <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">
+      {label}
+    </span>
+    <div className="flex items-center gap-2">
+      {icon}
+      <span className="text-sm font-semibold truncate">
+        {value || "No definido"}
+      </span>
+    </div>
+  </div>
+);

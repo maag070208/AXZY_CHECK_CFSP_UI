@@ -112,7 +112,6 @@ const IncidentsPage = () => {
   };
 
   const columns = useMemo(() => [
-    { key: "id", label: "ID", type: "number", sortable: true },
     { 
         key: "title", 
         label: "Incidencia", 

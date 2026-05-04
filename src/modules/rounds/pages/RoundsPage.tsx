@@ -34,7 +34,7 @@ const RoundsPage = () => {
   ]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [selectedClientId, setSelectedClientId] = useState<string | number>(searchParams.get("clientId") ? Number(searchParams.get("clientId")) : "");
+  const [selectedClientId, setSelectedClientId] = useState<string | number>(searchParams.get("clientId") || "");
   const [refreshKey, setRefreshKey] = useState(0);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -55,7 +55,7 @@ const RoundsPage = () => {
   useEffect(() => {
     const cid = searchParams.get("clientId");
     if (cid) {
-      setSelectedClientId(Number(cid));
+      setSelectedClientId(cid);
       setRefreshKey(prev => prev + 1);
     }
   }, [searchParams]);
@@ -88,7 +88,10 @@ const RoundsPage = () => {
   }, [selectedDate, refreshKey, searchTerm, statusFilter, selectedClientId, isResident, user?.id]);
 
   const memoizedFetch = useCallback((params: any) => {
-    return getPaginatedRounds(params);
+    return getPaginatedRounds({
+      ...params,
+      sort: params.sort || { key: "startTime", direction: "desc" }
+    });
   }, []);
 
   const [routesMap, setRoutesMap] = useState<Record<number, string>>({});
@@ -140,12 +143,6 @@ const RoundsPage = () => {
 
   const memoizedColumns = useMemo(
     () => [
-      {
-        key: "id",
-        label: "ID",
-        type: "number",
-        sortable: true,
-      },
       ...(isResident ? [] : [{
         key: "client",
         label: "Cliente",
@@ -154,7 +151,7 @@ const RoundsPage = () => {
           <div className="flex items-center gap-2">
             <FaBuilding className="text-slate-400 text-xs" />
             <span className="font-bold text-slate-700 uppercase text-[11px] tracking-tight">
-                {row.client?.name || row.recurringConfiguration?.client?.name || "Sin Cliente"}
+                {row.client?.name || row.recurringConfiguration?.client?.name || row.guard?.client?.name || "Sin Cliente"}
             </span>
           </div>
         )

@@ -21,6 +21,7 @@ import RoundDetailPage from "./modules/rounds/pages/RoundDetailPage";
 import SchedulesPage from "./modules/schedules/pages/SchedulesPage";
 import GuardsPage from "./modules/guards/pages/GuardsPage";
 import RoutesPage from "./modules/routes/pages/RoutesPage";
+import CreateRoutePage from "./modules/routes/pages/CreateRoutePage";
 import SettingsPage from "@app/modules/settings/pages/SettingsPage";
 
 
@@ -79,6 +80,8 @@ function App() {
         <Route path="/locations" element={<LocationsPage />} />
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/routes" element={<RoutesPage />} />
+        <Route path="/routes/new" element={<CreateRoutePage />} />
+        <Route path="/routes/edit/:id" element={<CreateRoutePage />} />
 
         <Route path="/users" element={<UsersPage />} />
         <Route path="/incidents" element={<IncidentsPage />} />

@@ -3,15 +3,14 @@ import { ITButton, ITDataTable, ITDialog, ITInput, ITSearchSelect } from "@axzyd
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaEdit, FaPlus, FaRoute, FaSearch, FaSync, FaTimes, FaTrash, FaBuilding } from "react-icons/fa";
 import { useDispatch } from "react-redux";
-import { CreateRouteModal } from "../components/CreateRouteModal";
+import { useNavigate } from "react-router-dom";
 import { deleteRoute, getPaginatedRoutes } from "../services/RoutesService";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 
 const RoutesPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editConfig, setEditConfig] = useState<any>(null);
   const [routeToDeleteId, setRouteToDeleteId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClientId, setSelectedClientId] = useState<string | number>("");
@@ -56,13 +55,11 @@ const RoutesPage = () => {
   };
 
   const handleEdit = (route: any) => {
-    setEditConfig(route);
-    setIsCreateModalOpen(true);
+    navigate(`/routes/edit/${route.id}`);
   };
 
   const handleCreate = () => {
-    setEditConfig(null);
-    setIsCreateModalOpen(true);
+    navigate("/routes/new");
   };
 
   const clearFilters = () => {
@@ -158,17 +155,6 @@ const RoutesPage = () => {
           title=""
           columns={[
             {
-              key: "id",
-              label: "ID",
-              type: "number",
-              sortable: true,
-              render: (row: any) => (
-                <div className="text-xs font-bold text-slate-400 py-4">
-                  #{row.id}
-                </div>
-              ),
-            },
-            {
               key: "client",
               label: "CLIENTE",
               type: "string",
@@ -259,13 +245,6 @@ const RoutesPage = () => {
           ]}
         />
       </div>
-
-      <CreateRouteModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={refreshTable}
-        editConfig={editConfig}
-      />
 
       {/* Confirm Delete Dialog */}
       <ITDialog isOpen={!!routeToDeleteId} onClose={() => setRouteToDeleteId(null)} title="Eliminar Registro">

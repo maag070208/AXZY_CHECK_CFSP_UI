@@ -4,13 +4,13 @@ import { TResult } from "@app/core/types/TResult";
 import { Schedule } from "../../schedules/SchedulesService";
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   lastName: string;
   username: string;
-  roleId: number;
+  roleId: string;
   role: {
-    id: number;
+    id: string;
     name: string;
     value: string;
   };
@@ -19,7 +19,13 @@ export interface User {
   shiftEnd?: string;   // HH:mm
   isLoggedIn?: boolean;
   schedule?: Schedule;
-  scheduleId?: number;
+  scheduleId?: string;
+  clientId?: string;
+  client?: {
+    id: string;
+    name: string;
+    active: boolean;
+  };
 }
 
 export interface CreateUserDto {
@@ -27,20 +33,23 @@ export interface CreateUserDto {
   lastName: string;
   username: string;
   password?: string;
-  roleId: number;
+  roleId: string;
   shiftStart?: string;
   shiftEnd?: string;
-  scheduleId?: number;
+  scheduleId?: string;
+  clientId?: string;
 }
 
 export interface UpdateUserDto {
     name?: string;
     lastName?: string;
     username?: string;
-    roleId?: number;
+    roleId?: string;
     shiftStart?: string;
     shiftEnd?: string;
-    scheduleId?: number;
+    scheduleId?: string;
+    clientId?: string;
+    active?: boolean;
 }
 
 export interface ChangePasswordDto {
@@ -83,7 +92,7 @@ export const createUser = async (data: CreateUserDto): Promise<TResult<User>> =>
     return await post<User>("/users", data);
 };
 
-export const updateUser = async (id: number, data: UpdateUserDto): Promise<TResult<User>> => {
+export const updateUser = async (id: string, data: UpdateUserDto): Promise<TResult<User>> => {
     return await put<User>(`/users/${id}`, data);
 };
 
@@ -92,14 +101,14 @@ export const updateUser = async (id: number, data: UpdateUserDto): Promise<TResu
    If this is intended for Admin use, we might need a different endpoint.
    For now, we map what exists.
 */
-export const changePassword = async (id: number, data: ChangePasswordDto): Promise<TResult<boolean>> => {
+export const changePassword = async (id: string, data: ChangePasswordDto): Promise<TResult<boolean>> => {
     return await put<boolean>(`/users/${id}/password`, data);
 };
 
-export const resetPassword = async (id: number, password: string): Promise<TResult<boolean>> => {
+export const resetPassword = async (id: string, password: string): Promise<TResult<boolean>> => {
     return await put<boolean>(`/users/${id}/reset-password`, { newPassword: password });
 };
 
-export const deleteUser = async (id: number): Promise<TResult<boolean>> => {
+export const deleteUser = async (id: string): Promise<TResult<boolean>> => {
     return await remove<boolean>(`/users/${id}`);
 };

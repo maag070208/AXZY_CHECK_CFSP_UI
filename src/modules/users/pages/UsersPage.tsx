@@ -1,288 +1,543 @@
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITButton, ITDataTable, ITDialog } from "@axzydev/axzy_ui_system";
+import {
+  ITButton,
+  ITDataTable,
+  ITDialog,
+  ITSelect,
+} from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaClock, FaEdit, FaKey, FaPlus, FaSync, FaTimes, FaTrash, FaUserShield } from "react-icons/fa";
+import {
+  FaClock,
+  FaEdit,
+  FaKey,
+  FaPlus,
+  FaSync,
+  FaTimes,
+  FaTrash,
+  FaUserShield,
+} from "react-icons/fa";
 import { useDispatch } from "react-redux";
+import { getSchedules } from "../../schedules/SchedulesService";
 import { ChangePasswordModal } from "../components/ChangePasswordModal";
 import { CreateUserWizard } from "../components/CreateUserWizard";
-import { deleteUser, getPaginatedUsers, User } from "../services/UserService";
+import {
+  deleteUser,
+  getPaginatedUsers,
+  updateUser,
+  User,
+} from "../services/UserService";
 
 const UsersPage = () => {
-    const dispatch = useDispatch();
-    const [refreshKey, setRefreshKey] = useState(0);
-    const [searchTerm, setSearchTerm] = useState("");
+  const dispatch = useDispatch();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
-    // Catalog for roles filter
-    const { data: rolesCatalog, loading: loadingRoles } = useCatalog('role');
+  // Catalog for roles filter
+  const { data: rolesCatalog, loading: loadingRoles } = useCatalog("role");
 
-    // Modal States
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [changingPasswordUser, setChangingPasswordUser] = useState<User | null>(null);
-    const [userToDeleteId, setUserToDeleteId] = useState<number | null>(null);
+  // Modal States
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [changingPasswordUser, setChangingPasswordUser] = useState<User | null>(
+    null,
+  );
+  const [changingClientUser, setChangingClientUser] = useState<User | null>(
+    null,
+  );
+  const [changingScheduleUser, setChangingScheduleUser] = useState<User | null>(
+    null,
+  );
+  const [userToDeleteId, setUserToDeleteId] = useState<number | null>(null);
 
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setRefreshKey(prev => prev + 1);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchTerm]);
+  const { data: clients } = useCatalog("client");
+  const [schedules, setSchedules] = useState<any[]>([]);
 
-    const externalFilters = useMemo(() => {
-        return { name: searchTerm };
-    }, [searchTerm]);
+  useEffect(() => {
+    getSchedules().then(setSchedules);
+  }, []);
 
-    const memoizedFetch = useCallback((params: any) => {
-        return getPaginatedUsers(params);
-    }, []);
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setRefreshKey((prev) => prev + 1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-    const refreshTable = () => setRefreshKey(prev => prev + 1);
+  const externalFilters = useMemo(() => {
+    return { name: searchTerm };
+  }, [searchTerm]);
 
-    const handleSuccess = () => {
-        setIsCreateModalOpen(false);
-        setEditingUser(null);
-        setChangingPasswordUser(null);
-        refreshTable();
-    };
+  const memoizedFetch = useCallback((params: any) => {
+    return getPaginatedUsers(params);
+  }, []);
 
-    const confirmDelete = async () => {
-        if (!userToDeleteId) return;
-        const res = await deleteUser(userToDeleteId);
-        setUserToDeleteId(null);
-        if (res.success) {
-            dispatch(showToast({ message: "Usuario eliminado", type: "success" }));
-            refreshTable();
-        } else {
-            dispatch(showToast({ message: "Error al eliminar usuario", type: "error" }));
-        }
-    };
+  const refreshTable = () => setRefreshKey((prev) => prev + 1);
 
-    return (
-        <div className="p-6 bg-[#f8fafc] min-h-screen">
-            {/* Header following the screenshot exactly */}
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-                    <FaUserShield className="text-emerald-600" />
-                    Directorio de Usuarios
-                </h1>
-                <p className="text-slate-500 text-sm mt-1">Gestión de usuarios vecinales, expedientes y controles de acceso</p>
-            </div>
+  const handleSuccess = () => {
+    setIsCreateModalOpen(false);
+    setEditingUser(null);
+    setChangingPasswordUser(null);
+    refreshTable();
+  };
 
-            <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
-                <div className="w-full sm:w-64 relative">
-                    <input
-                        type="text"
-                        placeholder="Buscar usuario..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full py-2 h-[42px] px-4 pr-10 bg-white border border-slate-100 rounded-xl outline-none text-sm focus:border-emerald-500 transition-all shadow-sm font-medium text-slate-600"
-                    />
-                    {searchTerm && (
-                        <button
-                            onClick={() => setSearchTerm("")}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
-                        >
-                            <FaTimes size={14} />
-                        </button>
-                    )}
-                </div>
-                <ITButton
-                    onClick={refreshTable}
-                    color="secondary"
-                    variant="outlined"
-                    className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
-                    size="small"
-                >
-                    <FaSync className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? '' : 'rotate-180'}`} />
-                    <span className="text-xs font-bold text-slate-500">Actualizar</span>
-                </ITButton>
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2.5 h-[42px] rounded-xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-105 transition-all w-full sm:w-auto"
-                >
-                    <FaPlus className="text-xs" />
-                    <span>Nuevo Usuario</span>
-                </button>
-            </div>
+  const confirmDelete = async () => {
+    if (!userToDeleteId) return;
+    const res = await deleteUser(userToDeleteId);
+    setUserToDeleteId(null);
+    if (res.success) {
+      dispatch(showToast({ message: "Usuario eliminado", type: "success" }));
+      refreshTable();
+    } else {
+      dispatch(
+        showToast({ message: "Error al eliminar usuario", type: "error" }),
+      );
+    }
+  };
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <ITDataTable
-                    key={refreshKey}
-                    fetchData={memoizedFetch as any}
-                    externalFilters={externalFilters}
-                    defaultItemsPerPage={10}
-                    title=""
-                    columns={[
-                        {
-                            key: "user",
-                            label: "USUARIO",
-                            type: "string",
-                            sortable: true,
-                            render: (row: User) => (
-                                <div className="flex items-center gap-3 py-2">
-                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold border border-slate-200 text-sm">
-                                        {row.name.charAt(0)}{row.lastName?.charAt(0) || ''}
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-slate-800 text-sm">{row.name} {row.lastName}</div>
-                                        <div className="text-xs text-slate-500 font-medium">@{row.username}</div>
-                                    </div>
-                                </div>
-                            )
-                        },
-                        {
-                            key: "roleId",
-                            label: "ROL / CATEGORÍA",
-                            type: "string",
-                            filter: "catalog",
-                            catalogOptions: {
-                                data: rolesCatalog,
-                                loading: loadingRoles
-                            },
-                            render: (row: User) => {
-                                const roleName = row.role?.name || '';
-                                const roleValue = row.role?.value || 'S/R';
+  return (
+    <div className="p-6 bg-[#f8fafc] min-h-screen">
+      {/* Header following the screenshot exactly */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+          <FaUserShield className="text-emerald-600" />
+          Directorio de Usuarios
+        </h1>
+        <p className="text-slate-500 text-sm mt-1">
+          Gestión de usuarios vecinales, expedientes y controles de acceso
+        </p>
+      </div>
 
-                                let badgeClass = "bg-slate-50 text-slate-500 border-slate-100"; // Default
-
-                                if (roleName === 'ADMIN') badgeClass = "bg-blue-50 text-blue-700 border-blue-100";
-                                if (roleName === 'GUARD') badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-100";
-                                if (roleName === 'SHIFT') badgeClass = "bg-indigo-50 text-indigo-700 border-indigo-100";
-                                if (roleName === 'MAINT') badgeClass = "bg-amber-50 text-amber-700 border-amber-100";
-                                if (roleName === 'RESDN') badgeClass = "bg-slate-50 text-slate-500 border-slate-100";
-
-                                return (
-                                    <div className="flex items-center">
-                                        <span className={`px-2 py-1 font-bold text-[10px] rounded border uppercase tracking-wider ${badgeClass}`}>
-                                            {roleValue}
-                                        </span>
-                                    </div>
-                                );
-                            }
-                        },
-                        {
-                            key: "schedule",
-                            label: "TURNO / ACCESO",
-                            type: "string",
-                            render: (row: User) => (
-                                row.schedule ? (
-                                    <div className="text-sm text-slate-600">
-                                        <div className="flex items-center gap-1.5 font-medium">
-                                            <FaClock className="text-slate-400 text-xs" />
-                                            {row.schedule.name}
-                                        </div>
-                                        <div className="text-xs text-slate-400 mt-0.5 ml-5">{row.schedule.startTime} - {row.schedule.endTime}</div>
-                                    </div>
-                                ) : (
-                                    <span className="text-xs italic text-slate-400">Sin Horario</span>
-                                )
-                            )
-                        },
-                        {
-                            key: "status",
-                            label: "ESTADO",
-                            type: "string",
-                            render: (row: User) => (
-                                <div className="text-sm text-slate-600">
-                                    <div className={`flex items-center gap-1.5 font-medium ${row.active ? 'text-emerald-600' : 'text-slate-400'}`}>
-                                        <div className={`w-1.5 h-1.5 rounded-full ${row.active ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
-                                        {row.active ? 'Activo' : 'Inactivo'}
-                                    </div>
-                                </div>
-                            )
-                        },
-                        {
-                            key: "actions",
-                            label: "ACCIONES",
-                            type: "actions",
-                            actions: (row: User) => (
-                                <div className="flex items-center gap-2">
-                                    <ITButton
-                                        onClick={() => setChangingPasswordUser(row)}
-                                        size="small"
-                                        variant="outlined"
-                                        className="border-emerald-200 text-emerald-500 hover:bg-emerald-50"
-                                        title="Contraseña"
-                                    >
-                                        <FaKey />
-                                    </ITButton>
-                                    <ITButton
-                                        onClick={() => setEditingUser(row)}
-                                        size="small"
-                                        variant="ghost"
-                                        className="text-slate-400 hover:text-slate-600"
-                                        title="Editar"
-                                    >
-                                        <FaEdit />
-                                    </ITButton>
-                                    <ITButton
-                                        onClick={() => setUserToDeleteId(row.id)}
-                                        size="small"
-                                        variant="ghost"
-                                        className="text-red-300 hover:text-red-500"
-                                        title="Eliminar"
-                                    >
-                                        <FaTrash />
-                                    </ITButton>
-                                </div>
-                            )
-                        }
-                    ] as any}
-                />
-            </div>
-
-            {/* Modals matching the high-end style */}
-            <ITDialog
-                isOpen={isCreateModalOpen || !!editingUser}
-                onClose={() => {
-                    setIsCreateModalOpen(false);
-                    setEditingUser(null);
-                }}
-                title={editingUser ? `Editar Usuario: ${editingUser.name}` : "Nuevo Usuario"}
-                className="!w-full !max-w-4xl"
+      <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
+        <div className="w-full sm:w-64 relative">
+          <input
+            type="text"
+            placeholder="Buscar usuario..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full py-2 h-[42px] px-4 pr-10 bg-white border border-slate-100 rounded-xl outline-none text-sm focus:border-emerald-500 transition-all shadow-sm font-medium text-slate-600"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
             >
-                <CreateUserWizard
-                    userToEdit={editingUser || undefined}
-                    onCancel={() => {
-                        setIsCreateModalOpen(false);
-                        setEditingUser(null);
-                    }}
-                    onSuccess={handleSuccess}
-                />
-            </ITDialog>
-
-            <ITDialog
-                isOpen={!!changingPasswordUser}
-                onClose={() => setChangingPasswordUser(null)}
-                className="!w-full !max-w-lg"
-                title="Cambiar Contraseña"
-            >
-                {changingPasswordUser && (
-                    <ChangePasswordModal
-                        user={changingPasswordUser}
-                        onCancel={() => setChangingPasswordUser(null)}
-                        onSuccess={handleSuccess}
-                    />
-                )}
-            </ITDialog>
-
-            <ITDialog
-                isOpen={!!userToDeleteId}
-                onClose={() => setUserToDeleteId(null)}
-                title="Confirmar Eliminación"
-            >
-                <div className="p-6">
-                    <p className="text-slate-700 mb-6">¿Estás seguro de eliminar el usuario seleccionado? Esta acción inhabilitará su acceso a la plataforma de forma permanente.</p>
-                    <div className="flex justify-end gap-3">
-                        <ITButton variant="outlined" onClick={() => setUserToDeleteId(null)}>Cancelar</ITButton>
-                        <ITButton className="bg-red-600 text-white border-red-600" onClick={confirmDelete}>Eliminar Usuario</ITButton>
-                    </div>
-                </div>
-            </ITDialog>
+              <FaTimes size={14} />
+            </button>
+          )}
         </div>
-    );
+        <ITButton
+          onClick={refreshTable}
+          color="secondary"
+          variant="outlined"
+          className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
+          size="small"
+        >
+          <FaSync
+            className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? "" : "rotate-180"}`}
+          />
+          <span className="text-xs font-bold text-slate-500">Actualizar</span>
+        </ITButton>
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2.5 h-[42px] rounded-xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-105 transition-all w-full sm:w-auto"
+        >
+          <FaPlus className="text-xs" />
+          <span>Nuevo Usuario</span>
+        </button>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <ITDataTable
+          key={refreshKey}
+          fetchData={memoizedFetch as any}
+          externalFilters={externalFilters}
+          defaultItemsPerPage={10}
+          title=""
+          columns={
+            [
+              {
+                key: "user",
+                label: "USUARIO",
+                type: "string",
+                sortable: true,
+                render: (row: User) => (
+                  <div className="flex items-center gap-3 py-2">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold border border-slate-200 text-sm">
+                      {row.name.charAt(0)}
+                      {row.lastName?.charAt(0) || ""}
+                    </div>
+                    <div>
+                      <div className="font-bold text-slate-800 text-sm">
+                        {row.name} {row.lastName}
+                      </div>
+                      <div className="text-xs text-slate-500 font-medium">
+                        @{row.username}
+                      </div>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: "roleId",
+                label: "ROL / CATEGORÍA",
+                type: "string",
+                filter: "catalog",
+                catalogOptions: {
+                  data: rolesCatalog,
+                  loading: loadingRoles,
+                },
+                render: (row: User) => {
+                  const roleName = row.role?.name || "";
+                  const roleValue = row.role?.value || "S/R";
+
+                  let badgeClass =
+                    "bg-slate-50 text-slate-500 border-slate-100"; // Default
+
+                  if (roleName === "ADMIN")
+                    badgeClass = "bg-blue-50 text-blue-700 border-blue-100";
+                  if (roleName === "GUARD")
+                    badgeClass =
+                      "bg-emerald-50 text-emerald-700 border-emerald-100";
+                  if (roleName === "SHIFT")
+                    badgeClass =
+                      "bg-indigo-50 text-indigo-700 border-indigo-100";
+                  if (roleName === "MAINT")
+                    badgeClass = "bg-amber-50 text-amber-700 border-amber-100";
+                  if (roleName === "RESDN")
+                    badgeClass = "bg-slate-50 text-slate-500 border-slate-100";
+
+                  return (
+                    <div className="flex items-center">
+                      <span
+                        className={`px-2 py-1 font-bold text-[10px] rounded border uppercase tracking-wider ${badgeClass}`}
+                      >
+                        {roleValue}
+                      </span>
+                    </div>
+                  );
+                },
+              },
+              {
+                key: "client",
+                label: "CLIENTE",
+                type: "string",
+                render: (row: User) => {
+                  const roleName = row.role?.name || "";
+                  const isOp =
+                    roleName === "GUARD" ||
+                    roleName === "SHIFT" ||
+                    roleName === "MAINT";
+                  if (!isOp)
+                    return (
+                      <span className="text-slate-300 italic text-[10px]">
+                        N/A
+                      </span>
+                    );
+                  return (
+                    <div className="text-xs font-bold text-emerald-600 uppercase tracking-tight">
+                      {row.client?.name || (
+                        <span className="text-slate-300 italic font-normal">
+                          Sin asignar
+                        </span>
+                      )}
+                    </div>
+                  );
+                },
+              },
+              {
+                key: "schedule",
+                label: "TURNO / ACCESO",
+                type: "string",
+                render: (row: User) =>
+                  row.schedule ? (
+                    <div className="text-sm text-slate-600">
+                      <div className="flex items-center gap-1.5 font-medium">
+                        <FaClock className="text-slate-400 text-xs" />
+                        {row.schedule.name}
+                      </div>
+                      <div className="text-xs text-slate-400 mt-0.5 ml-5">
+                        {row.schedule.startTime} - {row.schedule.endTime}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-xs italic text-slate-400">
+                      Sin Horario
+                    </span>
+                  ),
+              },
+              {
+                key: "status",
+                label: "ESTADO",
+                type: "string",
+                render: (row: User) => {
+                  const isEffectivelyActive =
+                    row.active && (row.client ? row.client.active : true);
+                  return (
+                    <div className="text-sm text-slate-600">
+                      <div
+                        className={`flex items-center gap-1.5 font-medium ${isEffectivelyActive ? "text-emerald-600" : "text-slate-400"}`}
+                      >
+                        <div
+                          className={`w-1.5 h-1.5 rounded-full ${isEffectivelyActive ? "bg-emerald-500" : "bg-slate-300"}`}
+                        ></div>
+                        {isEffectivelyActive ? "Activo" : "Inactivo"}
+                      </div>
+                    </div>
+                  );
+                },
+              },
+              {
+                key: "actions",
+                label: "ACCIONES",
+                type: "actions",
+                actions: (row: User) => (
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                      <ITButton
+                        onClick={() => setChangingScheduleUser(row)}
+                        size="small"
+                        variant="ghost"
+                        className="text-amber-500 hover:bg-amber-50 !p-2"
+                        title="Cambiar Horario"
+                      >
+                        <FaClock />
+                      </ITButton>
+                      <ITButton
+                        onClick={() => setChangingClientUser(row)}
+                        size="small"
+                        variant="ghost"
+                        className="text-indigo-500 hover:bg-indigo-50 !p-2"
+                        title="Cambiar Cliente"
+                      >
+                        <FaUserShield />
+                      </ITButton>
+                    </div>
+                    <div className="h-4 w-[1px] bg-slate-200 mx-1" />
+                    <ITButton
+                      onClick={() => setChangingPasswordUser(row)}
+                      size="small"
+                      variant="outlined"
+                      className="border-emerald-200 text-emerald-500 hover:bg-emerald-50"
+                      title="Contraseña"
+                    >
+                      <FaKey />
+                    </ITButton>
+                    <ITButton
+                      onClick={() => setEditingUser(row)}
+                      size="small"
+                      variant="ghost"
+                      className="text-slate-400 hover:text-slate-600"
+                      title="Editar"
+                    >
+                      <FaEdit />
+                    </ITButton>
+                    <ITButton
+                      onClick={() => setUserToDeleteId(row.id)}
+                      size="small"
+                      variant="ghost"
+                      className="text-red-300 hover:text-red-500"
+                      title="Eliminar"
+                    >
+                      <FaTrash />
+                    </ITButton>
+                  </div>
+                ),
+              },
+            ] as any
+          }
+        />
+      </div>
+
+      {/* Modals matching the high-end style */}
+      <ITDialog
+        isOpen={isCreateModalOpen || !!editingUser}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setEditingUser(null);
+        }}
+        title={
+          editingUser ? `Editar Usuario: ${editingUser.name}` : "Nuevo Usuario"
+        }
+        className="!w-full !max-w-4xl"
+      >
+        <CreateUserWizard
+          userToEdit={editingUser || undefined}
+          onCancel={() => {
+            setIsCreateModalOpen(false);
+            setEditingUser(null);
+          }}
+          onSuccess={handleSuccess}
+        />
+      </ITDialog>
+
+      <ITDialog
+        isOpen={!!changingPasswordUser}
+        onClose={() => setChangingPasswordUser(null)}
+        className="!w-full !max-w-lg"
+        title="Cambiar Contraseña"
+      >
+        {changingPasswordUser && (
+          <ChangePasswordModal
+            user={changingPasswordUser}
+            onCancel={() => setChangingPasswordUser(null)}
+            onSuccess={handleSuccess}
+          />
+        )}
+      </ITDialog>
+
+      <ITDialog
+        isOpen={!!changingClientUser}
+        onClose={() => setChangingClientUser(null)}
+        title={`Reasignar Cliente`}
+        className="!max-w-md"
+      >
+        <div className="p-8 space-y-8">
+          <div className="flex flex-col items-center text-center space-y-3">
+            <div className="w-16 h-16 rounded-3xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
+              <FaUserShield size={32} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                Cambiar Cliente
+              </h3>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
+                {changingClientUser?.name} {changingClientUser?.lastName}
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full">
+            <ITSelect
+              label=""
+              placeholder="Seleccionar cliente..."
+              options={clients.map((c) => ({ label: c.name, value: c.id }))}
+              value={changingClientUser?.clientId || ""}
+              onChange={(e: any) => {
+                const val = e.target.value;
+                if (!changingClientUser) return;
+                updateUser(changingClientUser.id, {
+                  clientId: val as string,
+                }).then((res) => {
+                  if (res.success) {
+                    dispatch(
+                      showToast({
+                        message: "Cliente actualizado",
+                        type: "success",
+                      }),
+                    );
+                    handleSuccess();
+                    setChangingClientUser(null);
+                  }
+                });
+              }}
+            />
+          </div>
+
+          <div className="flex justify-center">
+            <ITButton
+              variant="outlined"
+              onClick={() => setChangingClientUser(null)}
+              className="!rounded-2xl !px-10 border-slate-200 text-slate-400 font-bold uppercase text-[10px] tracking-widest hover:bg-slate-50"
+            >
+              Cancelar
+            </ITButton>
+          </div>
+        </div>
+      </ITDialog>
+
+      <ITDialog
+        isOpen={!!changingScheduleUser}
+        onClose={() => setChangingScheduleUser(null)}
+        title={`Reasignar Horario`}
+        className="!max-w-md"
+      >
+        <div className="p-8 space-y-8">
+          <div className="flex flex-col items-center text-center space-y-3">
+            <div className="w-16 h-16 rounded-3xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
+              <FaClock size={32} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                Cambiar Horario
+              </h3>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
+                {changingScheduleUser?.name} {changingScheduleUser?.lastName}
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full">
+            <ITSelect
+              label=""
+              placeholder="Seleccionar horario..."
+              options={schedules.map((s) => ({
+                label: `${s.name} (${s.startTime} - ${s.endTime})`,
+                value: s.id,
+              }))}
+              value={changingScheduleUser?.scheduleId || ""}
+              onChange={(e: any) => {
+                const val = e.target.value;
+                if (!changingScheduleUser) return;
+                updateUser(changingScheduleUser.id, {
+                  scheduleId: val as string,
+                }).then((res) => {
+                  if (res.success) {
+                    dispatch(
+                      showToast({
+                        message: "Horario actualizado",
+                        type: "success",
+                      }),
+                    );
+                    handleSuccess();
+                    setChangingScheduleUser(null);
+                  }
+                });
+              }}
+            />
+          </div>
+
+          <div className="flex justify-center">
+            <ITButton
+              variant="outlined"
+              onClick={() => setChangingScheduleUser(null)}
+              className="!rounded-2xl !px-10 border-slate-200 text-slate-400 font-bold uppercase text-[10px] tracking-widest hover:bg-slate-50"
+            >
+              Cancelar
+            </ITButton>
+          </div>
+        </div>
+      </ITDialog>
+
+      <ITDialog
+        isOpen={!!userToDeleteId}
+        onClose={() => setUserToDeleteId(null)}
+        title="Confirmar Eliminación"
+      >
+        <div className="p-6">
+          <p className="text-slate-700 mb-6">
+            ¿Estás seguro de eliminar el usuario seleccionado? Esta acción
+            inhabilitará su acceso a la plataforma de forma permanente.
+          </p>
+          <div className="flex justify-end gap-3">
+            <ITButton
+              variant="outlined"
+              onClick={() => setUserToDeleteId(null)}
+            >
+              Cancelar
+            </ITButton>
+            <ITButton
+              className="bg-red-600 text-white border-red-600"
+              onClick={confirmDelete}
+            >
+              Eliminar Usuario
+            </ITButton>
+          </div>
+        </div>
+      </ITDialog>
+    </div>
+  );
 };
 
 export default UsersPage;

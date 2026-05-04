@@ -88,7 +88,6 @@ const KardexPage = () => {
     };
 
     const columns = useMemo(() => [
-        { key: "id", label: "ID", type: "number", sortable: true },
         { 
             key: "timestamp", 
             label: "Fecha/Hora", 
@@ -265,7 +264,6 @@ const KardexPage = () => {
               <div>
                 <div className="flex items-center gap-3 mb-1">
                    <h3 className="text-2xl font-bold text-slate-800">Detalle de Actividad</h3>
-                   <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold">#{viewingEntry.id}</span>
                 </div>
                 <p className="text-sm text-slate-500">Registrado el {dayjs(viewingEntry.timestamp).format("DD [de] MMMM, YYYY [a las] HH:mm a")}</p>
               </div>

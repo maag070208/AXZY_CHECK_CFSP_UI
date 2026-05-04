@@ -112,12 +112,6 @@ const ClientsPage = () => {
                     title=""
                     columns={[
                         {
-                            key: "id",
-                            label: "ID",
-                            type: "string",
-                            sortable: true,
-                        },
-                        {
                             key: "name",
                             label: "CLIENTE",
                             type: "string",

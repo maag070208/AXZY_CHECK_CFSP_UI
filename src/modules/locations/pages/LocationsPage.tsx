@@ -16,7 +16,7 @@ const LocationsPage = () => {
   const [searchParams] = useSearchParams();
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClientId, setSelectedClientId] = useState<string | number>(searchParams.get("clientId") ? Number(searchParams.get("clientId")) : "");
+  const [selectedClientId, setSelectedClientId] = useState<string | number>(searchParams.get("clientId") || "");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isZonesModalOpen, setIsZonesModalOpen] = useState(false);
   const [isBulkPrintModalOpen, setIsBulkPrintModalOpen] = useState(false);
@@ -25,7 +25,7 @@ const LocationsPage = () => {
   useEffect(() => {
     const cid = searchParams.get("clientId");
     if (cid) {
-      setSelectedClientId(Number(cid));
+      setSelectedClientId(cid);
     }
   }, [searchParams]);
 
@@ -92,13 +92,8 @@ const LocationsPage = () => {
           const res = await post<any>("/locations/print-qrs", { ids: [location.id] }, { responseType: 'blob' });
           const blob = new Blob([res as any], { type: 'application/pdf' });
           const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', `qr_${location.name.replace(/\s+/g, '_')}.pdf`);
-          document.body.appendChild(link);
-          link.click();
-          link.parentNode?.removeChild(link);
-          dispatch(showToast({ message: "PDF generado correctamente", type: "success" }));
+          window.open(url, '_blank');
+          dispatch(showToast({ message: "Vista previa del QR generada", type: "success" }));
       } catch (error) {
           console.error("Error generating individual PDF", error);
           dispatch(showToast({ message: "Error al generar el código QR", type: "error" }));
@@ -106,17 +101,6 @@ const LocationsPage = () => {
   };
 
   const columns = useMemo(() => [
-      { 
-          key: "id", 
-          label: "ID", 
-          type: "number", 
-          sortable: true,
-          render: (row: any) => (
-              <div className="font-bold text-slate-800 bg-slate-50 px-2 py-1 rounded inline-block text-xs">
-                  {row.id}
-              </div>
-          )
-      },
       { 
           key: "name", 
           label: "Ubicación", 
@@ -301,14 +285,14 @@ const LocationsPage = () => {
       <ZonesModal 
         isOpen={isZonesModalOpen} 
         onClose={() => setIsZonesModalOpen(false)} 
-        clientId={Number(selectedClientId)} 
-        clientName={clients?.find((c: any) => Number(c.id) === Number(selectedClientId))?.name || "Cliente"}
+        clientId={selectedClientId as string} 
+        clientName={clients?.find((c: any) => String(c.id) === String(selectedClientId))?.name || "Cliente"}
       />
 
       {/* Create Modal */}
       <ITDialog isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Nueva Ubicación">
         <LocationForm 
-          initialData={selectedClientId ? { clientId: Number(selectedClientId), aisle: '', spot: '', number: '', name: '' } : undefined}
+          initialData={selectedClientId ? { clientId: selectedClientId as string, aisle: '', spot: '', number: '', name: '' } : undefined}
           onSubmit={handleCreate} 
           onCancel={() => setIsModalOpen(false)} 
         />

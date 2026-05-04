@@ -2,38 +2,38 @@ import { get, post, put } from "@app/core/axios/axios";
 import { TResult } from "@app/core/types/TResult";
 
 export interface IRound {
-  id: number;
-  guardId: number;
-  clientId?: number;
+  id: string;
+  guardId: string;
+  clientId?: string;
   startTime: string;
   endTime?: string | null;
   status: "IN_PROGRESS" | "COMPLETED";
-  recurringConfigurationId: number;
+  recurringConfigurationId: string;
   recurringConfiguration?: {
-      id: number;
+      id: string;
       title: string;
       startTime?: string;
       endTime?: string;
       client?: {
-          id: number;
+          id: string;
           name: string;
       };
       recurringLocations?: Array<{
-         id: number;
-         locationId: number;
+         id: string;
+         locationId: string;
          location: {
-           id: number;
+           id: string;
            name: string;
          }
       }>;
   };
   guard: {
-    id: number;
+    id: string;
     name: string;
     lastName: string | null;
   };
   client?: {
-      id: number;
+      id: string;
       name: string;
       locations?: any[];
   };
@@ -44,7 +44,7 @@ export interface IRoundEvent {
   timestamp: string;
   description: string;
   guard?: {
-    id: number;
+    id: string;
     name: string;
     lastName: string | null;
   };
@@ -71,15 +71,15 @@ export interface ITDataTableResponse<T> {
   total: number;
 }
 
-export const getRounds = async (date?: string, guardId?: number): Promise<TResult<IRound[]>> => {
+export const getRounds = async (date?: string, guardId?: string): Promise<TResult<IRound[]>> => {
   const params = new URLSearchParams();
   if (date) params.append("date", date);
-  if (guardId) params.append("guardId", guardId.toString());
+  if (guardId) params.append("guardId", guardId);
 
   return await get<IRound[]>(`/rounds?${params.toString()}`);
 };
 
-export const getRoundDetail = async (id: number): Promise<TResult<IRoundDetail>> => {
+export const getRoundDetail = async (id: string): Promise<TResult<IRoundDetail>> => {
   return await get<IRoundDetail>(`/rounds/${id}`);
 };
 

@@ -7,7 +7,7 @@ export interface ITaskCreate {
 }
 
 export interface ILocationCreate {
-    locationId: number;
+    locationId: string;
     locationName?: string;
     tasks: ITaskCreate[];
 }
@@ -15,14 +15,14 @@ export interface ILocationCreate {
 export interface IRecurringConfigCreate {
     title: string;
     locations: ILocationCreate[];
-    guardIds?: number[];
+    guardIds?: string[];
 }
 
 export const getRoutesList = async (): Promise<TResult<any[]>> => {
     return await get<any[]>('/recurring');
 };
 
-export const getRouteById = async (id: number): Promise<TResult<any>> => {
+export const getRouteById = async (id: string): Promise<TResult<any>> => {
     return await get<any>(`/recurring/${id}`);
 };
 
@@ -41,14 +41,14 @@ export const createRoute = async (data: IRecurringConfigCreate): Promise<TResult
     return await post<any>('/recurring', data);
 };
 
-export const updateRoute = async (id: number, data: IRecurringConfigCreate): Promise<TResult<any>> => {
+export const updateRoute = async (id: string, data: IRecurringConfigCreate): Promise<TResult<any>> => {
     return await put<any>(`/recurring/${id}`, data);
 };
 
-export const deleteRoute = async (id: number): Promise<TResult<any>> => {
+export const deleteRoute = async (id: string): Promise<TResult<any>> => {
     return await remove<any>(`/recurring/${id}`);
 };
 
-export const assignGuardToRoute = async (configId: number, guardIds: number[]): Promise<TResult<any>> => {
+export const assignGuardToRoute = async (configId: string, guardIds: string[]): Promise<TResult<any>> => {
     return await post<any>(`/recurring/${configId}/assign`, { guardIds });
 };

@@ -14,24 +14,26 @@ const LoginPage = () => {
   const handleSubmit = async (values: IAuthLogin) => {
     const response = await login({
       ...values,
-    }).catch(() => {
+    }).catch((error) => {
+      console.log({ error });
       dispatch(
         showToast({
-          message: "Error al iniciar sesión",
+          message: error?.messages?.[0] || "Error al iniciar sesión",
           type: "error",
           position: "top-right",
-        })
+        }),
       );
       return null;
     });
     if (response) {
-      if(!response.success){
+      console.log(response);
+      if (!response.success) {
         dispatch(
           showToast({
-            message: response.message,
+            message: response.messages?.[0] || "Error al iniciar sesión",
             type: "error",
             position: "top-right",
-          })
+          }),
         );
         return;
       }
@@ -48,7 +50,11 @@ const LoginPage = () => {
         className="w-3/4 md:2-2/6 lg:w-2/6 flex justify-center items-center border-slate-200 shadow-slate-400"
       >
         <div className="flex flex-col items-center space-y-8">
-          <img src={Logo} alt={"Logo"} className="h-[150px] dark:bg-transparent" />
+          <img
+            src={Logo}
+            alt={"Logo"}
+            className="h-[150px] dark:bg-transparent"
+          />
           <LoginFormComponent onSubmit={handleSubmit} />
         </div>
       </ITCard>

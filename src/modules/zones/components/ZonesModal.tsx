@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux";
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    clientId: number;
+    clientId: string;
     clientName: string;
 }
 
@@ -62,7 +62,7 @@ export const ZonesModal = ({ isOpen, onClose, clientId, clientName }: Props) => 
         }
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id: string) => {
         if (!window.confirm("¿Estás seguro de eliminar este recurrente?")) return;
         try {
             await deleteZone(id);

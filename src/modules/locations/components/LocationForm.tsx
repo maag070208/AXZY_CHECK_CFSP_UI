@@ -24,17 +24,17 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
       reference: initialData?.reference || "",
     },
     validationSchema: Yup.object({
-      clientId: Yup.number().required("El cliente es requerido"),
-      zoneId: Yup.number().required("El recurrente es requerido"),
+      clientId: Yup.string().required("El cliente es requerido"),
+      zoneId: Yup.string().required("El recurrente es requerido"),
       name: Yup.string().required("El nombre de ubicación es requerido"),
       reference: Yup.string().optional(),
     }),
     onSubmit: (values) => {
-      const selectedZone = zones.find(z => Number(z.id) === Number(values.zoneId));
+      const selectedZone = zones.find(z => String(z.id) === String(values.zoneId));
       onSubmit({
           ...values,
-          clientId: Number(values.clientId),
-          zoneId: Number(values.zoneId),
+          clientId: values.clientId,
+          zoneId: values.zoneId,
           zoneName: selectedZone?.name || ''
       });
     },
@@ -43,7 +43,7 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
   useEffect(() => {
     if (formik.values.clientId) {
         setLoadingZones(true);
-        getZonesByClient(Number(formik.values.clientId))
+        getZonesByClient(String(formik.values.clientId))
             .then(data => setZones(data))
             .finally(() => setLoadingZones(false));
     } else {

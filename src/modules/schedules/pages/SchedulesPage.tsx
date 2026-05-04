@@ -155,7 +155,6 @@ const SchedulesPage = () => {
                       </div>
                       <div>
                         <div className="font-bold text-slate-800 text-sm">{row.name}</div>
-                        <div className="text-[11px] text-slate-400 font-medium">ID: {row.id}</div>
                       </div>
                   </div>
               )
