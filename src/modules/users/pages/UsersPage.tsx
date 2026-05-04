@@ -84,7 +84,7 @@ const UsersPage = () => {
 
   const confirmDelete = async () => {
     if (!userToDeleteId) return;
-    const res = await deleteUser(userToDeleteId);
+    const res = await deleteUser(userToDeleteId.toString());
     setUserToDeleteId(null);
     if (res.success) {
       dispatch(showToast({ message: "Usuario eliminado", type: "success" }));
@@ -334,7 +334,7 @@ const UsersPage = () => {
                       <FaEdit />
                     </ITButton>
                     <ITButton
-                      onClick={() => setUserToDeleteId(row.id)}
+                      onClick={() => setUserToDeleteId(row.id as any)}
                       size="small"
                       variant="ghost"
                       className="text-red-300 hover:text-red-500"
@@ -411,8 +411,11 @@ const UsersPage = () => {
           <div className="w-full">
             <ITSelect
               label=""
+              name=""
               placeholder="Seleccionar cliente..."
-              options={clients.map((c) => ({ label: c.name, value: c.id }))}
+              options={
+                clients.map((c) => ({ label: c.name, value: c.id })) as any
+              }
               value={changingClientUser?.clientId || ""}
               onChange={(e: any) => {
                 const val = e.target.value;
@@ -471,6 +474,7 @@ const UsersPage = () => {
           <div className="w-full">
             <ITSelect
               label=""
+              name=""
               placeholder="Seleccionar horario..."
               options={schedules.map((s) => ({
                 label: `${s.name} (${s.startTime} - ${s.endTime})`,

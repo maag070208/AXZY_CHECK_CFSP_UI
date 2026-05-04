@@ -1,11 +1,25 @@
+import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITButton, ITDataTable, ITDialog, ITInput, ITSearchSelect } from "@axzydev/axzy_ui_system";
+import {
+  ITButton,
+  ITDataTable,
+  ITDialog,
+  ITInput,
+  ITSearchSelect,
+} from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaEdit, FaPlus, FaRoute, FaSearch, FaSync, FaTimes, FaTrash, FaBuilding } from "react-icons/fa";
+import {
+  FaBuilding,
+  FaEdit,
+  FaPlus,
+  FaRoute,
+  FaSync,
+  FaTimes,
+  FaTrash,
+} from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { deleteRoute, getPaginatedRoutes } from "../services/RoutesService";
-import { useCatalog } from "@app/core/hooks/catalog.hook";
 
 const RoutesPage = () => {
   const dispatch = useDispatch();
@@ -20,7 +34,7 @@ const RoutesPage = () => {
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
-      setRefreshKey(prev => prev + 1);
+      setRefreshKey((prev) => prev + 1);
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
@@ -28,7 +42,7 @@ const RoutesPage = () => {
   const externalFilters = useMemo(() => {
     return {
       title: searchTerm,
-      clientId: selectedClientId
+      clientId: selectedClientId,
     };
   }, [searchTerm, selectedClientId]);
 
@@ -36,7 +50,7 @@ const RoutesPage = () => {
     return getPaginatedRoutes(params);
   }, []);
 
-  const refreshTable = () => setRefreshKey(prev => prev + 1);
+  const refreshTable = () => setRefreshKey((prev) => prev + 1);
 
   const handleDelete = (id: number) => {
     setRouteToDeleteId(id);
@@ -44,7 +58,7 @@ const RoutesPage = () => {
 
   const confirmDelete = async () => {
     if (!routeToDeleteId) return;
-    const res = await deleteRoute(routeToDeleteId);
+    const res = await deleteRoute(String(routeToDeleteId));
     setRouteToDeleteId(null);
     if (res.success) {
       dispatch(showToast({ message: "Ruta eliminada", type: "success" }));
@@ -65,7 +79,7 @@ const RoutesPage = () => {
   const clearFilters = () => {
     setSelectedClientId("");
     setSearchTerm("");
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   return (
@@ -75,7 +89,9 @@ const RoutesPage = () => {
           <FaRoute className="text-[#065911]" />
           Gestión de Rutas
         </h1>
-        <p className="text-slate-500 text-sm mt-1">Gestión de recorridos y puntos de control (Catálogo de Rondas)</p>
+        <p className="text-slate-500 text-sm mt-1">
+          Gestión de recorridos y puntos de control (Catálogo de Rondas)
+        </p>
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
@@ -96,11 +112,14 @@ const RoutesPage = () => {
         <div className="w-full sm:w-64">
           <ITSearchSelect
             placeholder="Filtrar por Cliente"
-            options={(clients || []).map((c: any) => ({ label: c.name, value: c.id }))}
+            options={(clients || []).map((c: any) => ({
+              label: c.name,
+              value: c.id,
+            }))}
             value={selectedClientId}
             onChange={(val) => {
               setSelectedClientId(val);
-              setRefreshKey(prev => prev + 1);
+              setRefreshKey((prev) => prev + 1);
             }}
           />
         </div>
@@ -111,7 +130,7 @@ const RoutesPage = () => {
             name="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onBlur={() => { }}
+            onBlur={() => {}}
             className="!h-[42px] !rounded-xl border-slate-200 !pr-10 bg-white"
           />
           {searchTerm && (
@@ -133,7 +152,9 @@ const RoutesPage = () => {
           size="small"
           title="Actualizar datos"
         >
-          <FaSync className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? '' : 'rotate-180'}`} />
+          <FaSync
+            className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? "" : "rotate-180"}`}
+          />
           Refrescar
         </ITButton>
 
@@ -162,10 +183,11 @@ const RoutesPage = () => {
                 <div className="flex items-center gap-2">
                   <FaBuilding className="text-slate-400 text-xs" />
                   <span className="font-bold text-slate-700 uppercase text-[11px] tracking-tight">
-                    {row.recurringLocations?.[0]?.location?.client?.name || "Sin Cliente"}
+                    {row.recurringLocations?.[0]?.location?.client?.name ||
+                      "Sin Cliente"}
                   </span>
                 </div>
-              )
+              ),
             },
             {
               key: "title",
@@ -178,7 +200,9 @@ const RoutesPage = () => {
                     <FaRoute className="text-xs" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-800 line-clamp-1 uppercase">{row.title}</p>
+                    <p className="font-bold text-slate-800 line-clamp-1 uppercase">
+                      {row.title}
+                    </p>
                     <div className="flex gap-1 items-center">
                       <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md uppercase">
                         RUTA DE SERVICIO
@@ -195,10 +219,12 @@ const RoutesPage = () => {
               render: (row: any) => (
                 <div className="flex flex-col py-2">
                   <span className="font-bold text-slate-700 text-xs leading-tight uppercase">
-                    {row.recurringLocations?.[0]?.location?.name || 'SIN UBICACIÓN'}
+                    {row.recurringLocations?.[0]?.location?.name ||
+                      "SIN UBICACIÓN"}
                   </span>
                   <span className="text-slate-400 text-[10px] font-medium">
-                    {row.recurringLocations?.length || 0} Puntos registrados en sistema
+                    {row.recurringLocations?.length || 0} Puntos registrados en
+                    sistema
                   </span>
                 </div>
               ),
@@ -208,7 +234,9 @@ const RoutesPage = () => {
               label: "ESTADO",
               type: "string",
               render: (row: any) => (
-                <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${row.active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-[10px] font-bold border ${row.active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-100"}`}
+                >
                   {row.active ? "ACTIVA" : "INACTIVA"}
                 </span>
               ),
@@ -247,16 +275,29 @@ const RoutesPage = () => {
       </div>
 
       {/* Confirm Delete Dialog */}
-      <ITDialog isOpen={!!routeToDeleteId} onClose={() => setRouteToDeleteId(null)} title="Eliminar Registro">
+      <ITDialog
+        isOpen={!!routeToDeleteId}
+        onClose={() => setRouteToDeleteId(null)}
+        title="Eliminar Registro"
+      >
         <div className="p-6">
           <p className="text-slate-600 mb-6 text-sm">
-            ¿Estás seguro de eliminar esta ruta de servicio? Esta acción no se puede deshacer.
+            ¿Estás seguro de eliminar esta ruta de servicio? Esta acción no se
+            puede deshacer.
           </p>
           <div className="flex justify-end gap-3">
-            <ITButton variant="outlined" color="secondary" onClick={() => setRouteToDeleteId(null)} className="!rounded-lg">
+            <ITButton
+              variant="outlined"
+              color="secondary"
+              onClick={() => setRouteToDeleteId(null)}
+              className="!rounded-lg"
+            >
               Cancelar
             </ITButton>
-            <ITButton className="!bg-red-600 text-white !rounded-lg" onClick={confirmDelete}>
+            <ITButton
+              className="!bg-red-600 text-white !rounded-lg"
+              onClick={confirmDelete}
+            >
               Eliminar permanentemente
             </ITButton>
           </div>

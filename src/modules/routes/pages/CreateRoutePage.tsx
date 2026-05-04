@@ -11,10 +11,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   FaCheck,
   FaChevronLeft,
-  FaChevronRight,
   FaClipboardCheck,
   FaInfoCircle,
-  FaLayerGroup,
   FaMapMarkerAlt,
   FaMinus,
   FaPlus,
@@ -143,13 +141,13 @@ const CreateRoutePage = () => {
     const zoneLocs = allLocations.filter(
       (l) =>
         String(l.zoneId) === String(selectedZoneId) &&
-        !addedLocations.find((al) => al.locationId === l.id),
+        !addedLocations.find((al) => al.locationId === (l.id as any)),
     );
     if (zoneLocs.length === 0) return;
     setAddedLocations([
       ...addedLocations,
       ...zoneLocs.map((l) => ({
-        locationId: l.id,
+        locationId: l.id as any,
         locationName: l.name,
         tasks: [],
       })),
@@ -187,7 +185,7 @@ const CreateRoutePage = () => {
     () =>
       allLocations.filter(
         (l) =>
-          !addedLocations.find((al) => al.locationId === l.id) &&
+          !addedLocations.find((al) => al.locationId === (l.id as any)) &&
           (!selectedClientId ||
             String(l.clientId) === String(selectedClientId)),
       ),
@@ -366,7 +364,7 @@ const CreateRoutePage = () => {
                           value: l.id,
                         }))}
                         value={selectedLocId}
-                        onChange={setSelectedLocId}
+                        onChange={setSelectedLocId as any}
                       />
                       <ITButton
                         onClick={handleAddLocation}

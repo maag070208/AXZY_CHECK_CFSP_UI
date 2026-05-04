@@ -1,4 +1,5 @@
 import { MediaCarousel } from "@app/core/components/MediaCarousel";
+import { AppState } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import { ITBadget, ITLoader } from "@axzydev/axzy_ui_system";
 import { useEffect, useMemo, useState } from "react";
@@ -7,38 +8,30 @@ import {
   FaBuilding,
   FaCalendarAlt,
   FaCheckCircle,
-  FaCheckDouble,
-  FaClipboardList,
   FaClock,
   FaExclamationTriangle,
-  FaEye,
   FaFileAlt,
-  FaImage,
-  FaLocationArrow,
   FaMapMarkedAlt,
-  FaMapMarkerAlt,
   FaPlay,
   FaQrcode,
   FaRoute,
   FaStopwatch,
   FaTrash,
   FaUserShield,
-  FaWhatsapp,
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { GoogleMapComponent } from "../../../core/components/GoogleMapComponent";
-import { getRoutesList } from "../../routes/services/RoutesService";
-import { getRoundDetail, IRoundDetail } from "../services/RoundsService";
-import {
-  deleteKardexEntry,
-  deleteKardexMedia,
-} from "../../kardex/services/KardexService";
 import {
   deleteIncident,
   deleteIncidentMedia,
 } from "../../incidents/services/IncidentService";
-import { AppState } from "@app/core/store/store";
+import {
+  deleteKardexEntry,
+  deleteKardexMedia,
+} from "../../kardex/services/KardexService";
+import { getRoutesList } from "../../routes/services/RoutesService";
+import { getRoundDetail, IRoundDetail } from "../services/RoundsService";
 
 const RoundDetailPage = () => {
   const { id } = useParams();
@@ -269,32 +262,32 @@ const RoundDetailPage = () => {
     setLoading(false);
   };
 
-  const handleShareWhatsApp = () => {
-    if (!data) return;
-    const token = localStorage.getItem("token");
-    const reportUrl = `${import.meta.env.VITE_BASE_URL}/rounds/${id}/report?token=${token}`;
-    const clientName =
-      data.round.client?.name ||
-      data.round.recurringConfiguration?.client?.name ||
-      (data.round.guard as any)?.client?.name ||
-      "Cliente";
-    const guardName = `${data.round.guard.name} ${data.round.guard.lastName}`;
-    const title =
-      routeTitle ||
-      data.round.recurringConfiguration?.title ||
-      `Ronda #${data.round.id}`;
+  // const handleShareWhatsApp = () => {
+  //   if (!data) return;
+  //   const token = localStorage.getItem("token");
+  //   const reportUrl = `${import.meta.env.VITE_BASE_URL}/rounds/${id}/report?token=${token}`;
+  //   const clientName =
+  //     data.round.client?.name ||
+  //     data.round.recurringConfiguration?.client?.name ||
+  //     (data.round.guard as any)?.client?.name ||
+  //     "Cliente";
+  //   const guardName = `${data.round.guard.name} ${data.round.guard.lastName}`;
+  //   const title =
+  //     routeTitle ||
+  //     data.round.recurringConfiguration?.title ||
+  //     `Ronda #${data.round.id}`;
 
-    const message =
-      `*Reporte de Ronda - FANSAL*\n\n` +
-      `*Ruta:* ${title}\n` +
-      `*Cliente:* ${clientName}\n` +
-      `*Guardia:* ${guardName}\n` +
-      `*Fecha:* ${new Date(data.round.startTime).toLocaleDateString()}\n\n` +
-      `Puedes ver el reporte detallado aquí:\n${reportUrl}`;
+  //   const message =
+  //     `*Reporte de Ronda - FANSAL*\n\n` +
+  //     `*Ruta:* ${title}\n` +
+  //     `*Cliente:* ${clientName}\n` +
+  //     `*Guardia:* ${guardName}\n` +
+  //     `*Fecha:* ${new Date(data.round.startTime).toLocaleDateString()}\n\n` +
+  //     `Puedes ver el reporte detallado aquí:\n${reportUrl}`;
 
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank");
-  };
+  //   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+  //   window.open(whatsappUrl, "_blank");
+  // };
 
   const handleOpenRouteMap = () => {
     if (!data) return;

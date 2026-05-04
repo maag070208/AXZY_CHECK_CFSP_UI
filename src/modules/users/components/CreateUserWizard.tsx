@@ -1,21 +1,20 @@
+import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import { ITButton, ITInput, ITSelect } from "@axzydev/axzy_ui_system";
 import { useFormik } from "formik";
-import React, { useState, useMemo, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import * as Yup from "yup";
-import { createUser, updateUser, User } from "../services/UserService";
-import { useCatalog } from "@app/core/hooks/catalog.hook";
-import { getSchedules, Schedule } from "../../schedules/SchedulesService";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FaCheck,
-  FaUser,
-  FaShieldAlt,
   FaClipboardCheck,
   FaClock,
   FaIdCard,
-  FaLock,
+  FaShieldAlt,
+  FaUser,
 } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import * as Yup from "yup";
+import { getSchedules, Schedule } from "../../schedules/SchedulesService";
+import { createUser, updateUser, User } from "../services/UserService";
 
 interface Props {
   userToEdit?: User;

@@ -403,7 +403,6 @@ const SettingsPage = () => {
             key={`cat-${refreshKey}`}
             fetchData={fetchCategories as any}
             columns={[
-
               {
                 key: "name",
                 label: "NOMBRE",
@@ -472,7 +471,6 @@ const SettingsPage = () => {
             key={`type-${refreshKey}`}
             fetchData={fetchTypes as any}
             columns={[
-
               {
                 key: "category",
                 label: "CATEGORÍA",
@@ -817,7 +815,7 @@ const SettingsPage = () => {
               Cancelar
             </ITButton>
             <ITButton
-              onClick={handleSaveCategory}
+              onClick={handleSaveCategory as any}
               color="primary"
               className="rounded-2xl font-bold px-10 shadow-xl shadow-emerald-100/50 h-[46px]"
             >

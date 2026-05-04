@@ -8,7 +8,15 @@ import {
   ITSearchSelect,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaClock, FaEye, FaStop, FaSync, FaTimesCircle, FaUser, FaBuilding } from "react-icons/fa";
+import {
+  FaClock,
+  FaEye,
+  FaStop,
+  FaSync,
+  FaTimesCircle,
+  FaUser,
+  FaBuilding,
+} from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getRoutesList } from "../../routes/services/RoutesService";
@@ -34,7 +42,9 @@ const RoundsPage = () => {
   ]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [selectedClientId, setSelectedClientId] = useState<string | number>(searchParams.get("clientId") || "");
+  const [selectedClientId, setSelectedClientId] = useState<string | number>(
+    searchParams.get("clientId") || "",
+  );
   const [refreshKey, setRefreshKey] = useState(0);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -46,7 +56,7 @@ const RoundsPage = () => {
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
-      setRefreshKey(prev => prev + 1);
+      setRefreshKey((prev) => prev + 1);
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
@@ -56,7 +66,7 @@ const RoundsPage = () => {
     const cid = searchParams.get("clientId");
     if (cid) {
       setSelectedClientId(cid);
-      setRefreshKey(prev => prev + 1);
+      setRefreshKey((prev) => prev + 1);
     }
   }, [searchParams]);
 
@@ -71,26 +81,34 @@ const RoundsPage = () => {
     }
 
     if (searchTerm && searchTerm.trim().length > 0) {
-        filters.search = searchTerm.trim();
+      filters.search = searchTerm.trim();
     }
 
-    if (statusFilter && statusFilter !== 'ALL') {
-        filters.status = statusFilter;
+    if (statusFilter && statusFilter !== "ALL") {
+      filters.status = statusFilter;
     }
 
     if (selectedClientId) {
-        filters.clientId = selectedClientId;
+      filters.clientId = selectedClientId;
     } else if (isResident && user?.clientId) {
-        filters.clientId = user.clientId;
+      filters.clientId = user.clientId;
     }
 
     return filters;
-  }, [selectedDate, refreshKey, searchTerm, statusFilter, selectedClientId, isResident, user?.id]);
+  }, [
+    selectedDate,
+    refreshKey,
+    searchTerm,
+    statusFilter,
+    selectedClientId,
+    isResident,
+    user?.id,
+  ]);
 
   const memoizedFetch = useCallback((params: any) => {
     return getPaginatedRounds({
       ...params,
-      sort: params.sort || { key: "startTime", direction: "desc" }
+      sort: params.sort || { key: "startTime", direction: "desc" },
     });
   }, []);
 
@@ -112,8 +130,10 @@ const RoundsPage = () => {
     getUsers().then((res) => {
       if (res.success && res.data) {
         const onlyGuards = res.data.filter((u: any) => {
-            const roleName = typeof u.role === 'object' ? u.role.name : u.role;
-            return roleName === "GUARD" || roleName === "SHIFT" || roleName === "MAINT";
+          const roleName = typeof u.role === "object" ? u.role.name : u.role;
+          return (
+            roleName === "GUARD" || roleName === "SHIFT" || roleName === "MAINT"
+          );
         });
         setGuards(onlyGuards);
       }
@@ -130,32 +150,51 @@ const RoundsPage = () => {
       const res = await endRound(roundToFinishId);
       setRoundToFinishId(null);
       if (res.success) {
-        dispatch(showToast({ message: "Ronda finalizada correctamente", type: "success" }));
+        dispatch(
+          showToast({
+            message: "Ronda finalizada correctamente",
+            type: "success",
+          }),
+        );
         setRefreshKey((prev) => prev + 1);
       } else {
-        dispatch(showToast({ message: res.messages?.join("\n") || "Error al finalizar ronda", type: "error" }));
+        dispatch(
+          showToast({
+            message: res.messages?.join("\n") || "Error al finalizar ronda",
+            type: "error",
+          }),
+        );
       }
     } catch (e) {
       setRoundToFinishId(null);
-      dispatch(showToast({ message: "Error al finalizar ronda", type: "error" }));
+      dispatch(
+        showToast({ message: "Error al finalizar ronda", type: "error" }),
+      );
     }
   };
 
   const memoizedColumns = useMemo(
     () => [
-      ...(isResident ? [] : [{
-        key: "client",
-        label: "Cliente",
-        type: "string",
-        render: (row: any) => (
-          <div className="flex items-center gap-2">
-            <FaBuilding className="text-slate-400 text-xs" />
-            <span className="font-bold text-slate-700 uppercase text-[11px] tracking-tight">
-                {row.client?.name || row.recurringConfiguration?.client?.name || row.guard?.client?.name || "Sin Cliente"}
-            </span>
-          </div>
-        )
-      }]),
+      ...(isResident
+        ? []
+        : [
+            {
+              key: "client",
+              label: "Cliente",
+              type: "string",
+              render: (row: any) => (
+                <div className="flex items-center gap-2">
+                  <FaBuilding className="text-slate-400 text-xs" />
+                  <span className="font-bold text-slate-700 uppercase text-[11px] tracking-tight">
+                    {row.client?.name ||
+                      row.recurringConfiguration?.client?.name ||
+                      row.guard?.client?.name ||
+                      "Sin Cliente"}
+                  </span>
+                </div>
+              ),
+            },
+          ]),
       {
         key: "recurringConfiguration",
         label: "Ronda",
@@ -235,7 +274,7 @@ const RoundsPage = () => {
 
             {row.status === "IN_PROGRESS" && (
               <ITButton
-                onClick={() => handleEndRound(row.id)}
+                onClick={() => handleEndRound(Number(row.id))}
                 size="small"
                 color="danger"
                 variant="filled"
@@ -269,11 +308,14 @@ const RoundsPage = () => {
           <div className="w-full sm:w-64">
             <ITSearchSelect
               placeholder="Filtrar por Cliente"
-              options={(clients || []).map((c: any) => ({ label: c.name, value: c.id }))}
+              options={(clients || []).map((c: any) => ({
+                label: c.name,
+                value: c.id,
+              }))}
               value={selectedClientId}
               onChange={(val) => {
                 setSelectedClientId(val);
-                setRefreshKey(prev => prev + 1);
+                setRefreshKey((prev) => prev + 1);
               }}
             />
           </div>
@@ -303,7 +345,7 @@ const RoundsPage = () => {
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
-              setRefreshKey(prev => prev + 1);
+              setRefreshKey((prev) => prev + 1);
             }}
             className="bg-transparent text-sm font-bold text-slate-600 outline-none w-full"
           >
@@ -324,20 +366,21 @@ const RoundsPage = () => {
               if (Array.isArray(val)) {
                 const parsedDates = val.map((d) => (d ? new Date(d) : null));
                 setSelectedDate(parsedDates);
-                if (parsedDates[0] && parsedDates[1]) setRefreshKey(prev => prev + 1);
+                if (parsedDates[0] && parsedDates[1])
+                  setRefreshKey((prev) => prev + 1);
               } else if (val) {
                 const date = new Date(val);
                 setSelectedDate([date, date]);
-                setRefreshKey(prev => prev + 1);
+                setRefreshKey((prev) => prev + 1);
               } else {
                 setSelectedDate(null);
-                setRefreshKey(prev => prev + 1);
+                setRefreshKey((prev) => prev + 1);
               }
             }}
             className="text-sm text-slate-600 outline-none font-medium h-[42px]"
           />
           <ITButton
-            onClick={() => setRefreshKey(prev => prev + 1)}
+            onClick={() => setRefreshKey((prev) => prev + 1)}
             color="secondary"
             variant="outlined"
             className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all"
@@ -365,11 +408,20 @@ const RoundsPage = () => {
       >
         <div className="p-6">
           <p className="text-[#1b1b1f] text-base mb-6">
-            ¿Seguro que deseas FINALIZAR esta ronda manualmente? Esta acción no se puede deshacer.
+            ¿Seguro que deseas FINALIZAR esta ronda manualmente? Esta acción no
+            se puede deshacer.
           </p>
           <div className="flex justify-end gap-3">
-            <ITButton variant="outlined" color="secondary" onClick={() => setRoundToFinishId(null)}>Cancelar</ITButton>
-            <ITButton variant="solid" color="danger" onClick={confirmEndRound}>Finalizar Ronda</ITButton>
+            <ITButton
+              variant="outlined"
+              color="secondary"
+              onClick={() => setRoundToFinishId(null)}
+            >
+              Cancelar
+            </ITButton>
+            <ITButton variant="solid" color="danger" onClick={confirmEndRound}>
+              Finalizar Ronda
+            </ITButton>
           </div>
         </div>
       </ITDialog>

@@ -318,8 +318,11 @@ const GuardsPage = () => {
           <div className="w-full">
             <ITSelect
               label=""
+              name=""
               placeholder="Seleccionar cliente..."
-              options={clients.map((c) => ({ label: c.name, value: c.id }))}
+              options={
+                clients.map((c) => ({ label: c.name, value: c.id })) as any
+              }
               value={changingClientUser?.clientId || ""}
               onChange={(e: any) => {
                 const val = e.target.value;
@@ -378,6 +381,7 @@ const GuardsPage = () => {
           <div className="w-full">
             <ITSelect
               label=""
+              name=""
               placeholder="Seleccionar horario..."
               options={schedules.map((s) => ({
                 label: `${s.name} (${s.startTime} - ${s.endTime})`,
@@ -422,7 +426,7 @@ const GuardsPage = () => {
           <AssignmentModal
             isOpen={isAssignmentModalOpen}
             onClose={() => setIsAssignmentModalOpen(false)}
-            guardId={selectedGuard.id}
+            guardId={selectedGuard.id as any}
             guardName={`${selectedGuard.name} ${selectedGuard.lastName}`}
             onSuccess={handleSuccess}
           />

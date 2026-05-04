@@ -196,7 +196,7 @@ export const CreateRouteModal = ({
     const zoneLocations = allLocations.filter(
       (l) =>
         String(l.zoneId) === String(selectedZoneId) &&
-        !addedLocations.find((al) => al.locationId === l.id),
+        !addedLocations.find((al) => al.locationId === (l.id as any)),
     );
 
     if (zoneLocations.length === 0) {
@@ -209,7 +209,7 @@ export const CreateRouteModal = ({
       return;
     }
 
-    const newLocations: ILocationCreate[] = zoneLocations.map((l) => ({
+    const newLocations: any[] = zoneLocations.map((l) => ({
       locationId: l.id,
       locationName: l.name,
       tasks: [],
@@ -319,12 +319,14 @@ export const CreateRouteModal = ({
     }
   };
 
-  const filteredGuards = allGuards.filter(g => 
-    !selectedClientId || String(g.clientId) === String(selectedClientId)
+  const filteredGuards = allGuards.filter(
+    (g) => !selectedClientId || String(g.clientId) === String(selectedClientId),
   );
 
   const availableLocations = allLocations.filter((l) => {
-    const alreadyAdded = addedLocations.find((al) => al.locationId === l.id);
+    const alreadyAdded = addedLocations.find(
+      (al) => al.locationId === (l.id as any),
+    );
     if (alreadyAdded) return false;
     if (selectedClientId && String(l.clientId) !== String(selectedClientId))
       return false;
@@ -405,7 +407,8 @@ export const CreateRouteModal = ({
                   onClick={toggleAllGuards}
                   className="text-[9px] font-black uppercase tracking-widest text-[#065911] hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors border border-emerald-100"
                 >
-                  {selectedGuards.length === filteredGuards.length && filteredGuards.length > 0
+                  {selectedGuards.length === filteredGuards.length &&
+                  filteredGuards.length > 0
                     ? "Limpiar Selección"
                     : "Marcar Todos"}
                 </button>
@@ -420,7 +423,9 @@ export const CreateRouteModal = ({
                       className={`
                                               group cursor-pointer p-3 rounded-2xl border flex items-center justify-between transition-all duration-200
                                               ${
-                                                selectedGuards.includes(guard.id)
+                                                selectedGuards.includes(
+                                                  guard.id,
+                                                )
                                                   ? "bg-emerald-50/50 border-[#065911] shadow-sm"
                                                   : "bg-white border-slate-100 hover:border-slate-200"
                                               }
@@ -452,9 +457,11 @@ export const CreateRouteModal = ({
                   ))
                 ) : (
                   <div className="p-10 border-2 border-dashed border-slate-100 rounded-2xl text-center">
-                     <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
-                       {selectedClientId ? "Sin guardias asignados" : "Selecciona un cliente"}
-                     </p>
+                    <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                      {selectedClientId
+                        ? "Sin guardias asignados"
+                        : "Selecciona un cliente"}
+                    </p>
                   </div>
                 )}
               </div>
