@@ -1,7 +1,6 @@
 export interface TResult<T> {
-  data: T;
   success: boolean;
-  message: string;
+  data: T;
   messages: string[];
-  ex: any;
+  stack?: string;
 }

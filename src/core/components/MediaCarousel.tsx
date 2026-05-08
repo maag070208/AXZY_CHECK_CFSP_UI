@@ -16,7 +16,7 @@ interface MediaItem {
 }
 
 interface MediaCarouselProps {
-    media: MediaItem[];
+    media: (MediaItem | string)[];
     initialIndex?: number;
     title?: string;
     onDelete?: (item: MediaItem, index: number) => void;
@@ -24,10 +24,21 @@ interface MediaCarouselProps {
 }
 
 export const MediaCarousel: React.FC<MediaCarouselProps> = ({ 
-    media, 
+    media: rawMedia, 
     initialIndex = 0, 
     title = "Galería de Medios",
 }) => {
+    const media = React.useMemo(() => {
+        if (!rawMedia) return [];
+        return rawMedia.map(item => {
+            if (typeof item === 'string') {
+                const isVideo = item.toLowerCase().match(/\.(mp4|webm|mov|ogg|m4v)$/i);
+                return { type: isVideo ? 'VIDEO' : 'IMAGE', url: item } as MediaItem;
+            }
+            return item;
+        });
+    }, [rawMedia]);
+
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -152,7 +163,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
 
                 {/* Contenido Media */}
                 <div className="w-full h-full flex items-center justify-center p-2 bg-black">
-                    {currentItem.type?.toUpperCase() === 'VIDEO' || currentItem.url.toLowerCase().match(/\.(mp4|webm|mov|ogg|m4v)$/i) ? (
+                    {currentItem?.type?.toUpperCase() === 'VIDEO' || currentItem?.url?.toLowerCase().match(/\.(mp4|webm|mov|ogg|m4v)$/i) ? (
                         <div className="relative w-full h-full flex items-center justify-center">
                             <video 
                                 key={currentItem.url}
@@ -202,7 +213,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
                                 }
                             `}
                         >
-                            {item.type?.toUpperCase() === 'VIDEO' || item.url.toLowerCase().match(/\.(mp4|webm|mov|ogg|m4v)$/i) ? (
+                            {item?.type?.toUpperCase() === 'VIDEO' || item?.url?.toLowerCase().match(/\.(mp4|webm|mov|ogg|m4v)$/i) ? (
                                 <div className="w-full h-full bg-slate-800 flex items-center justify-center relative">
                                     <video 
                                         src={`${item.url}#t=0.5`} 
