@@ -1,10 +1,10 @@
+import { ITStepper } from "@app/core/components/ITStepper";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import { ITButton, ITInput, ITSelect } from "@axzydev/axzy_ui_system";
 import { useFormik } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  FaCheck,
   FaClipboardCheck,
   FaClock,
   FaIdCard,
@@ -32,27 +32,48 @@ export const CreateUserWizard: React.FC<Props> = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
 
-  const { data: roles } = useCatalog("role");
-  const { data: clients } = useCatalog("client");
+  const { data: roles, loading: loadingRoles } = useCatalog("role");
+  const { data: clients, loading: loadingClients } = useCatalog("client");
+  const [loadingSchedules, setLoadingSchedules] = useState(true);
 
   useEffect(() => {
-    getSchedules().then(setSchedules);
+    getSchedules().then((data) => {
+      setSchedules(data);
+      setLoadingSchedules(false);
+    });
   }, []);
 
   const roleOptions = useMemo(
-    () => roles.map((r) => ({ label: r.value, value: String(r.id) })),
+    () =>
+      roles
+        .filter((r) => r.name !== "RESDN")
+        .map((r) => ({ label: r.value, value: String(r.id) })),
     [roles],
   );
+
   const formik = useFormik({
+    enableReinitialize: true,
     initialValues: {
       name: userToEdit?.name || "",
       lastName: userToEdit?.lastName || "",
       username: userToEdit?.username || "",
       password: "",
       confirmPassword: "",
-      roleId: userToEdit?.roleId ? String(userToEdit.roleId) : "",
-      scheduleId: userToEdit?.scheduleId ? String(userToEdit.scheduleId) : "",
-      clientId: userToEdit?.clientId ? String(userToEdit.clientId) : "",
+      roleId: userToEdit?.roleId
+        ? String(userToEdit.roleId)
+        : userToEdit?.role?.id
+          ? String(userToEdit.role.id)
+          : "",
+      scheduleId: userToEdit?.scheduleId
+        ? String(userToEdit.scheduleId)
+        : userToEdit?.schedule?.id
+          ? String(userToEdit.schedule.id)
+          : "",
+      clientId: userToEdit?.clientId
+        ? String(userToEdit.clientId)
+        : userToEdit?.client?.id
+          ? String(userToEdit.client.id)
+          : "",
       active: userToEdit ? userToEdit.active : true,
     },
     validationSchema: Yup.object({
@@ -60,29 +81,38 @@ export const CreateUserWizard: React.FC<Props> = ({
       lastName: Yup.string().required("Requerido"),
       username: Yup.string().required("Requerido"),
       password: isEditing
-        ? Yup.string()
+        ? Yup.string().min(6, "Mínimo 6")
         : Yup.string().min(6, "Mínimo 6").required("Requerido"),
-      confirmPassword: isEditing
-        ? Yup.string()
-        : Yup.string()
-            .oneOf([Yup.ref("password")], "No coinciden")
-            .required("Requerido"),
+      confirmPassword: Yup.string()
+        .oneOf([Yup.ref("password")], "No coinciden")
+        .when("password", {
+          is: (val: string) => val && val.length > 0,
+          then: (schema) => schema.required("Requerido"),
+        }),
       roleId: Yup.string().required("Selecciona un rol"),
       scheduleId: Yup.string().when("roleId", {
-        is: () => isOperationalRole,
+        is: (roleId: string) => {
+          const role = roles.find((r) => String(r.id) === String(roleId));
+          return ["GUARD", "SHIFT", "MAINT"].includes(role?.name || "");
+        },
         then: () => Yup.string().required("Horario obligatorio"),
       }),
       clientId: Yup.string().when("roleId", {
-        is: () => isOperationalRole,
+        is: (roleId: string) => {
+          const role = roles.find((r) => String(r.id) === String(roleId));
+          return ["GUARD", "SHIFT", "MAINT"].includes(role?.name || "");
+        },
         then: () => Yup.string().required("Cliente obligatorio"),
       }),
     }),
     onSubmit: async (values) => {
       try {
+        const { confirmPassword, ...data } = values;
         const payload = {
-          ...values,
-          scheduleId: values.scheduleId || undefined,
-          clientId: values.clientId || undefined,
+          ...data,
+          password: data.password || undefined,
+          scheduleId: data.scheduleId || undefined,
+          clientId: data.clientId || undefined,
         };
         const res =
           isEditing && userToEdit
@@ -112,6 +142,7 @@ export const CreateUserWizard: React.FC<Props> = ({
       }
     },
   });
+
   const isOperationalRole = useMemo(() => {
     const selectedRole = roles.find(
       (r) => String(r.id) === String(formik.values.roleId),
@@ -124,53 +155,86 @@ export const CreateUserWizard: React.FC<Props> = ({
       label: "Identidad",
       icon: <FaUser />,
       content: (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <ITInput
               label="Nombre(s)"
               name="name"
               value={formik.values.name}
               onChange={formik.handleChange}
-              onBlur={() => {}}
+              onBlur={formik.handleBlur}
               error={formik.errors.name}
               touched={formik.touched.name}
               placeholder="Ej. Roberto"
+              className="!bg-slate-50 !border-slate-100 !h-12 !rounded-2xl"
             />
             <ITInput
               label="Apellidos"
               name="lastName"
               value={formik.values.lastName}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               error={formik.errors.lastName}
-              onBlur={() => {}}
               touched={formik.touched.lastName}
               placeholder="Ej. García"
+              className="!bg-slate-50 !border-slate-100 !h-12 !rounded-2xl"
             />
           </div>
 
-          <div className="bg-slate-50 p-5 rounded-2xl border border-dashed border-slate-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-white rounded-lg border border-slate-100 shadow-sm text-slate-400">
-                <FaIdCard size={14} />
+          <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm text-emerald-500">
+                <FaIdCard size={16} />
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Identificador del Sistema
-              </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Acceso
+                </span>
+                <span className="text-xs font-bold text-slate-700">
+                  Identificador del Sistema
+                </span>
+              </div>
             </div>
             <ITInput
               label="Nombre de Usuario"
               name="username"
               value={formik.values.username}
               onChange={formik.handleChange}
-              onBlur={() => {}}
+              onBlur={formik.handleBlur}
               error={formik.errors.username}
               touched={formik.touched.username}
               placeholder="Ej. rgarcia"
-              className="!bg-white"
+              className="!bg-white !border-slate-100 !h-12 !rounded-2xl"
             />
-            <p className="text-[10px] text-slate-400 mt-2 ml-1 italic">
-              Este nombre será el login oficial para la plataforma.
-            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+              <ITInput
+                label={
+                  isEditing ? "Cambiar Contraseña (Opcional)" : "Contraseña"
+                }
+                name="password"
+                type="password"
+                value={formik.values.password}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.password}
+                touched={formik.touched.password}
+                placeholder="••••••"
+                className="!bg-white !border-slate-100 !h-12 !rounded-2xl"
+              />
+              <ITInput
+                label="Confirmar"
+                name="confirmPassword"
+                type="password"
+                value={formik.values.confirmPassword}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.confirmPassword}
+                touched={formik.touched.confirmPassword}
+                placeholder="••••••"
+                className="!bg-white !border-slate-100 !h-12 !rounded-2xl"
+              />
+            </div>
           </div>
         </div>
       ),
@@ -179,8 +243,8 @@ export const CreateUserWizard: React.FC<Props> = ({
       label: "Acceso y Seguridad",
       icon: <FaShieldAlt />,
       content: (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-3xl border border-slate-50 shadow-sm space-y-6">
             <ITSelect
               label="Rol de Usuario"
               name="roleId"
@@ -189,43 +253,20 @@ export const CreateUserWizard: React.FC<Props> = ({
               options={roleOptions}
               error={formik.errors.roleId}
               touched={formik.touched.roleId}
+              placeholder={
+                loadingRoles ? "Cargando roles..." : "Seleccionar rol..."
+              }
+              className="!bg-slate-50 !border-none !h-12 !rounded-2xl"
             />
-
-            {!isEditing && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <ITInput
-                  label="Contraseña"
-                  name="password"
-                  type="password"
-                  value={formik.values.password}
-                  onChange={formik.handleChange}
-                  onBlur={() => {}}
-                  error={formik.errors.password}
-                  touched={formik.touched.password}
-                  placeholder="••••••"
-                />
-                <ITInput
-                  label="Confirmar"
-                  name="confirmPassword"
-                  type="password"
-                  value={formik.values.confirmPassword}
-                  onChange={formik.handleChange}
-                  error={formik.errors.confirmPassword}
-                  onBlur={() => {}}
-                  touched={formik.touched.confirmPassword}
-                  placeholder="••••••"
-                />
-              </div>
-            )}
           </div>
 
           {isOperationalRole && (
-            <div className="bg-emerald-50/40 p-5 rounded-2xl border border-emerald-100 space-y-5">
+            <div className="bg-emerald-50/40 p-6 rounded-3xl border border-emerald-100 space-y-5">
               <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{" "}
                 Asignación Operativa
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <ITSelect
                   label="Horario Laboral"
                   name="scheduleId"
@@ -237,6 +278,12 @@ export const CreateUserWizard: React.FC<Props> = ({
                   }))}
                   error={formik.errors.scheduleId}
                   touched={formik.touched.scheduleId}
+                  placeholder={
+                    loadingSchedules
+                      ? "Cargando horarios..."
+                      : "Seleccionar horario..."
+                  }
+                  className="!bg-white !border-none !h-12 !rounded-2xl"
                 />
                 <ITSelect
                   label="Cliente"
@@ -249,29 +296,40 @@ export const CreateUserWizard: React.FC<Props> = ({
                   }))}
                   error={formik.errors.clientId}
                   touched={formik.touched.clientId}
+                  placeholder={
+                    loadingClients
+                      ? "Cargando clientes..."
+                      : "Seleccionar cliente..."
+                  }
+                  className="!bg-white !border-none !h-12 !rounded-2xl"
                 />
               </div>
             </div>
           )}
 
           {isEditing && (
-            <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
-              <input
-                type="checkbox"
-                name="active"
-                checked={formik.values.active}
-                onChange={formik.handleChange}
-                className="w-5 h-5 accent-emerald-600 rounded-lg"
-              />
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-slate-700">
-                  Usuario habilitado
-                </span>
-                <span className="text-[10px] text-slate-400">
-                  Permitir el acceso a la aplicación
-                </span>
-              </div>
-            </label>
+            <div className="pt-0">
+              <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl cursor-pointer hover:bg-slate-100 transition-colors border border-slate-100">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    name="active"
+                    checked={formik.values.active}
+                    onChange={formik.handleChange}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-slate-700">
+                    Usuario habilitado
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    Permitir el acceso a la plataforma
+                  </span>
+                </div>
+              </label>
+            </div>
           )}
         </div>
       ),
@@ -280,7 +338,7 @@ export const CreateUserWizard: React.FC<Props> = ({
       label: "Confirmación",
       icon: <FaClipboardCheck />,
       content: (
-        <div className="animate-in zoom-in-95 duration-300">
+        <div className="space-y-4">
           <div className="bg-slate-900 rounded-3xl p-6 text-white relative overflow-hidden shadow-2xl">
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl" />
             <div className="flex items-center gap-4 mb-8">
@@ -340,7 +398,7 @@ export const CreateUserWizard: React.FC<Props> = ({
               />
             </div>
           </div>
-          <p className="text-center text-[10px] text-slate-400 mt-6 font-medium">
+          <p className="text-center text-[10px] text-slate-400 font-medium">
             Verifica que los datos sean correctos antes de procesar el registro.
           </p>
         </div>
@@ -377,40 +435,24 @@ export const CreateUserWizard: React.FC<Props> = ({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto py-4">
-      {/* Progress Stepper */}
-      <div className="flex justify-between px-8 mb-12 relative">
-        <div className="absolute top-5 left-12 right-12 h-[2px] bg-slate-100 -z-0" />
-        <div
-          className="absolute top-5 left-12 h-[2px] bg-emerald-500 transition-all duration-500 ease-out -z-0"
-          style={{ width: `${(currentStep / (steps.length - 1)) * 80}%` }}
+    <div className="flex flex-col h-[700px] w-full max-w-2xl mx-auto overflow-hidden bg-white">
+      {/* Progress Stepper - Professional standard */}
+      <div className="flex-none py-8 bg-white z-20">
+        <ITStepper
+          steps={steps.map((s) => ({ label: s.label, icon: s.icon }))}
+          currentStep={currentStep}
         />
-
-        {steps.map((step, index) => (
-          <div key={index} className="flex flex-col items-center relative z-10">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300 ${
-                index <= currentStep
-                  ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-100"
-                  : "bg-white border-slate-200 text-slate-400"
-              }`}
-            >
-              {index < currentStep ? <FaCheck size={12} /> : index + 1}
-            </div>
-            <span
-              className={`absolute -bottom-7 text-[9px] font-black uppercase tracking-tighter w-max ${index === currentStep ? "text-emerald-600" : "text-slate-300"}`}
-            >
-              {step.label}
-            </span>
-          </div>
-        ))}
       </div>
 
-      <div className="px-6 py-4 min-h-[380px]">
-        {steps[currentStep].content}
+      {/* Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto px-10 py-8 bg-[#fcfdfe]">
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {steps[currentStep].content}
+        </div>
       </div>
 
-      <div className="flex justify-between items-center px-6 pt-8 mt-4 border-t border-slate-100">
+      {/* Footer - Fixed at bottom */}
+      <div className="flex-none flex justify-between items-center px-10 py-6 border-t border-slate-100 bg-white z-20">
         <ITButton
           type="button"
           variant="ghost"
@@ -419,7 +461,6 @@ export const CreateUserWizard: React.FC<Props> = ({
               ? onCancel
               : () => setCurrentStep((prev) => prev - 1)
           }
-          className="!text-slate-400 !px-0"
         >
           {currentStep === 0 ? "Cancelar" : "Volver atrás"}
         </ITButton>
@@ -427,13 +468,12 @@ export const CreateUserWizard: React.FC<Props> = ({
           type="button"
           onClick={handleNext}
           disabled={formik.isSubmitting}
-          className="!bg-slate-900 !rounded-xl !px-10 shadow-xl shadow-slate-200"
         >
           {currentStep === steps.length - 1
             ? formik.isSubmitting
               ? "Procesando..."
-              : "Confirmar"
-            : "Continuar"}
+              : "Confirmar registro"
+            : "Siguiente paso"}
         </ITButton>
       </div>
     </div>

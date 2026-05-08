@@ -35,6 +35,9 @@ interface Props {
   onClose: () => void;
   guardId: any;
   guardName: string;
+  guard: any;
+  onReassignClient: () => void;
+  onReassignSchedule: () => void;
 }
 
 const statusTranslations: Record<AssignmentStatus, string> = {
@@ -52,6 +55,9 @@ export const ViewAssignmentsModal = ({
   onClose,
   guardId,
   guardName,
+  guard,
+  onReassignClient,
+  onReassignSchedule,
 }: Props) => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(false);
@@ -115,11 +121,58 @@ export const ViewAssignmentsModal = ({
       title={
         selectedAssignment
           ? `Detalle de Asignación`
-          : `Tareas Asignadas - ${guardName}`
+          : `Detalle del Guardia`
       }
       className="!max-w-5xl w-full"
     >
       <div className="p-0 flex flex-col h-[80vh]">
+        {/* Guard Profile Summary */}
+        <div className="px-8 py-6 bg-slate-50 border-b border-slate-100">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-xl font-black text-slate-400 shadow-sm">
+                {guardName.charAt(0)}
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                  {guardName}
+                </h3>
+                <div className="flex flex-wrap items-center gap-3 mt-1">
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100 text-[10px] font-bold uppercase tracking-tight">
+                    <FaUserShield size={10} />
+                    {guard?.client?.name || "Sin Cliente"}
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md border border-indigo-100 text-[10px] font-bold uppercase tracking-tight">
+                    <FaClock size={10} />
+                    {guard?.schedule?.name || "Sin Turno"}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <ITButton
+                onClick={onReassignSchedule}
+                variant="outlined"
+                className="!rounded-xl !py-2 !px-4 border-slate-200 bg-white text-amber-500 hover:bg-amber-50 flex items-center gap-2"
+                size="small"
+              >
+                <FaClock />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Cambiar Turno</span>
+              </ITButton>
+              <ITButton
+                onClick={onReassignClient}
+                variant="outlined"
+                className="!rounded-xl !py-2 !px-4 border-slate-200 bg-white text-indigo-500 hover:bg-indigo-50 flex items-center gap-2"
+                size="small"
+              >
+                <FaUserShield />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Cambiar Cliente</span>
+              </ITButton>
+            </div>
+          </div>
+        </div>
+
         {/* Header Section */}
         <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
           <div className="flex items-center gap-4">
@@ -142,8 +195,8 @@ export const ViewAssignmentsModal = ({
                   </>
                 ) : (
                   <>
-                    <FaClock className="text-[#065911] text-sm" />
-                    Historial de Asignaciones
+                    <FaClipboardList className="text-[#065911] text-sm" />
+                    Asignaciones Especiales
                   </>
                 )}
               </h4>
@@ -152,7 +205,7 @@ export const ViewAssignmentsModal = ({
                   ? dayjs(selectedAssignment.createdAt).format(
                       "DD [de] MMMM, YYYY [HH:mm]",
                     )
-                  : `Listado completo para ${guardName}`}
+                  : `Gestión de tareas y reportes de campo`}
               </p>
             </div>
           </div>

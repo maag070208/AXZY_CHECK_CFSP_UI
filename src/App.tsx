@@ -11,6 +11,7 @@ import HomePage from "./modules/home/pages/HomePage";
 
 import LocationsPage from "./modules/locations/pages/LocationsPage";
 import ClientsPage from "./modules/clients/pages/ClientsPage";
+import ClientDetailsPage from "./modules/clients/pages/ClientDetailsPage";
 
 import UsersPage from "./modules/users/pages/UsersPage";
 import IncidentsPage from "./modules/incidents/pages/IncidentsPage";
@@ -79,6 +80,7 @@ function App() {
         
         <Route path="/locations" element={<LocationsPage />} />
         <Route path="/clients" element={<ClientsPage />} />
+        <Route path="/clients/:id" element={<ClientDetailsPage />} />
         <Route path="/routes" element={<RoutesPage />} />
         <Route path="/routes/new" element={<CreateRoutePage />} />
         <Route path="/routes/edit/:id" element={<CreateRoutePage />} />

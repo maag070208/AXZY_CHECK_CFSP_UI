@@ -112,14 +112,14 @@ const RoundsPage = () => {
     });
   }, []);
 
-  const [routesMap, setRoutesMap] = useState<Record<number, string>>({});
+  const [routesMap, setRoutesMap] = useState<Record<string, string>>({});
   const [guards, setGuards] = useState<any[]>([]);
-  const [roundToFinishId, setRoundToFinishId] = useState<number | null>(null);
+  const [roundToFinishId, setRoundToFinishId] = useState<string | null>(null);
 
   useEffect(() => {
     getRoutesList().then((res) => {
       if (res.success && res.data) {
-        const map: Record<number, string> = {};
+        const map: Record<string, string> = {};
         res.data.forEach((r: any) => {
           map[r.id] = r.title;
         });
@@ -140,7 +140,7 @@ const RoundsPage = () => {
     });
   }, []);
 
-  const handleEndRound = (roundId: number) => {
+  const handleEndRound = (roundId: string) => {
     setRoundToFinishId(roundId);
   };
 
@@ -274,7 +274,7 @@ const RoundsPage = () => {
 
             {row.status === "IN_PROGRESS" && (
               <ITButton
-                onClick={() => handleEndRound(Number(row.id))}
+                onClick={() => handleEndRound(row.id)}
                 size="small"
                 color="danger"
                 variant="filled"
@@ -419,7 +419,11 @@ const RoundsPage = () => {
             >
               Cancelar
             </ITButton>
-            <ITButton variant="solid" color="danger" onClick={confirmEndRound}>
+            <ITButton
+              variant="outlined"
+              color="danger"
+              onClick={confirmEndRound}
+            >
               Finalizar Ronda
             </ITButton>
           </div>

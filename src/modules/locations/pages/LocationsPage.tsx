@@ -54,10 +54,17 @@ const LocationsPage = () => {
     return { name: searchTerm, clientId: selectedClientId };
   }, [searchTerm, selectedClientId]);
 
-  const handleCreate = async (data: any) => {
-    await createLocation(data);
-    setIsModalOpen(false);
-    setRefreshKey(prev => prev + 1);
+  const handleCreate = async (data: any, keepOpen?: boolean) => {
+    const res = await createLocation(data);
+    if (res.success) {
+      dispatch(showToast({ message: "Ubicación creada correctamente", type: "success" }));
+      if (!keepOpen) {
+        setIsModalOpen(false);
+      }
+      setRefreshKey(prev => prev + 1);
+    } else {
+      dispatch(showToast({ message: res?.messages?.join(", ") || "Error al crear", type: "error" }));
+    }
   };
 
   const handleEdit = async (data: any) => {

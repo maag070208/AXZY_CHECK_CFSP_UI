@@ -39,6 +39,7 @@ import {
 } from "react-icons/md";
 import { useDispatch } from "react-redux";
 import * as SettingsService from "../services/SettingsService";
+import { ITTabs, ITab } from "@app/core/components/ITTabs";
 
 const COMMON_ICONS = [
   { name: "shield-alert", icon: <MdShield /> },
@@ -304,101 +305,14 @@ const SettingsPage = () => {
     return () => clearTimeout(timer);
   }, [searchCat, searchType, searchConfig]);
 
-  return (
-    <div className="p-6 min-h-screen bg-slate-50">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-          <div className="bg-emerald-600 p-2.5 rounded-2xl shadow-lg shadow-emerald-100">
-            <FaCogs className="text-white text-xl" />
-          </div>
-          Configuración del Sistema
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">
-          Administración de catálogos y parámetros globales
-        </p>
-      </div>
-
-      {/* Tabs Styling Improved */}
-      <div className="flex gap-2 mb-8 bg-white p-1 rounded-2xl shadow-sm border border-slate-100 w-fit">
-        <button
-          onClick={() => setActiveTab("CATEGORIES")}
-          className={`flex items-center gap-2 py-2.5 px-6 text-sm font-bold transition-all rounded-xl ${activeTab === "CATEGORIES" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"}`}
-        >
-          <FaLayerGroup size={14} />
-          Categorías
-        </button>
-        <button
-          onClick={() => setActiveTab("TYPES")}
-          className={`flex items-center gap-2 py-2.5 px-6 text-sm font-bold transition-all rounded-xl ${activeTab === "TYPES" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"}`}
-        >
-          <FaTags size={14} />
-          Tipos de Incidentes
-        </button>
-        <button
-          onClick={() => setActiveTab("SYSCONFIG")}
-          className={`flex items-center gap-2 py-2.5 px-6 text-sm font-bold transition-all rounded-xl ${activeTab === "SYSCONFIG" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"}`}
-        >
-          <FaGlobe size={14} />
-          Configuración Global
-        </button>
-      </div>
-
-      {/* Actions & Filters */}
-      <div className="mb-8 flex flex-wrap items-center justify-end gap-4">
-        {/* Search Bar */}
-        <div className="relative w-full sm:w-80 group">
-          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
-          <input
-            type="text"
-            placeholder="Buscar en este catálogo..."
-            className="w-full h-[46px] pl-11 pr-4 bg-white border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-medium shadow-sm"
-            value={
-              activeTab === "CATEGORIES"
-                ? searchCat
-                : activeTab === "TYPES"
-                  ? searchType
-                  : searchConfig
-            }
-            onChange={(e) => {
-              if (activeTab === "CATEGORIES") setSearchCat(e.target.value);
-              else if (activeTab === "TYPES") setSearchType(e.target.value);
-              else setSearchConfig(e.target.value);
-            }}
-          />
-        </div>
-
-        {activeTab === "CATEGORIES" && (
-          <ITButton
-            onClick={() => openCategoryModal()}
-            color="primary"
-            className="!rounded-2xl shadow-xl shadow-emerald-100/50 h-[46px] px-6 font-bold hover:scale-[1.02] transition-transform"
-          >
-            <FaPlus />
-          </ITButton>
-        )}
-        {activeTab === "TYPES" && (
-          <ITButton
-            onClick={() => openTypeModal()}
-            color="primary"
-            className="!rounded-2xl shadow-xl shadow-emerald-100/50 h-[46px] px-6 font-bold hover:scale-[1.02] transition-transform"
-          >
-            <FaPlus />
-          </ITButton>
-        )}
-        {activeTab === "SYSCONFIG" && (
-          <ITButton
-            onClick={() => openConfigModal()}
-            color="primary"
-            className="!rounded-2xl shadow-xl shadow-emerald-100/50 h-[46px] px-6 font-bold hover:scale-[1.02] transition-transform"
-          >
-            <FaPlus />
-          </ITButton>
-        )}
-      </div>
-
-      {/* DataTables with improved row rendering */}
-      <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden transition-all">
-        {activeTab === "CATEGORIES" && (
+  // Tab configuration
+  const tabs: ITab[] = [
+    {
+      id: "CATEGORIES",
+      label: "Categorías",
+      icon: FaLayerGroup as any,
+      content: (
+        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
           <ITDataTable
             key={`cat-${refreshKey}`}
             fetchData={fetchCategories as any}
@@ -441,22 +355,22 @@ const SettingsPage = () => {
                   <div className="flex gap-2">
                     <ITButton
                       size="small"
-                      variant="outlined"
+                      variant="ghost"
                       onClick={() => openCategoryModal(row)}
-                      color="secondary"
+                      className="!text-slate-400 hover:!text-emerald-600 hover:!bg-emerald-50 !p-2"
                     >
                       <FaEdit />
                     </ITButton>
                     <ITButton
                       size="small"
-                      variant="outlined"
+                      variant="ghost"
                       onClick={async () => {
                         if (confirm("¿Eliminar?")) {
                           await SettingsService.deleteIncidentCategory(row.id);
                           refresh();
                         }
                       }}
-                      color="danger"
+                      className="!text-slate-400 hover:!text-red-600 hover:!bg-red-50 !p-2"
                     >
                       <FaTrash />
                     </ITButton>
@@ -465,8 +379,15 @@ const SettingsPage = () => {
               },
             ]}
           />
-        )}
-        {activeTab === "TYPES" && (
+        </div>
+      ),
+    },
+    {
+      id: "TYPES",
+      label: "Tipos de Incidentes",
+      icon: FaTags as any,
+      content: (
+        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
           <ITDataTable
             key={`type-${refreshKey}`}
             fetchData={fetchTypes as any}
@@ -507,22 +428,22 @@ const SettingsPage = () => {
                   <div className="flex gap-2">
                     <ITButton
                       size="small"
-                      variant="outlined"
+                      variant="ghost"
                       onClick={() => openTypeModal(row)}
-                      color="secondary"
+                      className="!text-slate-400 hover:!text-emerald-600 hover:!bg-emerald-50 !p-2"
                     >
                       <FaEdit />
                     </ITButton>
                     <ITButton
                       size="small"
-                      variant="outlined"
+                      variant="ghost"
                       onClick={async () => {
                         if (confirm("¿Eliminar?")) {
                           await SettingsService.deleteIncidentType(row.id);
                           refresh();
                         }
                       }}
-                      color="danger"
+                      className="!text-slate-400 hover:!text-red-600 hover:!bg-red-50 !p-2"
                     >
                       <FaTrash />
                     </ITButton>
@@ -531,8 +452,15 @@ const SettingsPage = () => {
               },
             ]}
           />
-        )}
-        {activeTab === "SYSCONFIG" && (
+        </div>
+      ),
+    },
+    {
+      id: "SYSCONFIG",
+      label: "Configuración Global",
+      icon: FaGlobe as any,
+      content: (
+        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
           <ITDataTable
             key={`sys-${refreshKey}`}
             fetchData={fetchSysConfig as any}
@@ -565,22 +493,22 @@ const SettingsPage = () => {
                   <div className="flex gap-2">
                     <ITButton
                       size="small"
-                      variant="outlined"
+                      variant="ghost"
                       onClick={() => openConfigModal(row)}
-                      color="secondary"
+                      className="!text-slate-400 hover:!text-emerald-600 hover:!bg-emerald-50 !p-2"
                     >
                       <FaEdit />
                     </ITButton>
                     <ITButton
                       size="small"
-                      variant="outlined"
+                      variant="ghost"
                       onClick={async () => {
                         if (confirm("¿Eliminar?")) {
                           await SettingsService.deleteSysConfig(row.key);
                           refresh();
                         }
                       }}
-                      color="danger"
+                      className="!text-slate-400 hover:!text-red-600 hover:!bg-red-50 !p-2"
                     >
                       <FaTrash />
                     </ITButton>
@@ -589,7 +517,72 @@ const SettingsPage = () => {
               },
             ]}
           />
-        )}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="p-10 min-h-screen bg-slate-50/50">
+      {/* Header Standard */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+        <div className="flex items-center gap-5">
+          <div className="w-16 h-16 bg-white rounded-3xl shadow-xl shadow-emerald-100/20 flex items-center justify-center border border-emerald-50">
+            <FaCogs className="text-emerald-600 text-2xl" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">
+              Configuración del Sistema
+            </h1>
+            <p className="text-slate-400 text-sm font-medium mt-1">
+              Administración de catálogos y parámetros globales
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {/* Search Bar */}
+          <div className="relative group">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+            <input
+              type="text"
+              placeholder="Buscar..."
+              className="w-full sm:w-64 h-12 pl-12 pr-4 bg-white border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold shadow-sm"
+              value={
+                activeTab === "CATEGORIES"
+                  ? searchCat
+                  : activeTab === "TYPES"
+                    ? searchType
+                    : searchConfig
+              }
+              onChange={(e) => {
+                if (activeTab === "CATEGORIES") setSearchCat(e.target.value);
+                else if (activeTab === "TYPES") setSearchType(e.target.value);
+                else setSearchConfig(e.target.value);
+              }}
+            />
+          </div>
+
+          <ITButton
+            onClick={() => {
+              if (activeTab === "CATEGORIES") openCategoryModal();
+              else if (activeTab === "TYPES") openTypeModal();
+              else openConfigModal();
+            }}
+            className="!bg-emerald-600 !text-white !rounded-2xl !px-6 !h-12 shadow-xl shadow-emerald-200 hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            <div className="flex items-center gap-2">
+              <FaPlus />
+              <span className="font-black uppercase text-[11px] tracking-widest">
+                Agregar
+              </span>
+            </div>
+          </ITButton>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-[40px] p-8 shadow-2xl shadow-slate-200/40 border border-white">
+        <ITTabs tabs={tabs} activeTab={activeTab} onChange={(id: any) => setActiveTab(id)} />
       </div>
 
       {/* Modals Improvements */}

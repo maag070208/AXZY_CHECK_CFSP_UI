@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { getZonesByClient, Zone } from "../../zones/services/ZonesService";
 
 interface Props {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any, keepOpen?: boolean) => void;
   onCancel: () => void;
   initialData?: any;
 }
@@ -15,6 +15,7 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
   const { data: clients } = useCatalog("client");
   const [zones, setZones] = useState<Zone[]>([]);
   const [loadingZones, setLoadingZones] = useState(false);
+  const [isSavingAndNew, setIsSavingAndNew] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -29,14 +30,39 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
       name: Yup.string().required("El nombre de ubicación es requerido"),
       reference: Yup.string().optional(),
     }),
-    onSubmit: (values) => {
+    onSubmit: (values, { resetForm }) => {
       const selectedZone = zones.find(z => String(z.id) === String(values.zoneId));
+      const selectedClient = clients?.find((c: any) => String(c.id) === String(values.clientId));
+      
+      const clientName = selectedClient?.name || 'S/C';
+      const zoneName = selectedZone?.name || 'S/Z';
+      
+      const prefix = `${clientName}-${zoneName}-`;
+      let finalName = values.name;
+      
+      // Ensure it starts with the prefix exactly once
+      if (!finalName.startsWith(prefix)) {
+        finalName = `${prefix}${finalName}`;
+      }
+
       onSubmit({
           ...values,
+          name: finalName,
           clientId: values.clientId,
           zoneId: values.zoneId,
-          zoneName: selectedZone?.name || ''
-      });
+          zoneName: zoneName
+      }, isSavingAndNew);
+
+      if (isSavingAndNew) {
+        // Keep client and zone, clear name and reference
+        resetForm({
+          values: {
+            ...values,
+            name: "",
+            reference: ""
+          }
+        });
+      }
     },
   });
 
@@ -106,7 +132,21 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
       
       <div className="flex justify-end gap-2 mt-4">
         <ITButton color="secondary" onClick={onCancel} type="button" variant="outlined">Cancelar</ITButton>
-        <ITButton type="submit" className="bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-600">Guardar Ubicación</ITButton>
+        <ITButton 
+          type="submit" 
+          onClick={() => setIsSavingAndNew(true)}
+          variant="outlined" 
+          className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+        >
+          Guardar y Nueva
+        </ITButton>
+        <ITButton 
+          type="submit" 
+          onClick={() => setIsSavingAndNew(false)}
+          className="bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-600"
+        >
+          Guardar Ubicación
+        </ITButton>
       </div>
     </form>
   );

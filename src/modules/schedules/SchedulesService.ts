@@ -38,3 +38,8 @@ export const deleteSchedule = async (id: number) => {
   const data = await remove<boolean>(`/schedules/${id}`);
   return data.data;
 };
+
+export const getUsersBySchedule = async (id: number) => {
+  const res = await get<any[]>(`/schedules/${id}/users`);
+  return res.data || [];
+};

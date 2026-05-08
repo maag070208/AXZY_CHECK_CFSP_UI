@@ -1,4 +1,4 @@
-import { post, put, remove } from "@app/core/axios/axios";
+import { get, post, put, remove } from "@app/core/axios/axios";
 
 export interface Client {
     id: number;
@@ -13,6 +13,16 @@ export interface Client {
     };
     users?: Array<{ id: number; username: string }>;
 }
+
+export const getClientById = async (id: string | number) => {
+    try {
+        const res = await get<any>(`/clients/${id}`);
+        return res;
+    } catch (error) {
+        console.error("Error fetching client by id", error);
+        throw error;
+    }
+};
 
 export const getPaginatedClients = async (params: any) => {
     try {

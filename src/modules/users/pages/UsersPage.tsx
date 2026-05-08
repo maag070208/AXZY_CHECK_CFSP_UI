@@ -27,11 +27,13 @@ import {
   updateUser,
   User,
 } from "../services/UserService";
+import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
 
 const UsersPage = () => {
   const dispatch = useDispatch();
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
 
   // Catalog for roles filter
   const { data: rolesCatalog, loading: loadingRoles } = useCatalog("role");
@@ -49,6 +51,7 @@ const UsersPage = () => {
     null,
   );
   const [userToDeleteId, setUserToDeleteId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { data: clients } = useCatalog("client");
   const [schedules, setSchedules] = useState<any[]>([]);
@@ -69,9 +72,20 @@ const UsersPage = () => {
     return { name: searchTerm };
   }, [searchTerm]);
 
-  const memoizedFetch = useCallback((params: any) => {
-    return getPaginatedUsers(params);
-  }, []);
+  const memoizedFetch = useCallback(
+    (params: any) => {
+      const filters = { ...params.filters };
+      if (activeFilter === "active") filters.active = true;
+      if (activeFilter === "inactive") filters.active = false;
+
+      return getPaginatedUsers({ ...params, filters });
+    },
+    [activeFilter],
+  );
+
+  useEffect(() => {
+    refreshTable();
+  }, [activeFilter]);
 
   const refreshTable = () => setRefreshKey((prev) => prev + 1);
 
@@ -83,8 +97,10 @@ const UsersPage = () => {
   };
 
   const confirmDelete = async () => {
-    if (!userToDeleteId) return;
+    if (!userToDeleteId || isDeleting) return;
+    setIsDeleting(true);
     const res = await deleteUser(userToDeleteId.toString());
+    setIsDeleting(false);
     setUserToDeleteId(null);
     if (res.success) {
       dispatch(showToast({ message: "Usuario eliminado", type: "success" }));
@@ -127,6 +143,15 @@ const UsersPage = () => {
             </button>
           )}
         </div>
+        <ITTripleFilter
+          value={activeFilter}
+          onChange={setActiveFilter}
+          options={[
+            { label: "Todos", value: "all" },
+            { label: "Activos", value: "active" },
+            { label: "Inactivos", value: "inactive" },
+          ]}
+        />
         <ITButton
           onClick={refreshTable}
           color="secondary"
@@ -185,7 +210,7 @@ const UsersPage = () => {
                 type: "string",
                 filter: "catalog",
                 catalogOptions: {
-                  data: rolesCatalog,
+                  data: rolesCatalog?.filter((r: any) => r.name !== "RESDN"),
                   loading: loadingRoles,
                 },
                 render: (row: User) => {
@@ -272,8 +297,7 @@ const UsersPage = () => {
                 label: "ESTADO",
                 type: "string",
                 render: (row: User) => {
-                  const isEffectivelyActive =
-                    row.active && (row.client ? row.client.active : true);
+                  const isEffectivelyActive = row.active;
                   return (
                     <div className="text-sm text-slate-600">
                       <div
@@ -360,7 +384,7 @@ const UsersPage = () => {
         title={
           editingUser ? `Editar Usuario: ${editingUser.name}` : "Nuevo Usuario"
         }
-        className="!w-full !max-w-4xl"
+        className="!w-full !max-w-2xl"
       >
         <CreateUserWizard
           userToEdit={editingUser || undefined}
@@ -532,10 +556,12 @@ const UsersPage = () => {
               Cancelar
             </ITButton>
             <ITButton
+              color="danger"
               className="bg-red-600 text-white border-red-600"
               onClick={confirmDelete}
+              disabled={isDeleting}
             >
-              Eliminar Usuario
+              {isDeleting ? "Eliminando..." : "Eliminar Usuario"}
             </ITButton>
           </div>
         </div>

@@ -94,12 +94,12 @@ export const getPaginatedRounds = async (params: ITDataTableFetchParams): Promis
   return { data: [], total: 0 };
 };
 
-export const startRound = async (guardId: number): Promise<TResult<IRound>> => {
+export const startRound = async (guardId: string): Promise<TResult<IRound>> => {
     // We import post from axios/axios but let's assume it was already imported or I need to add it.
     // Checking imports... only 'get' is imported. I need to update imports too.
     return await post<IRound>("/rounds/start", { guardId });
 };
 
-export const endRound = async (id: number): Promise<TResult<IRound>> => {
+export const endRound = async (id: string): Promise<TResult<IRound>> => {
     return await put<IRound>(`/rounds/${id}/end`, {});
 };

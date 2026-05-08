@@ -11,7 +11,8 @@ export enum AssignmentStatus {
     REVIEWED = "REVIEWED",
     COMPLETED = "COMPLETED",
     ANOMALY = "ANOMALY",
-    CANCELLED = "CANCELLED"
+    CANCELLED = "CANCELLED",
+    ACTIVE = "ACTIVE"
 }
 
 export interface AssignmentTask {
