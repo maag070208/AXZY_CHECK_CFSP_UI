@@ -3,7 +3,6 @@ import { ITButton, ITDataTable, ITDialog } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FaBuilding,
-  FaClock,
   FaEdit,
   FaPlus,
   FaSearchLocation,
@@ -33,7 +32,7 @@ const ClientsPage = () => {
   // Modal States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [clientToDeleteId, setClientToDeleteId] = useState<number | null>(null);
+  const [clientToDeleteId, setClientToDeleteId] = useState<string | null>(null);
 
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -45,15 +44,23 @@ const ClientsPage = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Immediate refresh for status filter
+  useEffect(() => {
+    setRefreshKey((prev) => prev + 1);
+  }, [statusFilter]);
+
   const externalFilters = useMemo(() => {
-    return { 
-      name: searchTerm,
-      active: statusFilter === "all" ? undefined : statusFilter === "active" ? true : false,
-    };
+    const filters: Record<string, string | number | boolean | Date> = {};
+    if (searchTerm) filters.name = searchTerm;
+    if (statusFilter !== "all") filters.active = statusFilter === "active" ? true : false;
+    return filters;
   }, [searchTerm, statusFilter]);
 
-  const memoizedFetch = useCallback((params: any) => {
-    return getPaginatedClients(params);
+  const memoizedFetch = useCallback(async (params: any) => {
+    const res = await getPaginatedClients(params);
+    return res.success && res.data
+      ? { data: res.data.rows, total: res.data.total }
+      : { data: [], total: 0 };
   }, []);
 
   const refreshTable = () => setRefreshKey((prev) => prev + 1);
@@ -73,9 +80,9 @@ const ClientsPage = () => {
       clearSpecificCatalogCache("client");
       refreshTable();
       setClientToDeleteId(null);
-    } catch (error) {
+    } catch (error: any) {
       dispatch(
-        showToast({ message: "Error al eliminar cliente", type: "error" }),
+        showToast({ message: error?.messages?.[0] || "Error al eliminar cliente", type: "error" }),
       );
     } finally {
       setIsDeleting(false);

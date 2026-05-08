@@ -53,7 +53,7 @@ const ClientDetailsPage = () => {
       label: "Zonas / Recurrentes",
       icon: FaMapMarkedAlt,
       content: (
-        <ClientZonesTab clientId={id!} clientName={client?.name || ""} />
+        <ClientZonesTab clientId={id!} />
       ),
     },
     {

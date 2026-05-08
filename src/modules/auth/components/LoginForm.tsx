@@ -13,8 +13,10 @@ import * as Yup from "yup";
 
 const LoginFormComponent = ({
   onSubmit,
+  loading = false,
 }: {
   onSubmit: (values: IAuthLogin) => void;
+  loading?: boolean;
 }) => {
   const initialValues = {
     username: "",
@@ -80,8 +82,8 @@ const LoginFormComponent = ({
             errors={errors}
           />
           <div className="mt-4">
-            <ITButton disabled={!isValid} className="w-full" type="submit">
-              Iniciar Sesión
+            <ITButton disabled={!isValid || loading} className="w-full" type="submit">
+              {loading ? "Iniciando..." : "Iniciar Sesión"}
             </ITButton>
           </div>
         </Form>

@@ -2,6 +2,7 @@ import { post } from "@app/core/axios/axios";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import { LocationForm } from "@app/modules/locations/components/LocationForm";
 import {
+  Location,
   createLocation,
   deleteLocation,
   getLocationsByClient,
@@ -78,7 +79,7 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
     await handlePrintBulk([location.id]);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!window.confirm("¿Estás seguro de eliminar esta ubicación?")) return;
     const res = await deleteLocation(id);
     if (res.success) {

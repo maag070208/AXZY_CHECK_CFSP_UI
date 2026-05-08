@@ -54,21 +54,29 @@ export const CreateClientWizard = ({
     onSubmit: async (values) => {
       setLoading(true);
       try {
+        let res;
         if (clientToEdit) {
-          await updateClient(clientToEdit.id, values);
-          dispatch(
-            showToast({ message: "Cliente actualizado", type: "success" }),
-          );
+          res = await updateClient(clientToEdit.id, values);
         } else {
-          await createClient(values);
-          dispatch(showToast({ message: "Cliente creado", type: "success" }));
+          res = await createClient(values);
         }
-        clearSpecificCatalogCache("client");
-        onSuccess();
-      } catch (error: any) {
+
+        if (res.success) {
+          dispatch(
+            showToast({ message: clientToEdit ? "Cliente actualizado" : "Cliente creado", type: "success" }),
+          );
+          clearSpecificCatalogCache("client");
+          onSuccess();
+        } else {
+          dispatch(
+            showToast({ message: res.messages?.[0] || "Error al guardar cliente", type: "error" }),
+          );
+        }
+      } catch (error) {
+        const err = error as any;
         dispatch(
           showToast({
-            message: error.messages?.[0] || "Error al guardar cliente",
+            message: err.messages?.[0] || "Error al guardar cliente",
             type: "error",
           }),
         );
@@ -194,8 +202,8 @@ export const CreateClientWizard = ({
               value={formik.values.appUsername}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              error={formik.errors.appUsername}
-              touched={formik.touched.appUsername}
+              error={formik.errors.appUsername as string}
+              touched={formik.touched.appUsername as boolean}
               placeholder="Ej. plaza2000_app"
               className="!bg-white"
             />
@@ -206,8 +214,8 @@ export const CreateClientWizard = ({
               value={formik.values.appPassword}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              error={formik.errors.appPassword}
-              touched={formik.touched.appPassword}
+              error={formik.errors.appPassword as string}
+              touched={formik.touched.appPassword as boolean}
               placeholder={
                 clientToEdit
                   ? "Dejar en blanco para no cambiar"

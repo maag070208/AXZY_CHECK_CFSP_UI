@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { setAuth } from "@app/core/store/auth/auth.slice";
 import { AppDispatch } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
@@ -8,25 +9,18 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import LoginFormComponent from "../components/LoginForm";
 import { login } from "../services/AuthService";
+import { TResult } from "@app/core/types/TResult";
+
 const LoginPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = async (values: IAuthLogin) => {
-    const response = await login({
-      ...values,
-    }).catch((error) => {
-      console.log({ error });
-      dispatch(
-        showToast({
-          message: error?.messages?.[0] || "Error al iniciar sesión",
-          type: "error",
-          position: "top-right",
-        }),
-      );
-      return null;
-    });
-    if (response) {
-      console.log(response);
+    setLoading(true);
+    try {
+      const response = await login(values);
+
       if (!response.success) {
         dispatch(
           showToast({
@@ -40,6 +34,17 @@ const LoginPage = () => {
 
       dispatch(setAuth(response.data));
       navigate("/home");
+    } catch (error) {
+      const result = error as TResult<void>;
+      dispatch(
+        showToast({
+          message: result?.messages?.[0] || "Error de conexión",
+          type: "error",
+          position: "top-right",
+        }),
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,7 +60,7 @@ const LoginPage = () => {
             alt={"Logo"}
             className="h-[150px] dark:bg-transparent"
           />
-          <LoginFormComponent onSubmit={handleSubmit} />
+          <LoginFormComponent onSubmit={handleSubmit} loading={loading} />
         </div>
       </ITCard>
     </div>

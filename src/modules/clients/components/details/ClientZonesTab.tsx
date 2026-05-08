@@ -18,10 +18,9 @@ import { useDispatch } from "react-redux";
 
 interface Props {
   clientId: string;
-  clientName: string;
 }
 
-export const ClientZonesTab = ({ clientId, clientName }: Props) => {
+export const ClientZonesTab = ({ clientId }: Props) => {
   const dispatch = useDispatch();
   const [refreshKey, setRefreshKey] = useState(0);
   const [newZoneName, setNewZoneName] = useState("");
