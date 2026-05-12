@@ -6,18 +6,18 @@ import {
 } from "@axzydev/axzy_ui_system";
 import { useEffect, useState } from "react";
 import {
+  FaArrowLeft,
   FaCalendarAlt,
   FaCheckCircle,
-  FaClock,
-  FaExclamationTriangle,
-  FaMapMarkerAlt,
-  FaSync,
-  FaImage,
   FaCheckDouble,
   FaChevronRight,
-  FaArrowLeft,
-  FaLayerGroup,
+  FaClock,
+  FaExclamationTriangle,
   FaFileAlt,
+  FaLayerGroup,
+  FaMapMarkerAlt,
+  FaSync,
+  FaUserShield,
 } from "react-icons/fa";
 import {
   getAllAssignmentsByGuard,
@@ -25,7 +25,7 @@ import {
 } from "../service/guards.service";
 import { Assignment, AssignmentStatus } from "../types/guards.types";
 import dayjs from "dayjs";
-import { MediaCarousel } from "@app/core/components/MediaCarousel";
+import { ITMediaGrid } from "@app/core/components/ITMediaGrid";
 
 // Fallback for API Base URL if constant is missing
 const API_BASE_URL = "http://localhost:4444";
@@ -48,6 +48,7 @@ const statusTranslations: Record<AssignmentStatus, string> = {
   [AssignmentStatus.ANOMALY]: "ANOMALÍA",
   [AssignmentStatus.COMPLETED]: "COMPLETADO",
   [AssignmentStatus.CANCELLED]: "CANCELADO",
+  [AssignmentStatus.ACTIVE]: "ACTIVO",
 };
 
 export const ViewAssignmentsModal = ({
@@ -70,8 +71,6 @@ export const ViewAssignmentsModal = ({
     const res = await getAllAssignmentsByGuard(guardId);
     if (res.success && res.data) {
       setAssignments(res.data);
-
-      // If we are viewing a specific assignment, update its data too
       if (selectedAssignment) {
         const updated = res.data.find((a) => a.id === selectedAssignment.id);
         if (updated) setSelectedAssignment(updated);
@@ -118,31 +117,26 @@ export const ViewAssignmentsModal = ({
     <ITDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={
-        selectedAssignment
-          ? `Detalle de Asignación`
-          : `Detalle del Guardia`
-      }
-      className="!max-w-5xl w-full"
+      className="!max-w-6xl !w-full"
     >
-      <div className="p-0 flex flex-col h-[80vh]">
-        {/* Guard Profile Summary */}
-        <div className="px-8 py-6 bg-slate-50 border-b border-slate-100">
+      <div className="flex flex-col h-[85vh] bg-[#F8FAFC]">
+        {/* Profile Header */}
+        <div className="flex-none p-8 bg-white border-b border-slate-100">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-xl font-black text-slate-400 shadow-sm">
+            <div className="flex items-center gap-5">
+              <div className="w-20 h-20 rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center text-2xl font-black text-slate-400 shadow-sm">
                 {guardName.charAt(0)}
               </div>
-              <div>
-                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+              <div className="space-y-1">
+                <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
                   {guardName}
                 </h3>
-                <div className="flex flex-wrap items-center gap-3 mt-1">
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100 text-[10px] font-bold uppercase tracking-tight">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100 text-[10px] font-black uppercase tracking-widest">
                     <FaUserShield size={10} />
                     {guard?.client?.name || "Sin Cliente"}
                   </div>
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md border border-indigo-100 text-[10px] font-bold uppercase tracking-tight">
+                  <div className="flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-100 text-[10px] font-black uppercase tracking-widest">
                     <FaClock size={10} />
                     {guard?.schedule?.name || "Sin Turno"}
                   </div>
@@ -153,372 +147,289 @@ export const ViewAssignmentsModal = ({
             <div className="flex items-center gap-3">
               <ITButton
                 onClick={onReassignSchedule}
-                variant="outlined"
-                className="!rounded-xl !py-2 !px-4 border-slate-200 bg-white text-amber-500 hover:bg-amber-50 flex items-center gap-2"
-                size="small"
+                variant="outline"
+                className="!rounded-xl !h-11 !px-5 !border-slate-100 !bg-white !text-amber-500 hover:!bg-amber-50"
               >
-                <FaClock />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Cambiar Turno</span>
+                <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
+                  <FaClock /> Turno
+                </div>
               </ITButton>
               <ITButton
                 onClick={onReassignClient}
-                variant="outlined"
-                className="!rounded-xl !py-2 !px-4 border-slate-200 bg-white text-indigo-500 hover:bg-indigo-50 flex items-center gap-2"
-                size="small"
+                variant="outline"
+                className="!rounded-xl !h-11 !px-5 !border-slate-100 !bg-white !text-indigo-500 hover:!bg-indigo-50"
               >
-                <FaUserShield />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Cambiar Cliente</span>
+                <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
+                  <FaUserShield /> Cliente
+                </div>
+              </ITButton>
+              <div className="w-px h-8 bg-slate-100 mx-1" />
+              <ITButton
+                onClick={fetchAssignments}
+                variant="ghost"
+                className="!w-11 !h-11 !rounded-xl !text-slate-400"
+              >
+                <FaSync className={loading ? "animate-spin" : ""} />
               </ITButton>
             </div>
           </div>
         </div>
 
-        {/* Header Section */}
-        <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
-          <div className="flex items-center gap-4">
-            {selectedAssignment && (
-              <button
-                onClick={() => setSelectedAssignment(null)}
-                className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all hover:text-[#065911]"
-              >
-                <FaArrowLeft />
-              </button>
-            )}
-            <div>
-              <h4 className="font-bold text-slate-800 text-lg flex items-center gap-2">
-                {selectedAssignment ? (
-                  <>
-                    <span className="text-slate-400 text-sm font-medium">
-                      #{selectedAssignment.id}
-                    </span>
-                    {selectedAssignment.location?.name}
-                  </>
-                ) : (
-                  <>
-                    <FaClipboardList className="text-[#065911] text-sm" />
-                    Asignaciones Especiales
-                  </>
-                )}
-              </h4>
-              <p className="text-[11px] text-slate-400 font-medium">
-                {selectedAssignment
-                  ? dayjs(selectedAssignment.createdAt).format(
-                      "DD [de] MMMM, YYYY [HH:mm]",
-                    )
-                  : `Gestión de tareas y reportes de campo`}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={fetchAssignments}
-              className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-[#065911]"
-              disabled={loading}
-            >
-              <FaSync className={loading ? "animate-spin" : ""} />
-            </button>
-          </div>
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50 custom-scrollbar">
+        {/* Dynamic Content */}
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
           {loading && !selectedAssignment && !assignments.length ? (
-            <div className="py-20 flex justify-center">
+            <div className="h-full flex flex-col items-center justify-center space-y-4">
               <ITLoader />
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Cargando expediente...</p>
             </div>
           ) : selectedAssignment ? (
-            /* DETAIL VIEW */
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              {/* Left Column: Multimedia and Tasks */}
-              <div className="lg:col-span-8 space-y-8">
-                {/* Multimedia */}
-                <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                  <div className="flex items-center justify-between mb-4">
-                    <h5 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                      <FaImage className="text-indigo-500" />
-                      Evidencia Multimedia
-                    </h5>
-                    {selectedAssignment.kardex?.some(
-                      (k: any) => k.media?.length,
-                    ) && (
-                      <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full uppercase">
-                        Registrada
-                      </span>
+            /* DETAIL VIEW - 8/4 Layout */
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center gap-4 mb-8">
+                <button
+                  onClick={() => setSelectedAssignment(null)}
+                  className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:border-emerald-100 transition-all shadow-sm"
+                >
+                  <FaArrowLeft size={14} />
+                </button>
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                      Reporte de Ubicación
+                    </h4>
+                    <ITBadget
+                      color={getStatusColor(selectedAssignment.status)}
+                      variant="outlined"
+                      className="font-black text-[9px] px-3 tracking-widest"
+                    >
+                      {statusTranslations[selectedAssignment.status]}
+                    </ITBadget>
+                  </div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                    ID #{selectedAssignment.id} • {selectedAssignment.location?.name}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Left Column (8): Evidence and Checklist */}
+                <div className="lg:col-span-8 space-y-8">
+                  {/* Evidence Card */}
+                  <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Evidencia Multimedia
+                      </h5>
+                    </div>
+                    
+                    {selectedAssignment.kardex?.flatMap((k: any) => k.media || []).length ? (
+                      <ITMediaGrid
+                        media={selectedAssignment.kardex
+                          .flatMap((k: any) => k.media || [])
+                          .map((m: any) => ({
+                            ...m,
+                            url: m.url.startsWith("http")
+                              ? m.url
+                              : `${API_BASE_URL}${m.url.replace("/api/v1", "")}`,
+                          }))}
+                        gridSize={280}
+                      />
+                    ) : (
+                      <div className="py-20 bg-slate-50/50 rounded-[24px] border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center">
+                        <FaFileAlt className="text-slate-200 text-4xl mb-4" />
+                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Sin registros visuales</p>
+                      </div>
                     )}
                   </div>
 
-                  {selectedAssignment.kardex?.flatMap((k: any) => k.media || [])
-                    .length ? (
-                    <MediaCarousel
-                      media={selectedAssignment.kardex
-                        .flatMap((k: any) => k.media || [])
-                        .map((m: any) => ({
-                          ...m,
-                          url: m.url.startsWith("http")
-                            ? m.url
-                            : `${API_BASE_URL}${m.url.replace("/api/v1", "")}`,
-                        }))}
-                      title="Evidencia de Recorrido"
-                    />
-                  ) : (
-                    <div className="py-12 border-2 border-dashed border-slate-100 rounded-xl flex flex-col items-center justify-center text-center bg-slate-50">
-                      <FaFileAlt className="text-slate-200 text-3xl mb-3" />
-                      <p className="text-sm font-medium text-slate-500">
-                        Sin evidencia visual
-                      </p>
-                      <p className="text-[10px] text-slate-400">
-                        No se adjuntaron fotos o videos en este reporte.
-                      </p>
+                  {/* Checklist Card */}
+                  <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-6">
+                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Consignas Operativas
+                    </h5>
+                    
+                    <div className="grid grid-cols-1 gap-3">
+                      {selectedAssignment.tasks.map((task) => (
+                        <div
+                          key={task.id}
+                          className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${
+                            task.completed 
+                              ? "bg-emerald-50/30 border-emerald-100" 
+                              : "bg-slate-50/30 border-slate-100"
+                          }`}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs shadow-sm transition-all ${
+                              task.completed ? "bg-emerald-500 text-white" : "bg-white text-slate-200 border border-slate-100"
+                            }`}>
+                              <FaCheckCircle />
+                            </div>
+                            <span className={`text-[11px] font-black uppercase tracking-tight ${task.completed ? "text-emerald-700" : "text-slate-600"}`}>
+                              {task.description}
+                            </span>
+                          </div>
+                          {task.completed && (
+                            <div className="text-right">
+                              <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Completada</p>
+                              <p className="text-[9px] font-bold text-slate-400">{dayjs(task.completedAt).format("HH:mm")} hrs</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </section>
 
-                {/* Tasks Checklist */}
-                <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                  <h5 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-6">
-                    <FaCheckCircle className="text-[#065911]" />
-                    Lista de Verificación
-                  </h5>
+                    {selectedAssignment.notes && (
+                      <div className="mt-8 pt-8 border-t border-slate-50">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Observaciones del Guardia</p>
+                        <div className="bg-amber-50/50 p-6 rounded-2xl border border-amber-100/50">
+                          <p className="text-xs text-slate-600 font-bold italic leading-relaxed">
+                            "{selectedAssignment.notes}"
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                  <div className="space-y-3">
-                    {selectedAssignment.tasks.map((task) => (
-                      <div
-                        key={task.id}
-                        className="flex items-center justify-between p-4 rounded-xl bg-slate-50/50 border border-slate-100 hover:bg-slate-50 transition-all"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
-                              task.completed
-                                ? "bg-[#065911] border-[#065911] shadow-md shadow-[#065911]/20"
-                                : "border-slate-200 bg-white"
-                            }`}
-                          >
-                            {task.completed && (
-                              <FaCheckCircle className="text-white text-[10px]" />
+                {/* Right Column (4): Info and Status */}
+                <div className="lg:col-span-4 space-y-6">
+                  <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm sticky top-8">
+                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8">Información General</h5>
+                    
+                    <div className="space-y-8">
+                      <DetailItem
+                        icon={<FaMapMarkerAlt className="text-emerald-500" />}
+                        label="Ubicación"
+                        value={selectedAssignment.location?.name}
+                        subValue={`Zona ${selectedAssignment.location?.aisle || "N/A"}`}
+                      />
+                      <DetailItem
+                        icon={<FaCalendarAlt className="text-indigo-500" />}
+                        label="Fecha de Inicio"
+                        value={dayjs(selectedAssignment.createdAt).format("DD/MM/YYYY")}
+                        subValue={dayjs(selectedAssignment.createdAt).format("HH:mm [hrs]")}
+                      />
+                      <DetailItem
+                        icon={<FaLayerGroup className="text-amber-500" />}
+                        label="Prioridad"
+                        value="Especial"
+                        subValue="Asignación Directa"
+                      />
+                    </div>
+
+                    {selectedAssignment.status === AssignmentStatus.UNDER_REVIEW && (
+                      <div className="mt-12">
+                        <ITButton
+                          onClick={() => handleApprove(selectedAssignment.id)}
+                          disabled={approvingId === selectedAssignment.id}
+                          className="w-full !h-14 !rounded-2xl shadow-xl shadow-emerald-100"
+                        >
+                          <div className="flex items-center gap-3 font-black text-[10px] uppercase tracking-widest">
+                            {approvingId === selectedAssignment.id ? (
+                              <ITLoader size="sm" />
+                            ) : (
+                              <>
+                                <FaCheckDouble size={16} /> Aprobar Reporte
+                              </>
                             )}
                           </div>
-                          <span
-                            className={`text-sm ${task.completed ? "text-slate-500 line-through font-medium" : "text-slate-700 font-bold"}`}
-                          >
-                            {task.description}
-                          </span>
-                        </div>
-                        {task.completedAt && (
-                          <div className="flex flex-col items-end">
-                            <span className="text-[10px] font-bold text-slate-400">
-                              COMPLETADA
-                            </span>
-                            <span className="text-[10px] text-slate-400">
-                              {dayjs(task.completedAt).format("HH:mm")}
-                            </span>
-                          </div>
-                        )}
+                        </ITButton>
                       </div>
-                    ))}
+                    )}
                   </div>
-
-                  {selectedAssignment.notes && (
-                    <div className="mt-8 pt-6 border-t border-slate-50">
-                      <h6 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
-                        Observaciones Adicionales
-                      </h6>
-                      <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100/50">
-                        <p className="text-sm text-slate-600 italic leading-relaxed">
-                          "{selectedAssignment.notes}"
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </section>
-              </div>
-
-              {/* Right Column: Metadata */}
-              <div className="lg:col-span-4 space-y-6">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 sticky top-24">
-                  <h5 className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-6">
-                    Resumen de Asignación
-                  </h5>
-
-                  <div className="space-y-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0 text-emerald-600 shadow-sm">
-                        <FaMapMarkerAlt />
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-                          Ubicación
-                        </p>
-                        <p className="text-sm font-bold text-slate-800">
-                          {selectedAssignment.location?.name}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Pasillo {selectedAssignment.location?.aisle}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 text-blue-600 shadow-sm">
-                        <FaLayerGroup />
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-                          Estado Actual
-                        </p>
-                        <div className="mt-1">
-                          <ITBadget
-                            color={getStatusColor(selectedAssignment.status)}
-                            variant="filled"
-                            size="small"
-                            className="!rounded-full !px-3 !py-1 font-bold text-[10px]"
-                          >
-                            {statusTranslations[selectedAssignment.status]}
-                          </ITBadget>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 text-slate-500 shadow-sm border border-slate-100">
-                        <FaCalendarAlt />
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-                          Fecha de Registro
-                        </p>
-                        <p className="text-sm font-bold text-slate-800">
-                          {dayjs(selectedAssignment.createdAt).format(
-                            "DD/MM/YYYY",
-                          )}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {dayjs(selectedAssignment.createdAt).format("HH:mm")}{" "}
-                          hrs
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Button */}
-                  {selectedAssignment.status ===
-                    AssignmentStatus.UNDER_REVIEW && (
-                    <div className="mt-10">
-                      <ITButton
-                        className="w-full !bg-[#065911] !rounded-xl py-4 flex items-center justify-center gap-3 shadow-lg shadow-[#065911]/20 hover:scale-[1.02] transition-transform"
-                        onClick={() => handleApprove(selectedAssignment.id)}
-                        disabled={approvingId === selectedAssignment.id}
-                      >
-                        <FaCheckDouble fontSize={18} />
-                        <span className="font-bold tracking-tight">
-                          {approvingId === selectedAssignment.id
-                            ? "PROCESANDO..."
-                            : "APROBAR Y FINALIZAR"}
-                        </span>
-                      </ITButton>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
           ) : assignments.length > 0 ? (
             /* LIST VIEW */
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in zoom-in duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in-95 duration-500">
               {assignments.map((assignment) => (
                 <div
                   key={assignment.id}
-                  className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all cursor-pointer group hover:border-[#065911]/30"
                   onClick={() => setSelectedAssignment(assignment)}
+                  className="group bg-white rounded-[32px] border border-slate-100 p-8 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all cursor-pointer relative overflow-hidden"
                 >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`p-3 rounded-xl transition-all ${
-                          assignment.status === AssignmentStatus.UNDER_REVIEW
-                            ? "bg-amber-50 text-amber-600 group-hover:bg-amber-100"
-                            : "bg-slate-50 text-slate-400 group-hover:bg-slate-100"
-                        }`}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50/30 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-700" />
+                  
+                  <div className="relative space-y-6">
+                    <div className="flex justify-between items-start">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-emerald-500 group-hover:text-white group-hover:border-emerald-400 transition-all duration-300">
+                        <FaMapMarkerAlt size={20} />
+                      </div>
+                      <ITBadget
+                        color={getStatusColor(assignment.status)}
+                        variant="outlined"
+                        className="font-black text-[8px] px-2 tracking-widest"
                       >
-                        <FaMapMarkerAlt />
-                      </div>
-                      <div>
-                        <h5 className="font-bold text-slate-800 group-hover:text-[#065911] transition-colors">
-                          {assignment.location?.name || "Sin Ubicación"}
-                        </h5>
-                        <p className="text-[11px] text-slate-400 flex items-center gap-1 font-medium mt-0.5">
-                          <FaCalendarAlt size={10} />
-                          {dayjs(assignment.createdAt).format(
-                            "DD/MM/YYYY HH:mm",
-                          )}
-                        </p>
-                      </div>
+                        {statusTranslations[assignment.status]}
+                      </ITBadget>
                     </div>
-                    <ITBadget
-                      color={getStatusColor(assignment.status)}
-                      size="small"
-                      variant="filled"
-                      className="!px-3 !py-1 rounded-full text-[9px] font-black uppercase tracking-widest"
-                    >
-                      {statusTranslations[assignment.status]}
-                    </ITBadget>
-                  </div>
 
-                  <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-50">
-                    <div className="flex items-center gap-2">
-                      <div className="flex -space-x-2">
-                        {assignment.tasks.slice(0, 3).map((_, i) => (
-                          <div
-                            key={i}
-                            className="w-6 h-6 rounded-full bg-[#065911]/10 border-2 border-white flex items-center justify-center text-[10px] text-[#065911] font-bold"
-                          >
-                            <FaCheckCircle size={8} />
-                          </div>
-                        ))}
-                        {assignment.tasks.length > 3 && (
-                          <div className="w-6 h-6 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[8px] text-slate-500 font-bold">
-                            +{assignment.tasks.length - 3}
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                        {assignment.tasks.length} Tareas
-                      </span>
+                    <div>
+                      <h5 className="text-sm font-black text-slate-800 uppercase tracking-tight group-hover:text-emerald-600 transition-colors">
+                        {assignment.location?.name || "Sin Ubicación"}
+                      </h5>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                        {dayjs(assignment.createdAt).format("DD/MM/YYYY HH:mm")}
+                      </p>
                     </div>
-                    <div className="text-slate-300 group-hover:text-[#065911] group-hover:translate-x-1 transition-all">
-                      <FaChevronRight size={14} />
+
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                      <div className="flex items-center gap-2">
+                        <div className="flex -space-x-2">
+                          {assignment.tasks.slice(0, 3).map((_, i) => (
+                            <div key={i} className="w-6 h-6 rounded-full bg-emerald-100 border-2 border-white flex items-center justify-center text-emerald-600">
+                              <FaCheckCircle size={10} />
+                            </div>
+                          ))}
+                        </div>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                          {assignment.tasks.length} Tareas
+                        </span>
+                      </div>
+                      <FaChevronRight size={12} className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-100">
-              <FaExclamationTriangle
-                className="mx-auto text-slate-200 mb-4"
-                size={48}
-              />
-              <h5 className="text-slate-600 font-bold text-lg">
-                Sin asignaciones
-              </h5>
-              <p className="text-slate-400 text-sm max-w-xs mx-auto">
-                No hay registros de tareas especiales para este guardia todavía.
-              </p>
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
+              <div className="w-24 h-24 rounded-[40px] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-200">
+                <FaExclamationTriangle size={40} />
+              </div>
+              <div className="space-y-2">
+                <h5 className="text-xl font-black text-slate-800 uppercase tracking-tight">Sin Historial</h5>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] max-w-xs">No se han registrado asignaciones operativas para este guardia.</p>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Footer Section */}
-        <div className="px-8 py-5 border-t border-slate-100 bg-white flex justify-end sticky bottom-0 z-10">
+        {/* Footer */}
+        <div className="flex-none px-8 py-6 bg-white border-t border-slate-100 flex justify-end">
           <ITButton
-            variant="outlined"
-            color="secondary"
+            variant="ghost"
             onClick={onClose}
-            className="!rounded-xl px-10 hover:bg-slate-50"
+            className="px-10 font-black text-[10px] uppercase tracking-widest text-slate-400"
           >
-            Cerrar Historial
+            Cerrar Expediente
           </ITButton>
         </div>
       </div>
     </ITDialog>
   );
 };
+
+const DetailItem = ({ icon, label, value, subValue }: any) => (
+  <div className="flex items-start gap-4">
+    <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
+      {icon}
+    </div>
+    <div>
+      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
+      <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight">{value}</p>
+      {subValue && <p className="text-[9px] font-bold text-slate-400 mt-0.5">{subValue}</p>}
+    </div>
+  </div>
+);

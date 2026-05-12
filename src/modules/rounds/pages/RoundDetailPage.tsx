@@ -1,7 +1,7 @@
-import { MediaCarousel } from "@app/core/components/MediaCarousel";
-import { AppState } from "@app/core/store/store";
+import { ITMediaGrid } from "@app/core/components/ITMediaGrid";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITBadget, ITLoader } from "@axzydev/axzy_ui_system";
+import { ITBadget, ITButton, ITLoader } from "@axzydev/axzy_ui_system";
+import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import {
   FaArrowLeft,
@@ -16,107 +16,25 @@ import {
   FaQrcode,
   FaRoute,
   FaStopwatch,
-  FaTrash,
   FaUserShield,
 } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { GoogleMapComponent } from "../../../core/components/GoogleMapComponent";
-import {
-  deleteIncident,
-  deleteIncidentMedia,
-} from "../../incidents/services/IncidentService";
-import {
-  deleteKardexEntry,
-  deleteKardexMedia,
-} from "../../kardex/services/KardexService";
 import { getRoutesList } from "../../routes/services/RoutesService";
 import { getRoundDetail, IRoundDetail } from "../services/RoundsService";
+
+const API_BASE_URL = "http://localhost:4444";
 
 const RoundDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const role = useSelector((state: AppState) => state.auth.role);
-  const isAdmin = role === "ADMIN";
 
   const [data, setData] = useState<IRoundDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [routeTitle, setRouteTitle] = useState("");
 
-  const handleDeleteMedia = async (
-    eventId: string,
-    type: "SCAN" | "INCIDENT",
-    item: any,
-  ) => {
-    const key = item.key || item.url.split("/").pop();
-    if (!key) return;
-
-    let res;
-    if (type === "SCAN") {
-      res = await deleteKardexMedia(eventId, key);
-    } else {
-      res = await deleteIncidentMedia(eventId, key);
-    }
-
-    if (res.success) {
-      dispatch(
-        showToast({
-          message: "Archivo eliminado correctamente",
-          type: "success",
-        }),
-      );
-      setData((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          timeline: prev.timeline.map((e) => {
-            const currentId = e.data?.id;
-            if (currentId === eventId && e.type === type) {
-              return {
-                ...e,
-                data: {
-                  ...e.data,
-                  media: e.data.media.filter(
-                    (m: any) => (m.key || m.url.split("/").pop()) !== key,
-                  ),
-                },
-              };
-            }
-            return e;
-          }),
-        };
-      });
-    }
-  };
-
-  const handleDeleteEvent = async (
-    eventId: string,
-    type: "SCAN" | "INCIDENT",
-  ) => {
-    if (!window.confirm("¿Deseas eliminar este registro permanentemente?"))
-      return;
-
-    let res;
-    if (type === "SCAN") {
-      res = await deleteKardexEntry(eventId);
-    } else {
-      res = await deleteIncident(eventId);
-    }
-
-    if (res.success) {
-      dispatch(showToast({ message: "Registro eliminado", type: "success" }));
-      setData((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          timeline: prev.timeline.filter(
-            (e) => !(e.data?.id === eventId && e.type === type),
-          ),
-        };
-      });
-    }
-  };
 
   const metrics = useMemo(() => {
     if (!data) return null;
@@ -262,33 +180,6 @@ const RoundDetailPage = () => {
     setLoading(false);
   };
 
-  // const handleShareWhatsApp = () => {
-  //   if (!data) return;
-  //   const token = localStorage.getItem("token");
-  //   const reportUrl = `${import.meta.env.VITE_BASE_URL}/rounds/${id}/report?token=${token}`;
-  //   const clientName =
-  //     data.round.client?.name ||
-  //     data.round.recurringConfiguration?.client?.name ||
-  //     (data.round.guard as any)?.client?.name ||
-  //     "Cliente";
-  //   const guardName = `${data.round.guard.name} ${data.round.guard.lastName}`;
-  //   const title =
-  //     routeTitle ||
-  //     data.round.recurringConfiguration?.title ||
-  //     `Ronda #${data.round.id}`;
-
-  //   const message =
-  //     `*Reporte de Ronda - FANSAL*\n\n` +
-  //     `*Ruta:* ${title}\n` +
-  //     `*Cliente:* ${clientName}\n` +
-  //     `*Guardia:* ${guardName}\n` +
-  //     `*Fecha:* ${new Date(data.round.startTime).toLocaleDateString()}\n\n` +
-  //     `Puedes ver el reporte detallado aquí:\n${reportUrl}`;
-
-  //   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-  //   window.open(whatsappUrl, "_blank");
-  // };
-
   const handleOpenRouteMap = () => {
     if (!data) return;
     const scansWithCoords = data.timeline
@@ -326,285 +217,226 @@ const RoundDetailPage = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <ITLoader />
-          <p className="mt-4 text-slate-500 font-medium">
-            Cargando detalles de la ronda...
-          </p>
-        </div>
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center space-y-4">
+        <ITLoader />
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+          Sincronizando ruta...
+        </p>
       </div>
     );
 
   if (!data)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center bg-white rounded-2xl shadow-lg p-8 max-w-md">
-          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FaExclamationTriangle className="text-red-500 text-3xl" />
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6">
+        <div className="text-center bg-white rounded-[32px] shadow-xl p-12 max-w-md border border-slate-100">
+          <div className="w-20 h-20 bg-rose-50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-rose-100">
+            <FaExclamationTriangle className="text-rose-500 text-3xl" />
           </div>
-          <h3 className="text-xl font-bold text-slate-800 mb-2">
-            No se encontró la ronda
+          <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-2">
+            Ronda no encontrada
           </h3>
-          <p className="text-slate-500 mb-6">
-            La ronda que buscas no existe o ha sido eliminada.
+          <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mb-8">
+            El registro solicitado no existe o fue removido.
           </p>
-          <button
+          <ITButton
             onClick={() => navigate(-1)}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="w-full !h-14 !rounded-2xl shadow-xl shadow-emerald-100"
           >
-            Volver
-          </button>
+            VOLVER AL HISTORIAL
+          </ITButton>
         </div>
       </div>
     );
 
+  const title =
+    routeTitle ||
+    data.round.recurringConfiguration?.title ||
+    `Ronda #${data.round.id}`;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header Section */}
-      <div className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-all duration-200 group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-slate-200 flex items-center justify-center transition-colors">
-                <FaArrowLeft className="text-sm" />
-              </div>
-              <span className="font-medium hidden sm:inline">Volver</span>
-            </button>
-
-            <div className="flex items-center gap-3">
-              {/* Compartir por WhatsApp */}
-              {/* <button
-                onClick={handleShareWhatsApp}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-all font-bold text-sm shadow-lg shadow-emerald-100"
-              >
-                <FaWhatsapp className="text-lg" />
-                <span className="hidden sm:inline">WhatsApp</span>
-              </button> */}
-
-              {/* Descargar PDF */}
-              <button
-                onClick={() => {
-                  const token = localStorage.getItem("token");
-                  window.open(
-                    `${import.meta.env.VITE_BASE_URL}/rounds/${id}/report?token=${token}`,
-                    "_blank",
-                  );
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-bold text-sm border border-slate-200 shadow-sm"
-              >
-                <FaFileAlt className="text-emerald-500" />
-                <span className="hidden sm:inline">PDF</span>
-              </button>
-
-              <ITBadget
-                color={
-                  data.round.status === "COMPLETED" ? "success" : "warning"
-                }
-                variant="filled"
-                size="medium"
-              >
-                {data.round.status === "COMPLETED" ? "FINALIZADA" : "EN CURSO"}
-              </ITBadget>
+    <div className="min-h-screen bg-[#F8FAFC] pb-20">
+      <div className="bg-white border-b border-slate-100 sticky top-0 z-30 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-slate-50 group-hover:bg-emerald-500 group-hover:text-white flex items-center justify-center transition-all text-slate-400 border border-slate-100 group-hover:border-emerald-400 shadow-sm">
+              <FaArrowLeft size={14} />
             </div>
+            <span className="text-[10px] font-black text-slate-400 group-hover:text-emerald-600 uppercase tracking-widest transition-colors">
+              Volver
+            </span>
+          </button>
+
+          <div className="flex items-center gap-3">
+            <ITButton
+              onClick={() => {
+                const token = localStorage.getItem("token");
+                window.open(
+                  `${import.meta.env.VITE_BASE_URL}/rounds/${id}/report?token=${token}`,
+                  "_blank",
+                );
+              }}
+              variant="outline"
+              className="!h-11 !px-6 !rounded-xl !border-slate-100 !bg-white !text-slate-600"
+            >
+              <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
+                <FaFileAlt className="text-emerald-500" /> Exportar PDF
+              </div>
+            </ITButton>
+            <ITBadget
+              color={data.round.status === "COMPLETED" ? "success" : "warning"}
+              className="font-black text-[9px] px-4 tracking-widest"
+            >
+              {data.round.status === "COMPLETED" ? "FINALIZADA" : "EN CURSO"}
+            </ITBadget>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Title Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent mb-3">
-            {routeTitle ||
-              data.round.recurringConfiguration?.title ||
-              `Ronda #${data.round.id}`}
-          </h1>
-
-          <div className="flex flex-wrap gap-6 text-sm">
-            <div className="flex items-center gap-2 text-slate-600">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                <FaUserShield className="text-blue-600 text-sm" />
+      <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+        {/* Header Content */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-slate-600 flex items-center justify-center border border-indigo-100 shadow-sm">
+                <FaRoute size={20} />
               </div>
-              <div>
-                <p className="text-xs text-slate-400">Guardia</p>
-                <p className="font-semibold text-slate-700">
-                  {data.round.guard.name} {data.round.guard.lastName}
-                </p>
-              </div>
+              <h1 className="text-3xl md:text-4xl font-black text-slate-800 uppercase tracking-tight">
+                {title}
+              </h1>
             </div>
 
-            <div className="flex items-center gap-2 text-slate-600">
-              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
-                <FaBuilding className="text-slate-600 text-sm" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-400">Cliente</p>
-                <p className="font-semibold text-slate-700">
-                  {data.round.client?.name ||
-                    data.round.recurringConfiguration?.client?.name ||
-                    (data.round.guard as any)?.client?.name ||
-                    "Sin Cliente"}
-                </p>
-              </div>
-            </div>
-
-            {data.round.recurringConfiguration?.startTime && (
-              <div className="flex items-center gap-2 text-slate-600">
-                <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                  <FaClock className="text-purple-600 text-sm" />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400">Horario programado</p>
-                  <p className="font-semibold text-slate-700">
-                    {data.round.recurringConfiguration.startTime} -{" "}
-                    {data.round.recurringConfiguration.endTime}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center gap-2 text-slate-600">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                <FaCalendarAlt className="text-emerald-600 text-sm" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-400">Fecha de inicio</p>
-                <p className="font-semibold text-slate-700">
-                  {new Date(data.round.startTime).toLocaleDateString()}
-                </p>
-              </div>
+            <div className="flex flex-wrap gap-6">
+              <HeaderMetric
+                icon={<FaUserShield className="text-blue-500" />}
+                label="Guardia"
+                value={`${data.round.guard.name} ${data.round.guard.lastName}`}
+              />
+              <HeaderMetric
+                icon={<FaBuilding className="text-slate-500" />}
+                label="Cliente"
+                value={data.round.client?.name || "Sin Cliente"}
+              />
+              <HeaderMetric
+                icon={<FaCalendarAlt className="text-emerald-500" />}
+                label="Fecha"
+                value={dayjs(data.round.startTime).format("DD/MM/YYYY")}
+              />
             </div>
           </div>
         </div>
 
-        {/* Dashboard */}
+        {/* Dash Cards */}
         {metrics && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                  <FaClock className="text-white text-xl" />
-                </div>
-              </div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
-                Duración Total
-              </p>
-              <p className="text-2xl font-bold text-slate-800">
-                {metrics.duration}
-              </p>
-            </div>
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                  <FaQrcode className="text-white text-xl" />
-                </div>
-              </div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
-                Puntos Cubiertos
-              </p>
-              <p className="text-2xl font-bold text-slate-800">
-                {metrics.totalScans}{" "}
-                <span className="text-sm text-slate-400 font-normal">
-                  /{" "}
-                  {metrics.expectedScans > 0
-                    ? metrics.expectedScans
-                    : metrics.totalRawScans}
-                </span>
-              </p>
-            </div>
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
-                  <FaStopwatch className="text-white text-xl" />
-                </div>
-              </div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
-                Promedio tramo
-              </p>
-              <p className="text-2xl font-bold text-slate-800">
-                {metrics.avgTime}
-              </p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <MetricCard
+              icon={<FaClock />}
+              color="indigo"
+              label="Duración Total"
+              value={metrics.duration}
+              subValue="Tiempo efectivo de recorrido"
+            />
+            <MetricCard
+              icon={<FaQrcode />}
+              color="emerald"
+              label="Puntos Cubiertos"
+              value={`${metrics.totalScans} / ${metrics.expectedScans || metrics.totalRawScans}`}
+              subValue="Progreso de la ruta"
+            />
+            <MetricCard
+              icon={<FaStopwatch />}
+              color="amber"
+              label="Promedio por Punto"
+              value={metrics.avgTime}
+              subValue="Ritmo operativo detectado"
+            />
           </div>
         )}
 
-        {/* Ruta Recorrida Visual */}
+        {/* Visual Route Visualizer */}
         {metrics && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200">
-                  <FaRoute className="text-white text-lg" />
+          <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-10">
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shadow-sm">
+                  <FaMapMarkedAlt size={22} />
                 </div>
-                <h3 className="font-bold text-slate-800 text-lg">
-                  Ruta Recorrida
-                </h3>
+                <div>
+                  <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                    Esquema de Recorrido
+                  </h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">
+                    Visualización secuencial de la ruta
+                  </p>
+                </div>
               </div>
-              <button
+              <ITButton
                 onClick={handleOpenRouteMap}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium text-sm transition-all"
+                variant="outline"
+                className="!h-12 !px-6 !rounded-2xl !border-slate-100 !bg-slate-50 !text-slate-600"
               >
-                <FaMapMarkedAlt className="text-blue-600" /> Ver en mapa
-              </button>
+                <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
+                  <FaMapMarkedAlt className="text-blue-500" /> Trazar en Google
+                  Maps
+                </div>
+              </ITButton>
             </div>
-            <div className="overflow-x-auto pb-4">
-              <div className="flex items-start min-w-max">
+
+            <div className="overflow-x-auto pb-6 scrollbar-hide">
+              <div className="flex items-start min-w-max px-4">
                 {metrics.mapNodes.map((node: any, idx: number) => (
                   <div key={idx} className="flex items-center">
                     {idx > 0 && (
-                      <div className="flex flex-col items-center mx-2">
+                      <div className="flex flex-col items-center mx-4">
+                        <div className="w-16 h-1 bg-slate-100 rounded-full relative overflow-hidden">
+                          {node.diffMs > 0 && (
+                            <div className="absolute inset-0 bg-emerald-500/20" />
+                          )}
+                        </div>
                         {node.timeDiff && node.timeDiff !== "--" && (
-                          <span className="text-xs font-mono text-slate-500 mb-2 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2 bg-white px-2 py-0.5 rounded-lg border border-slate-100 shadow-sm">
                             {node.timeDiff}
                           </span>
                         )}
-                        <div className="w-12 h-0.5 bg-gradient-to-r from-slate-300 to-slate-400"></div>
                       </div>
                     )}
-                    <div className="flex flex-col items-center w-28 group">
+                    <div className="flex flex-col items-center w-32 group">
                       <div
-                        className={`relative w-14 h-14 rounded-2xl flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-110
-                                                ${node.status === "START" ? "bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-300" : ""}
-                                                ${node.status === "END" ? "bg-gradient-to-br from-slate-600 to-slate-700 shadow-slate-300" : ""}
-                                                ${node.status === "SUCCESS" ? "bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-300" : ""}
-                                                ${node.status === "DUPLICATE" ? "bg-gradient-to-br from-red-500 to-red-600 shadow-red-300" : ""}
-                                                ${node.status === "INCOMPLETE" ? "bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-300" : ""}
-                                                ${node.status === "MISSING" ? "bg-gradient-to-br from-red-100 to-red-200 border-2 border-red-300" : ""}
-                                                ${node.status === "PENDING" ? "bg-gradient-to-br from-slate-100 to-slate-200 border-2 border-slate-300" : ""}
-                                            `}
+                        className={`w-16 h-16 rounded-[24px] flex items-center justify-center shadow-xl transition-all duration-500 group-hover:scale-110 border-4 border-white
+                          ${node.status === "START" ? "bg-indigo-600 text-white shadow-indigo-200" : ""}
+                          ${node.status === "END" ? "bg-slate-800 text-white shadow-slate-300" : ""}
+                          ${node.status === "SUCCESS" ? "bg-emerald-500 text-white shadow-emerald-200" : ""}
+                          ${node.status === "DUPLICATE" ? "bg-rose-500 text-white shadow-rose-200" : ""}
+                          ${node.status === "INCOMPLETE" ? "bg-amber-500 text-white shadow-amber-200" : ""}
+                          ${node.status === "MISSING" ? "bg-rose-50 text-rose-500 border-rose-100 shadow-none" : ""}
+                          ${node.status === "PENDING" ? "bg-slate-50 text-slate-300 border-slate-100 shadow-none" : ""}
+                        `}
                       >
                         {node.status === "START" && (
-                          <FaPlay className="text-white text-lg ml-0.5" />
+                          <FaPlay size={18} className="ml-1" />
                         )}
-                        {node.status === "END" && (
-                          <FaCheckCircle className="text-white text-lg" />
-                        )}
+                        {node.status === "END" && <FaCheckCircle size={22} />}
                         {node.status === "SUCCESS" && (
-                          <FaCheckCircle className="text-white text-lg" />
+                          <FaCheckCircle size={22} />
                         )}
                         {node.status === "DUPLICATE" && (
-                          <span className="text-white text-2xl font-bold">
-                            !
-                          </span>
+                          <span className="font-black text-2xl">!</span>
                         )}
                         {node.status === "INCOMPLETE" && (
-                          <FaExclamationTriangle className="text-white text-lg" />
+                          <FaExclamationTriangle size={20} />
                         )}
                         {node.status === "MISSING" && (
-                          <span className="text-red-600 text-xl font-bold">
-                            ?
-                          </span>
+                          <span className="font-black text-xl">?</span>
                         )}
-                        {node.status === "PENDING" && (
-                          <FaClock className="text-slate-500 text-lg" />
-                        )}
+                        {node.status === "PENDING" && <FaClock size={20} />}
                       </div>
-                      <p className="text-center text-sm font-semibold mt-3 text-slate-700 leading-tight">
-                        {node.label}
-                      </p>
+                      <div className="mt-4 text-center">
+                        <p className="text-[10px] font-black text-slate-800 uppercase tracking-tight leading-tight line-clamp-2">
+                          {node.label}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -613,124 +445,187 @@ const RoundDetailPage = () => {
           </div>
         )}
 
-        {/* Timeline */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="border-b border-slate-200 bg-slate-50 px-6 py-4">
-            <h2 className="text-lg font-bold text-slate-800">
-              Línea de tiempo
+        {/* Timeline Refined */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-4 ml-2">
+            <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
+            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+              Expediente de Tiempo
             </h2>
           </div>
-          <div className="p-6">
-            <div className="relative border-l-2 border-slate-200 ml-4 space-y-8">
-              {data.timeline.map((event, index) => (
-                <div key={index} className="relative pl-8">
-                  <EventIcon type={event.type} />
-                  <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-mono font-semibold text-slate-500">
-                        {new Date(event.timestamp).toLocaleString()}
-                      </span>
-                      {isAdmin &&
-                        (event.type === "INCIDENT" ||
-                          event.type === "SCAN") && (
-                          <button
-                            onClick={() =>
-                              handleDeleteEvent(
-                                event.data.id,
-                                event.type as any,
-                              )
-                            }
-                            className="p-2 text-slate-300 hover:text-red-500 transition-colors"
-                          >
-                            <FaTrash size={14} />
-                          </button>
-                        )}
-                    </div>
-                    <h3 className="text-md font-bold text-slate-700 mb-3">
-                      {event.description}
-                    </h3>
 
-                    {event.type === "SCAN" && (
-                      <div className="space-y-4">
-                        <div className="p-3 bg-purple-50 rounded-xl border border-purple-100 flex items-center gap-2">
-                          <FaBuilding className="text-purple-600" />
-                          <p className="font-bold text-slate-800">
-                            {event.data?.location?.name}
-                          </p>
-                        </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          <div>
-                            {event.data?.media?.length > 0 ? (
-                              <MediaCarousel
-                                media={event.data.media}
-                                title="Evidencia"
-                                showDelete={isAdmin}
-                                onDelete={(item) =>
-                                  handleDeleteMedia(event.data.id, "SCAN", item)
-                                }
-                              />
-                            ) : (
-                              <p className="text-sm text-slate-400 italic">
+          <div className="relative border-l-2 border-slate-100 ml-6 space-y-12 pb-10">
+            {data.timeline.map((event, index) => (
+              <div
+                key={index}
+                className="relative pl-12 animate-in fade-in slide-in-from-left-4 duration-500"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <TimelineIcon type={event.type} />
+
+                <div className="bg-white rounded-[32px] border border-slate-100 shadow-lg shadow-slate-200/40 p-8 hover:shadow-xl transition-all group overflow-hidden relative">
+                  <div className="flex flex-col lg:flex-row justify-between gap-6 mb-8">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                          {dayjs(event.timestamp).format("HH:mm:ss [HRS]")}
+                        </span>
+                        <div className="w-px h-3 bg-slate-200" />
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                          {dayjs(event.timestamp).format("DD MMMM, YYYY")}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight group-hover:text-slate-600 transition-colors">
+                        {event.description}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {event.type === "SCAN" && (
+                    <div className="space-y-8">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Evidence Column */}
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-3 ml-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              Registros de Campo
+                            </p>
+                          </div>
+                          {event.data?.media?.length > 0 ? (
+                            <ITMediaGrid
+                              media={event.data.media}
+                              gridSize={240}
+                            />
+                          ) : (
+                            <div className="py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center">
+                              <FaFileAlt className="text-slate-200 text-3xl mb-3" />
+                              <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
                                 Sin evidencia fotográfica
                               </p>
-                            )}
-                          </div>
-                          {event.data?.latitude && (
-                            <GoogleMapComponent
-                              lat={Number(event.data.latitude)}
-                              lng={Number(event.data.longitude)}
-                              height="200px"
-                              zoom={18}
-                            />
+                            </div>
                           )}
                         </div>
-                        {event.data?.notes && (
-                          <NotesViewer notes={event.data.notes} />
-                        )}
-                        {event.data?.assignment?.tasks && (
-                          <TaskList tasks={event.data.assignment.tasks} />
-                        )}
-                      </div>
-                    )}
 
-                    {event.type === "INCIDENT" && (
-                      <div className="space-y-4">
-                        <div className="p-3 bg-orange-50 rounded-xl border border-orange-200 font-bold text-orange-700">
-                          {event.data?.category}
+                        {/* Location/Map Column */}
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-3 ml-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              Geoposicionamiento
+                            </p>
+                          </div>
+                          {event.data?.latitude ? (
+                            <div className="rounded-[24px] overflow-hidden border border-slate-100 shadow-sm">
+                              <GoogleMapComponent
+                                lat={Number(event.data.latitude)}
+                                lng={Number(event.data.longitude)}
+                                height="240px"
+                                zoom={18}
+                              />
+                            </div>
+                          ) : (
+                            <div className="h-[240px] bg-slate-50 rounded-[24px] border border-slate-100 flex items-center justify-center">
+                              <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                                GPS no disponible
+                              </p>
+                            </div>
+                          )}
                         </div>
-                        <p className="text-sm text-slate-600">
+                      </div>
+
+                      {/* Dynamic Task List or Notes */}
+                      {(event.data?.notes || event.data?.assignment?.tasks) && (
+                        <div className="pt-8 border-t border-slate-50 grid grid-cols-1 md:grid-cols-2 gap-8">
+                          {event.data?.notes && (
+                            <div className="space-y-3">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                Observaciones
+                              </p>
+                              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                <p className="text-xs text-slate-600 font-bold italic leading-relaxed">
+                                  "{event.data.notes}"
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          {event.data?.assignment?.tasks && (
+                            <div className="space-y-3">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                Tareas Asignadas
+                              </p>
+                              <div className="space-y-2">
+                                {event.data.assignment.tasks.map(
+                                  (task: any) => (
+                                    <div
+                                      key={task.id}
+                                      className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm"
+                                    >
+                                      <div
+                                        className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] transition-all ${task.completed ? "bg-emerald-500 text-white" : "bg-slate-50 text-slate-200 border border-slate-100"}`}
+                                      >
+                                        <FaCheckCircle />
+                                      </div>
+                                      <span
+                                        className={`text-[10px] font-black uppercase tracking-tight ${task.completed ? "text-emerald-700" : "text-slate-500"}`}
+                                      >
+                                        {task.description}
+                                      </span>
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {event.type === "INCIDENT" && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                          <ITBadget
+                            color="danger"
+                            variant="outlined"
+                            className="font-black text-[9px] px-3 tracking-widest"
+                          >
+                            INCIDENTE: {event.data?.category}
+                          </ITBadget>
+                        </div>
+                        <p className="text-sm text-slate-600 font-bold leading-relaxed">
                           {event.data?.description}
                         </p>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {event.data?.media?.length > 0 && (
-                            <MediaCarousel
-                              media={event.data.media}
-                              title="Incidente"
-                              showDelete={isAdmin}
-                              onDelete={(item) =>
-                                handleDeleteMedia(
-                                  event.data.id,
-                                  "INCIDENT",
-                                  item,
-                                )
-                              }
-                            />
-                          )}
-                          {event.data?.latitude && (
+                        {event.data?.media?.length > 0 && (
+                          <ITMediaGrid
+                            media={event.data.media.map((m: any) => ({
+                              ...m,
+                              url: m.url.startsWith("http")
+                                ? m.url
+                                : `${API_BASE_URL}${m.url.replace("/api/v1", "")}`,
+                            }))}
+                            gridSize={240}
+                          />
+                        )}
+                      </div>
+                      <div>
+                        {event.data?.latitude && (
+                          <div className="rounded-[24px] overflow-hidden border-2 border-rose-100 shadow-sm">
                             <GoogleMapComponent
                               lat={Number(event.data.latitude)}
                               lng={Number(event.data.longitude)}
-                              height="200px"
+                              height="300px"
                               zoom={18}
                             />
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -738,104 +633,91 @@ const RoundDetailPage = () => {
   );
 };
 
-// --- Subcomponentes de apoyo ---
-
-const EventIcon = ({ type }: { type: string }) => {
-  let icon = <div className="w-2 h-2 rounded-full bg-slate-300" />;
-  let bg = "bg-slate-100",
-    border = "border-slate-300";
-  if (type === "START") {
-    icon = <FaPlay className="text-blue-600 text-xs" />;
-    bg = "bg-blue-100";
-    border = "border-blue-500";
-  }
-  if (type === "SCAN") {
-    icon = <FaQrcode className="text-purple-600 text-xs" />;
-    bg = "bg-purple-100";
-    border = "border-purple-500";
-  }
-  if (type === "INCIDENT") {
-    icon = <FaExclamationTriangle className="text-orange-600 text-xs" />;
-    bg = "bg-orange-100";
-    border = "border-orange-500";
-  }
-  if (type === "END") {
-    icon = <FaCheckCircle className="text-green-600 text-xs" />;
-    bg = "bg-green-100";
-    border = "border-green-500";
-  }
-  return (
-    <div
-      className={`absolute -left-[13px] top-0 w-7 h-7 rounded-full ${bg} border-2 ${border} flex items-center justify-center z-10 shadow-sm`}
-    >
+const HeaderMetric = ({ icon, label, value }: any) => (
+  <div className="flex items-center gap-3">
+    <div className="w-9 h-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center shadow-sm">
       {icon}
     </div>
-  );
-};
+    <div>
+      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+        {label}
+      </p>
+      <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight">
+        {value}
+      </p>
+    </div>
+  </div>
+);
 
-const NotesViewer = ({ notes }: { notes: string }) => {
-  if (!notes) return null;
-  const lines = notes.split("\n");
+const MetricCard = ({ icon, color, label, value, subValue }: any) => {
+  const colors: any = {
+    indigo: "from-indigo-500 to-indigo-600 shadow-indigo-100",
+    emerald: "from-emerald-500 to-emerald-600 shadow-emerald-100",
+    amber: "from-amber-500 to-amber-600 shadow-amber-100",
+  };
+
   return (
-    <div className="space-y-2 bg-white rounded-xl p-4 border border-slate-200">
-      {lines.map((line, i) => {
-        const trimmed = line.trim();
-        if (trimmed.startsWith("---"))
-          return <div key={i} className="border-t border-slate-200 my-2" />;
-        if (trimmed.startsWith("[ ]") || trimmed.startsWith("[x]")) {
-          const isChecked = trimmed.startsWith("[x]");
-          return (
-            <div key={i} className="flex items-center gap-2 text-sm">
-              <div
-                className={`w-4 h-4 rounded border flex items-center justify-center ${isChecked ? "bg-emerald-500 border-emerald-500 text-white" : "border-slate-300"}`}
-              >
-                {isChecked && <FaCheckCircle size={10} />}
-              </div>
-              <span
-                className={
-                  isChecked ? "text-slate-400 line-through" : "text-slate-700"
-                }
-              >
-                {trimmed.replace(/\[.\]/, "").trim()}
-              </span>
-            </div>
-          );
-        }
-        return (
-          trimmed && (
-            <p key={i} className="text-sm text-slate-600 italic">
-              "{trimmed}"
-            </p>
-          )
-        );
-      })}
+    <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-lg shadow-slate-200/40 relative overflow-hidden group">
+      <div
+        className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${colors[color]} opacity-[0.03] rounded-full -mr-8 -mt-8 group-hover:scale-150 transition-transform duration-700`}
+      />
+      <div className="relative space-y-4">
+        <div
+          className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${colors[color]} flex items-center justify-center text-white shadow-lg`}
+        >
+          {icon}
+        </div>
+        <div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
+            {label}
+          </p>
+          <p className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+            {value}
+          </p>
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+            {subValue}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
 
-const TaskList = ({ tasks }: { tasks: any[] }) => {
-  if (!tasks || tasks.length === 0) return null;
+const TimelineIcon = ({ type }: { type: string }) => {
+  const styles: any = {
+    START: {
+      bg: "bg-indigo-600",
+      icon: <FaPlay className="ml-1" />,
+      border: "border-indigo-100 shadow-indigo-100",
+    },
+    SCAN: {
+      bg: "bg-emerald-500",
+      icon: <FaQrcode />,
+      border: "border-emerald-100 shadow-emerald-100",
+    },
+    INCIDENT: {
+      bg: "bg-rose-500",
+      icon: <FaExclamationTriangle />,
+      border: "border-rose-100 shadow-rose-100",
+    },
+    END: {
+      bg: "bg-slate-800",
+      icon: <FaCheckCircle />,
+      border: "border-slate-100 shadow-slate-100",
+    },
+  };
+
+  const config = styles[type] || {
+    bg: "bg-slate-300",
+    icon: null,
+    border: "border-slate-50",
+  };
+
   return (
-    <div className="space-y-2">
-      {tasks.map((task, idx) => (
-        <div
-          key={idx}
-          className="flex items-center gap-2 p-2 bg-white border border-slate-100 rounded-lg text-sm"
-        >
-          <div
-            className={`w-4 h-4 rounded border flex items-center justify-center ${task.completed ? "bg-emerald-500 border-emerald-500 text-white" : "border-slate-300"}`}
-          >
-            {task.completed && <FaCheckCircle size={10} />}
-          </div>
-          <span
-            className={
-              task.completed ? "text-slate-400 line-through" : "text-slate-700"
-            }
-          >
-            {task.description}
-          </span>
-        </div>
-      ))}
+    <div
+      className={`absolute -left-[19px] top-0 w-9 h-9 rounded-xl ${config.bg} ${config.border} border-4 text-white flex items-center justify-center z-10 shadow-lg text-xs transition-transform group-hover:scale-110`}
+    >
+      {config.icon}
     </div>
   );
 };

@@ -1,252 +1,227 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    FaChevronLeft,
-    FaChevronRight,
-    FaCompress,
-    FaExpand,
-    FaPlay,
-    FaTimes
-} from 'react-icons/fa';
+  FaChevronLeft,
+  FaChevronRight,
+  FaCompress,
+  FaExpand,
+  FaPlay,
+  FaTimes,
+} from "react-icons/fa";
 
 interface MediaItem {
-    type: 'IMAGE' | 'VIDEO';
-    url: string;
-    key?: string;
-    title?: string;
+  type: "IMAGE" | "VIDEO";
+  url: string;
+  key?: string;
+  title?: string;
 }
 
 interface MediaCarouselProps {
-    media: (MediaItem | string)[];
-    initialIndex?: number;
-    title?: string;
-    onDelete?: (item: MediaItem, index: number) => void;
-    showDelete?: boolean;
+  media: (MediaItem | string)[];
+  initialIndex?: number;
+  title?: string;
+  onClose?: () => void;
 }
 
-export const MediaCarousel: React.FC<MediaCarouselProps> = ({ 
-    media: rawMedia, 
-    initialIndex = 0, 
-    title = "Galería de Medios",
+export const MediaCarousel: React.FC<MediaCarouselProps> = ({
+  media: rawMedia,
+  initialIndex = 0,
+  title = "Galería de Medios",
+  onClose,
 }) => {
-    const media = React.useMemo(() => {
-        if (!rawMedia) return [];
-        return rawMedia.map(item => {
-            if (typeof item === 'string') {
-                const isVideo = item.toLowerCase().match(/\.(mp4|webm|mov|ogg|m4v)$/i);
-                return { type: isVideo ? 'VIDEO' : 'IMAGE', url: item } as MediaItem;
-            }
-            return item;
-        });
-    }, [rawMedia]);
+  const media = React.useMemo(() => {
+    if (!rawMedia) return [];
+    return rawMedia.map((item) => {
+      if (typeof item === "string") {
+        const isVideo = item.toLowerCase().match(/\.(mp4|webm|mov|ogg|m4v)$/i);
+        return { type: isVideo ? "VIDEO" : "IMAGE", url: item } as MediaItem;
+      }
+      return item;
+    });
+  }, [rawMedia]);
 
-    const [currentIndex, setCurrentIndex] = useState(initialIndex);
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-    // --- Navegación ---
-    const nextSlide = useCallback(() => {
-        if (media.length <= 1) return;
-        setCurrentIndex((prev) => (prev === media.length - 1 ? 0 : prev + 1));
-    }, [media.length]);
+  const nextSlide = useCallback(() => {
+    if (media.length <= 1) return;
+    setCurrentIndex((prev) => (prev === media.length - 1 ? 0 : prev + 1));
+  }, [media.length]);
 
-    const prevSlide = useCallback(() => {
-        if (media.length <= 1) return;
-        setCurrentIndex((prev) => (prev === 0 ? media.length - 1 : prev - 1));
-    }, [media.length]);
+  const prevSlide = useCallback(() => {
+    if (media.length <= 1) return;
+    setCurrentIndex((prev) => (prev === 0 ? media.length - 1 : prev - 1));
+  }, [media.length]);
 
-    // const handleDelete = () => {
-    //     if (onDelete && window.confirm("¿Estás seguro de que deseas eliminar este archivo?")) {
-    //         onDelete(media[currentIndex], currentIndex);
-    //         // If it was the last item, the parent should handle it, 
-    //         // but we might need to adjust local index if the parent doesn't re-render immediately
-    //         if (currentIndex >= media.length - 1 && currentIndex > 0) {
-    //             setCurrentIndex(currentIndex - 1);
-    //         }
-    //     }
-    // };
-
-    // --- Fullscreen ---
-    const toggleFullscreen = async () => {
-        if (!document.fullscreenElement) {
-            try {
-                await containerRef.current?.requestFullscreen();
-                setIsFullscreen(true);
-            } catch (err) {
-                console.error("Error al intentar entrar en pantalla completa", err);
-            }
-        } else {
-            await document.exitFullscreen();
-            setIsFullscreen(false);
-        }
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") nextSlide();
+      if (e.key === "ArrowLeft") prevSlide();
+      if (e.key === "Escape" && onClose) onClose();
     };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [nextSlide, prevSlide, onClose]);
 
-    useEffect(() => {
-        const handler = () => setIsFullscreen(!!document.fullscreenElement);
-        document.addEventListener('fullscreenchange', handler);
-        return () => document.removeEventListener('fullscreenchange', handler);
-    }, []);
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch((err) => {
+        console.error(`Error: ${err.message}`);
+      });
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
 
-    // --- Teclado ---
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowRight') nextSlide();
-            if (e.key === 'ArrowLeft') prevSlide();
-            if (e.key === 'Escape' && isFullscreen) toggleFullscreen();
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [nextSlide, prevSlide, isFullscreen]);
+  if (!media || media.length === 0) return null;
+  const currentItem = media[currentIndex];
 
-    if (!media || media.length === 0) return null;
-
-    const currentItem = media[currentIndex];
-
-    return (
-        <div 
-            ref={containerRef}
-            className={`
-                flex flex-col overflow-hidden transition-all duration-500 ease-in-out font-sans group
-                ${isFullscreen ? 'fixed inset-0 z-[100] bg-black' : 'relative rounded-2xl shadow-2xl bg-slate-900 border border-white/10 w-full max-w-5xl mx-auto'}
-            `}
-        >
-            {/* --- Header Superior --- */}
-            <div className={`
-                absolute top-0 left-0 w-full z-20 flex justify-between items-center p-4
-                bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-300
-                ${isFullscreen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
-            `}>
-                <div className="flex flex-col">
-                    <h3 className="text-white font-medium text-lg drop-shadow-md">{title}</h3>
-                    <p className="text-white/60 text-xs uppercase tracking-widest">
-                        {currentIndex + 1} / {media.length}
-                    </p>
-                </div>
-                
-                <div className="flex gap-2">
-                    <button 
-                        onClick={toggleFullscreen}
-                        className="p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all border border-white/10"
-                    >
-                        {isFullscreen ? <FaCompress /> : <FaExpand />}
-                    </button>
-                    {isFullscreen && (
-                        <button 
-                            onClick={toggleFullscreen}
-                            className="p-3 rounded-full bg-red-500/20 hover:bg-red-500/40 backdrop-blur-md text-red-200 transition-all border border-red-500/20"
-                        >
-                            <FaTimes />
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* --- Escenario Principal --- */}
-            <div className={`relative flex-1 flex items-center justify-center select-none ${isFullscreen ? 'h-full' : 'aspect-video'}`}>
-                
-                {/* Botones de Navegación */}
-                {media.length > 1 && (
-                    <>
-                        <button 
-                            onClick={prevSlide}
-                            className="absolute left-4 z-30 p-4 rounded-2xl bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10 -translate-x-4 group-hover:translate-x-0"
-                        >
-                            <FaChevronLeft size={24} />
-                        </button>
-                        <button 
-                            onClick={nextSlide}
-                            className="absolute right-4 z-30 p-4 rounded-2xl bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10 translate-x-4 group-hover:translate-x-0"
-                        >
-                            <FaChevronRight size={24} />
-                        </button>
-                    </>
-                )}
-
-                {/* Contenido Media */}
-                <div className="w-full h-full flex items-center justify-center p-2 bg-black">
-                    {currentItem?.type?.toUpperCase() === 'VIDEO' || currentItem?.url?.toLowerCase().match(/\.(mp4|webm|mov|ogg|m4v)$/i) ? (
-                        <div className="relative w-full h-full flex items-center justify-center">
-                            <video 
-                                key={currentItem.url}
-                                src={currentItem.url}
-                                controls 
-                                playsInline
-                                preload="metadata"
-                                className="max-w-full max-h-full rounded-lg shadow-2xl"
-                                autoPlay={isFullscreen}
-                                onLoadedMetadata={(e) => {
-                                    // Sometimes we need to seek to show the first frame
-                                    const video = e.target as HTMLVideoElement;
-                                    if (video.currentTime === 0) video.currentTime = 0.1;
-                                }}
-                            >
-                                Tu navegador no soporta el elemento de video.
-                            </video>
-                        </div>
-                    ) : (
-                        <img 
-                            src={currentItem.url} 
-                            alt={currentItem.title || "Gallery item"} 
-                            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl animate-fade-in"
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Error+al+cargar+imagen';
-                            }}
-                        />
-                    )}
-                </div>
-            </div>
-
-            {/* --- Tira de Miniaturas (Footer) --- */}
-            <div className={`
-                w-full p-4 border-t border-white/10 bg-slate-950/80 backdrop-blur-xl z-20
-                ${isFullscreen ? 'absolute bottom-0 opacity-0 hover:opacity-100 transition-opacity duration-300' : ''}
-            `}>
-                <div className="flex gap-4 overflow-x-auto pb-2 justify-center no-scrollbar">
-                    {media.map((item, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setCurrentIndex(idx)}
-                            className={`
-                                relative flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden transition-all duration-300 transform
-                                ${idx === currentIndex 
-                                    ? 'ring-2 ring-blue-500 scale-110 shadow-lg opacity-100' 
-                                    : 'opacity-40 hover:opacity-100 scale-100 grayscale hover:grayscale-0'
-                                }
-                            `}
-                        >
-                            {item?.type?.toUpperCase() === 'VIDEO' || item?.url?.toLowerCase().match(/\.(mp4|webm|mov|ogg|m4v)$/i) ? (
-                                <div className="w-full h-full bg-slate-800 flex items-center justify-center relative">
-                                    <video 
-                                        src={`${item.url}#t=0.5`} 
-                                        className="absolute inset-0 w-full h-full object-cover opacity-60"
-                                        onLoadedData={(e) => {
-                                            const video = e.target as HTMLVideoElement;
-                                            video.pause();
-                                        }}
-                                        muted
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/0 transition-all duration-300">
-                                        <FaPlay className="text-white text-xs drop-shadow-lg scale-125 group-hover:scale-150 transition-transform" />
-                                    </div>
-                                </div>
-                            ) : (
-                                <img 
-                                    src={item.url} 
-                                    className="w-full h-full object-cover animate-fade-in" 
-                                    alt="thumbnail"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://placehold.co/100x70?text=Err';
-                                    }}
-                                />
-                            )}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            <style>{`
-                .no-scrollbar::-webkit-scrollbar { display: none; }
-                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-            `}</style>
+  return (
+    <div
+      ref={containerRef}
+      className={`
+        flex flex-col w-full mx-auto overflow-hidden bg-slate-950 transition-all duration-500
+        ${isFullscreen ? "h-screen fixed inset-0 z-[9999]" : "h-auto max-h-[85vh] rounded-[2.5rem] shadow-2xl border border-white/5"}
+      `}
+    >
+      {/* Header con botón de cerrar */}
+      <div
+        className="absolute top-0 inset-x-0 z-20 p-8 flex justify-between items-start pointer-events-none"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="pointer-events-auto">
+          <h4 className="text-white text-lg font-black uppercase tracking-tight drop-shadow-lg">
+            {title}
+          </h4>
+          <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.2em] mt-1">
+            Evidencia {currentIndex + 1} de {media.length}
+          </p>
         </div>
-    );
+        <div className="flex gap-3 pointer-events-auto">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFullscreen();
+            }}
+            className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 text-white flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 transition-all shadow-xl"
+          >
+            {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
+          </button>
+          {onClose && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 text-white flex items-center justify-center hover:bg-rose-500 hover:border-rose-400 transition-all shadow-xl"
+            >
+              <FaTimes size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Main Content - Click en la imagen/video para cerrar */}
+      <div
+        className="flex-1 relative flex items-center justify-center p-12 overflow-hidden bg-black/40 cursor-pointer"
+        onClick={onClose}
+      >
+        <div onClick={(e) => e.stopPropagation()}>
+          {currentItem.type === "VIDEO" ||
+          currentItem.url.toLowerCase().match(/\.(mp4|webm|mov|ogg|m4v)$/i) ? (
+            <video
+              key={currentItem.url}
+              src={currentItem.url}
+              controls
+              autoPlay
+              className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <img
+              src={currentItem.url}
+              alt={currentItem.title || `Media ${currentIndex}`}
+              className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl select-none"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+        </div>
+
+        {/* Nav Arrows */}
+        {media.length > 1 && (
+          <>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                prevSlide();
+              }}
+              className="absolute left-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[1.5rem] bg-white/5 backdrop-blur-md border border-white/10 text-white flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 transition-all z-10 group"
+            >
+              <FaChevronLeft
+                size={20}
+                className="group-hover:-translate-x-1 transition-transform"
+              />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                nextSlide();
+              }}
+              className="absolute right-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[1.5rem] bg-white/5 backdrop-blur-md border border-white/10 text-white flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 transition-all z-10 group"
+            >
+              <FaChevronRight
+                size={20}
+                className="group-hover:translate-x-1 transition-transform"
+              />
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Thumbs Bar */}
+      <div className="h-24 bg-black/60 backdrop-blur-2xl border-t border-white/5 p-4 flex items-center justify-center gap-4 shrink-0 overflow-x-auto no-scrollbar">
+        {media.map((item, idx) => (
+          <button
+            key={idx}
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentIndex(idx);
+            }}
+            className={`
+              relative w-14 h-14 rounded-xl overflow-hidden border-2 transition-all duration-300 shrink-0
+              ${
+                currentIndex === idx
+                  ? "border-emerald-500 scale-110 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                  : "border-white/10 opacity-30 hover:opacity-100 hover:scale-105"
+              }
+            `}
+          >
+            {item.type === "VIDEO" ? (
+              <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                <FaPlay size={10} className="text-white" />
+              </div>
+            ) : (
+              <img
+                src={item.url}
+                className="w-full h-full object-cover"
+                alt=""
+              />
+            )}
+          </button>
+        ))}
+      </div>
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            .no-scrollbar::-webkit-scrollbar { display: none; }
+            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+          `,
+        }}
+      />
+    </div>
+  );
 };
