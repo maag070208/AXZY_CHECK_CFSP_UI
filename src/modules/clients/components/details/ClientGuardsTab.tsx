@@ -6,7 +6,7 @@ import {
   ITSelect,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useState } from "react";
-import { FaClock, FaSync, FaTimes } from "react-icons/fa";
+import { FaClock, FaSync, FaTimes, FaUserShield } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { getSchedules } from "../../../schedules/SchedulesService";
 import {
@@ -14,6 +14,7 @@ import {
   updateUser,
   User,
 } from "../../../users/services/UserService";
+import { TResult } from "@app/core/types/TResult";
 
 interface Props {
   clientId: string | number;
@@ -52,7 +53,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
       if (res.success) {
         dispatch(
           showToast({
-            message: "Guardia removido del cliente",
+            message: "Guardia removido del cliente con éxito",
             type: "success",
           }),
         );
@@ -61,32 +62,33 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
       } else {
         dispatch(
           showToast({
-            message: "Error al remover guardia",
+            message: res.messages?.[0] || "No se pudo remover al guardia",
             type: "error",
           }),
         );
       }
     } catch (error) {
-      dispatch(showToast({ message: "Error inesperado", type: "error" }));
+      const err = error as TResult<any>;
+      dispatch(showToast({ message: err.messages?.[0] || "Error de conexión", type: "error" }));
     }
   };
 
   const columns = [
     {
       key: "user",
-      label: "Guardia",
+      label: "Perfil del Operativo",
       type: "string",
       render: (row: User) => (
-        <div className="flex items-center gap-3 py-2">
-          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold border border-slate-200 text-sm">
+        <div className="flex items-center gap-4 py-2">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 font-black text-sm shadow-sm">
             {row.name.charAt(0)}
             {row.lastName?.charAt(0) || ""}
           </div>
           <div>
-            <div className="font-bold text-slate-800 text-sm uppercase">
+            <div className="font-black text-slate-800 text-sm uppercase tracking-tight">
               {row.name} {row.lastName}
             </div>
-            <div className="text-xs text-slate-500 font-medium">
+            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
               @{row.username}
             </div>
           </div>
@@ -95,19 +97,21 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
     },
     {
       key: "status",
-      label: "Estado",
+      label: "Estado Operativo",
       type: "string",
       render: (row: User) => {
         const lastLog = row.assignmentLogs?.[0];
-        // Determinar status: si el último log es ASIGNADO, está ACTIVO.
-        // Si no hay logs, usamos clientId como indicativo de ACTIVO.
         const status = lastLog 
             ? (lastLog.type === "ASIGNADO" ? "ACTIVO" : "BAJA") 
             : (row.clientId ? "ACTIVO" : "BAJA");
 
         return (
           <div
-            className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase ${status === "ACTIVO" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}
+            className={`inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.1em] border ${
+              status === "ACTIVO" 
+                ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                : "bg-red-50 text-red-600 border-red-100"
+            }`}
           >
             {status}
           </div>
@@ -116,21 +120,21 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
     },
     {
       key: "schedule",
-      label: "Turno / Horario",
+      label: "Jornada Asignada",
       type: "string",
       render: (row: User) =>
         row.schedule ? (
-          <div className="text-sm text-slate-600">
-            <div className="flex items-center gap-1.5 font-bold text-slate-700 text-xs uppercase">
+          <div className="py-1">
+            <div className="flex items-center gap-2 font-black text-slate-700 text-[10px] uppercase tracking-widest">
+              <FaClock className="text-emerald-500" />
               {row.schedule.name}
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-              <FaClock className="text-[10px]" /> {row.schedule.startTime} -{" "}
-              {row.schedule.endTime}
+            <div className="text-[10px] text-slate-400 font-bold mt-1 ml-5">
+              {row.schedule.startTime} - {row.schedule.endTime}
             </div>
           </div>
         ) : (
-          <span className="text-[11px] italic text-slate-300">Sin Horario</span>
+          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">Sin Horario</span>
         ),
     },
     {
@@ -138,24 +142,24 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
       label: "Acciones",
       type: "actions",
       actions: (row: User) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-end">
           <ITButton
             onClick={() => setChangingScheduleUser(row)}
             size="small"
             variant="ghost"
-            className="text-amber-500 hover:bg-amber-50 !p-2"
-            title="Cambiar Horario"
+            className="text-amber-500 hover:bg-amber-50 p-2 rounded-xl"
+            title="Reasignar Horario"
           >
-            <FaClock />
+            <FaClock size={14} />
           </ITButton>
           <ITButton
             onClick={() => setRemovingUser(row)}
             size="small"
             variant="ghost"
-            className="text-red-300 hover:bg-red-50 !p-2"
+            className="text-red-200 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl"
             title="Remover de Cliente"
           >
-            <FaTimes />
+            <FaTimes size={14} />
           </ITButton>
         </div>
       ),
@@ -163,126 +167,130 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-          Personal Operativo Asignado
-        </h3>
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h3 className="text-sm font-black text-slate-800 uppercase tracking-[0.1em]">
+            Personal Asignado
+          </h3>
+          <p className="text-[11px] text-slate-400 font-bold uppercase mt-1 tracking-widest">
+            Control de guardias y personal operativo en sitio
+          </p>
+        </div>
         <ITButton
           onClick={() => setRefreshKey((prev) => prev + 1)}
           size="small"
-          variant="outlined"
-          className="h-9 w-9 p-0 flex justify-center items-center"
+          variant="ghost"
+          className="h-10 w-10 p-0 flex justify-center items-center bg-slate-50 rounded-xl hover:bg-slate-100"
         >
           <FaSync className="text-slate-400" />
         </ITButton>
       </div>
 
-      <ITDataTable
-        key={refreshKey}
-        columns={columns as any}
-        fetchData={memoizedFetch as any}
-        defaultItemsPerPage={5}
-      />
+      <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+        <ITDataTable
+          key={refreshKey}
+          columns={columns as any}
+          fetchData={memoizedFetch as any}
+          defaultItemsPerPage={5}
+        />
+      </div>
 
       <ITDialog
         isOpen={!!changingScheduleUser}
         onClose={() => setChangingScheduleUser(null)}
-        title={`Reasignar Horario`}
-        className="!max-w-md"
+        title={`Gestión de Horario`}
       >
         <div className="p-8 space-y-8">
-          <div className="flex flex-col items-center text-center space-y-3">
-            <div className="w-16 h-16 rounded-3xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="w-20 h-20 rounded-[28px] bg-amber-50 text-amber-500 flex items-center justify-center shadow-inner">
               <FaClock size={32} />
             </div>
             <div>
               <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
                 Cambiar Horario
               </h3>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">
                 {changingScheduleUser?.name} {changingScheduleUser?.lastName}
               </p>
             </div>
           </div>
 
-          <div className="w-full">
-            <ITSelect
-              label=""
-              name=""
-              placeholder="Seleccionar horario..."
-              options={schedules.map((s) => ({
-                label: `${s.name} (${s.startTime} - ${s.endTime})`,
-                value: s.id,
-              }))}
-              value={changingScheduleUser?.scheduleId || ""}
-              onChange={(e: any) => {
-                const val = e.target.value;
-                if (!changingScheduleUser) return;
-                updateUser(changingScheduleUser.id, {
-                  scheduleId: val as string,
-                }).then((res) => {
-                  if (res.success) {
-                    dispatch(
-                      showToast({
-                        message: "Horario actualizado",
-                        type: "success",
-                      }),
-                    );
-                    setRefreshKey((prev) => prev + 1);
-                    setChangingScheduleUser(null);
-                  }
-                });
-              }}
-            />
-          </div>
+          <ITSelect
+            label="Seleccionar Nueva Jornada"
+            name="scheduleId"
+            placeholder="Seleccionar horario..."
+            options={schedules.map((s) => ({
+              label: `${s.name} (${s.startTime} - ${s.endTime})`,
+              value: s.id,
+            }))}
+            value={changingScheduleUser?.scheduleId || ""}
+            onChange={async (e: any) => {
+              const val = e.target.value;
+              if (!changingScheduleUser) return;
+              const res = await updateUser(changingScheduleUser.id, {
+                scheduleId: val as string,
+              });
+              if (res.success) {
+                dispatch(
+                  showToast({
+                    message: "Horario actualizado con éxito",
+                    type: "success",
+                  }),
+                );
+                setRefreshKey((prev) => prev + 1);
+                setChangingScheduleUser(null);
+              } else {
+                dispatch(showToast({ message: res.messages?.[0] || "Error al actualizar", type: "error" }));
+              }
+            }}
+          />
 
-          <div className="flex justify-center">
+          <div className="flex justify-center pt-4">
             <ITButton
-              variant="outlined"
+              variant="ghost"
               onClick={() => setChangingScheduleUser(null)}
-              className="!rounded-2xl !px-10 border-slate-200 text-slate-400 font-bold uppercase text-[10px] tracking-widest hover:bg-slate-50"
+              className="text-slate-400 font-bold uppercase text-[10px] tracking-widest"
             >
-              Cancelar
+              Cerrar Ventana
             </ITButton>
           </div>
         </div>
       </ITDialog>
+
       <ITDialog
         isOpen={!!removingUser}
         onClose={() => setRemovingUser(null)}
-        title={`Confirmar Remoción`}
-        className="!max-w-md"
+        title={`Confirmar Desasignación`}
       >
         <div className="p-8 space-y-8">
-          <div className="flex flex-col items-center text-center space-y-3">
-            <div className="w-16 h-16 rounded-3xl bg-red-50 text-red-600 flex items-center justify-center shadow-sm">
-              <FaTimes size={32} />
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="w-20 h-20 rounded-[28px] bg-red-50 text-red-500 flex items-center justify-center shadow-inner">
+              <FaUserShield size={32} />
             </div>
             <div>
               <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
                 Remover Guardia
               </h3>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
-                ¿Seguro que deseas remover a {removingUser?.name} {removingUser?.lastName}?
+              <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2">
+                ¿Está seguro que desea desvincular a <span className="text-slate-800 font-black">{removingUser?.name} {removingUser?.lastName}</span> de este cliente?
               </p>
             </div>
           </div>
 
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-4">
             <ITButton
-              variant="outlined"
+              variant="ghost"
               onClick={() => setRemovingUser(null)}
-              className="!rounded-2xl !px-10 border-slate-200 text-slate-400 font-bold uppercase text-[10px] tracking-widest hover:bg-slate-50"
+              className="text-slate-400 font-bold uppercase text-[10px] tracking-widest flex-1 h-12"
             >
               Cancelar
             </ITButton>
             <ITButton
-              variant="primary"
               onClick={() => removingUser && handleRemoveFromClient(removingUser)}
-              className="!rounded-2xl !px-10 bg-red-600 hover:bg-red-700 text-white font-bold uppercase text-[10px] tracking-widest border-none"
+              className="bg-red-600 hover:bg-red-700 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl flex-1 h-12 shadow-lg shadow-red-500/10"
             >
-              Sí, Remover
+              Confirmar Baja
             </ITButton>
           </div>
         </div>
@@ -290,3 +298,4 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
     </div>
   );
 };
+

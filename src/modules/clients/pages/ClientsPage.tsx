@@ -1,9 +1,17 @@
+import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
+import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { clearSpecificCatalogCache } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITButton, ITDataTable, ITDialog } from "@axzydev/axzy_ui_system";
+import { TResult } from "@app/core/types/TResult";
+import {
+  ITButton,
+  ITDataTable,
+  ITDataTableFetchParams,
+  ITDialog,
+} from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FaBuilding,
-  FaClock,
   FaEdit,
   FaPlus,
   FaSearchLocation,
@@ -19,21 +27,20 @@ import {
   deleteClient,
   getPaginatedClients,
 } from "../services/ClientsService";
-import { clearSpecificCatalogCache } from "@app/core/hooks/catalog.hook";
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
-import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
 
 const ClientsPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
 
   // Modal States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [clientToDeleteId, setClientToDeleteId] = useState<number | null>(null);
+  const [clientToDeleteId, setClientToDeleteId] = useState<string | null>(null);
 
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -45,16 +52,28 @@ const ClientsPage = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Immediate refresh for status filter
+  useEffect(() => {
+    setRefreshKey((prev) => prev + 1);
+  }, [statusFilter]);
+
   const externalFilters = useMemo(() => {
-    return { 
-      name: searchTerm,
-      active: statusFilter === "all" ? undefined : statusFilter === "active" ? true : false,
-    };
+    const filters: Record<string, string | number | boolean | Date> = {};
+    if (searchTerm) filters.name = searchTerm;
+    if (statusFilter !== "all")
+      filters.active = statusFilter === "active" ? true : false;
+    return filters;
   }, [searchTerm, statusFilter]);
 
-  const memoizedFetch = useCallback((params: any) => {
-    return getPaginatedClients(params);
-  }, []);
+  const memoizedFetch = useCallback(
+    async (params: ITDataTableFetchParams): Promise<any> => {
+      const res = await getPaginatedClients(params);
+      return res.success && res.data
+        ? { data: res.data.rows, total: res.data.total }
+        : { data: [], total: 0 };
+    },
+    [],
+  );
 
   const refreshTable = () => setRefreshKey((prev) => prev + 1);
 
@@ -74,8 +93,12 @@ const ClientsPage = () => {
       refreshTable();
       setClientToDeleteId(null);
     } catch (error) {
+      const result = error as TResult<void>;
       dispatch(
-        showToast({ message: "Error al eliminar cliente", type: "error" }),
+        showToast({
+          message: result?.messages?.[0] || "Error al eliminar cliente",
+          type: "error",
+        }),
       );
     } finally {
       setIsDeleting(false);
@@ -110,7 +133,7 @@ const ClientsPage = () => {
 
             <ITTripleFilter
               value={statusFilter}
-              onChange={setStatusFilter as any}
+              onChange={(val) => setStatusFilter(val as any)}
               options={[
                 { label: "Todos", value: "all" },
                 { label: "Activos", value: "active" },
@@ -129,7 +152,9 @@ const ClientsPage = () => {
               <FaSync
                 className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? "" : "rotate-180"}`}
               />
-              <span className="text-xs font-bold text-slate-500">Actualizar</span>
+              <span className="text-xs font-bold text-slate-500">
+                Actualizar
+              </span>
             </ITButton>
 
             <button
@@ -144,98 +169,94 @@ const ClientsPage = () => {
       />
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <ITDataTable
+        <ITDataTable<Client & Record<string, unknown>>
           key={refreshKey}
-          fetchData={memoizedFetch as any}
+          fetchData={memoizedFetch}
           externalFilters={externalFilters}
           defaultItemsPerPage={10}
           title=""
-          columns={
-            [
-              {
-                key: "name",
-                label: "CLIENTE",
-                type: "string",
-                sortable: true,
-                render: (row: Client) => (
-                  <div 
-                    onClick={() => navigate(`/clients/${row.id}`)}
-                    className="font-bold text-slate-800 hover:text-emerald-600 cursor-pointer transition-colors"
+          columns={[
+            {
+              key: "name",
+              label: "CLIENTE",
+              type: "string",
+              sortable: true,
+              render: (row: Client) => (
+                <div
+                  onClick={() => navigate(`/clients/${row.id}`)}
+                  className="font-bold text-slate-800 hover:text-emerald-600 cursor-pointer transition-colors"
+                >
+                  {row.name}
+                </div>
+              ),
+            },
+            {
+              key: "contact",
+              label: "CONTACTO",
+              type: "string",
+              render: (row: Client) => (
+                <div className="text-xs">
+                  <div className="font-bold text-slate-700">
+                    {row.contactName || "-"}
+                  </div>
+                  <div className="text-slate-500">{row.contactPhone || ""}</div>
+                </div>
+              ),
+            },
+            {
+              key: "status",
+              label: "ESTADO",
+              type: "string",
+              render: (row: Client) => (
+                <div className="text-sm text-slate-600">
+                  <div
+                    className={`flex items-center gap-1.5 font-medium ${row.active ? "text-emerald-600" : "text-slate-400"}`}
                   >
-                    {row.name}
-                  </div>
-                ),
-              },
-              {
-                key: "contact",
-                label: "CONTACTO",
-                type: "string",
-                render: (row: Client) => (
-                  <div className="text-xs">
-                    <div className="font-bold text-slate-700">
-                      {row.contactName || "-"}
-                    </div>
-                    <div className="text-slate-500">
-                      {row.contactPhone || ""}
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                key: "status",
-                label: "ESTADO",
-                type: "string",
-                render: (row: Client) => (
-                  <div className="text-sm text-slate-600">
                     <div
-                      className={`flex items-center gap-1.5 font-medium ${row.active ? "text-emerald-600" : "text-slate-400"}`}
-                    >
-                      <div
-                        className={`w-1.5 h-1.5 rounded-full ${row.active ? "bg-emerald-500" : "bg-slate-300"}`}
-                      ></div>
-                      {row.active ? "Activo" : "Inactivo"}
-                    </div>
+                      className={`w-1.5 h-1.5 rounded-full ${row.active ? "bg-emerald-500" : "bg-slate-300"}`}
+                    ></div>
+                    {row.active ? "Activo" : "Inactivo"}
                   </div>
-                ),
-              },
-              {
-                key: "actions",
-                label: "ACCIONES",
-                type: "actions",
-                actions: (row: Client) => (
-                  <div className="flex items-center gap-2">
-                    <ITButton
-                      onClick={() => navigate(`/clients/${row.id}`)}
-                      size="small"
-                      variant="ghost"
-                      className="text-emerald-500 hover:text-emerald-700"
-                      title="Ver Detalles"
-                    >
-                      <FaSearchLocation />
-                    </ITButton>
-                    <ITButton
-                      onClick={() => setEditingClient(row)}
-                      size="small"
-                      variant="ghost"
-                      className="text-slate-400 hover:text-slate-600"
-                      title="Editar"
-                    >
-                      <FaEdit />
-                    </ITButton>
-                    <ITButton
-                      onClick={() => setClientToDeleteId(row.id)}
-                      size="small"
-                      variant="ghost"
-                      className="text-red-300 hover:text-red-500"
-                      title="Eliminar"
-                    >
-                      <FaTrash />
-                    </ITButton>
-                  </div>
-                ),
-              },
-            ] as any
-          }
+                </div>
+              ),
+            },
+            {
+              key: "actions",
+              label: "ACCIONES",
+              type: "actions",
+              actions: (row: Client) => (
+                <div className="flex items-center gap-2">
+                  <ITButton
+                    onClick={() => navigate(`/clients/${row.id}`)}
+                    size="small"
+                    variant="ghost"
+                    className="text-emerald-500 hover:text-emerald-700"
+                    title="Ver Detalles"
+                  >
+                    <FaSearchLocation />
+                  </ITButton>
+                  <ITButton
+                    onClick={() => setEditingClient(row)}
+                    size="small"
+                    variant="ghost"
+                    className="text-slate-400 hover:text-slate-600"
+                    title="Editar"
+                  >
+                    <FaEdit />
+                  </ITButton>
+                  <ITButton
+                    onClick={() => setClientToDeleteId(row.id)}
+                    size="small"
+                    variant="ghost"
+                    className="text-red-300 hover:text-red-500"
+                    title="Eliminar"
+                  >
+                    <FaTrash />
+                  </ITButton>
+                </div>
+              ),
+            },
+          ]}
         />
       </div>
 

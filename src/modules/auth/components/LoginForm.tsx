@@ -13,8 +13,10 @@ import * as Yup from "yup";
 
 const LoginFormComponent = ({
   onSubmit,
+  loading = false,
 }: {
   onSubmit: (values: IAuthLogin) => void;
+  loading?: boolean;
 }) => {
   const initialValues = {
     username: "",
@@ -79,9 +81,22 @@ const LoginFormComponent = ({
             touched={touched}
             errors={errors}
           />
-          <div className="mt-4">
-            <ITButton disabled={!isValid} className="w-full" type="submit">
-              Iniciar Sesión
+          <div className="mt-8">
+            <ITButton 
+              disabled={!isValid || loading} 
+              className={`w-full !h-14 !rounded-2xl font-bold text-lg shadow-lg shadow-emerald-200 transition-all ${!isValid || loading ? 'opacity-50' : 'hover:scale-[1.02] active:scale-95 bg-emerald-600 hover:bg-emerald-700'}`} 
+              type="submit"
+            >
+              <div className="flex items-center justify-center gap-3">
+                {loading ? (
+                   <span className="flex items-center gap-2">
+                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                     Autenticando...
+                   </span>
+                ) : (
+                  "Entrar al Sistema"
+                )}
+              </div>
             </ITButton>
           </div>
         </Form>

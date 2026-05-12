@@ -1,16 +1,24 @@
 import { post } from "@app/core/axios/axios";
 import { showToast } from "@app/core/store/toast/toast.slice";
+import { BulkPrintModal } from "@app/modules/locations/components/BulkPrintModal";
 import { LocationForm } from "@app/modules/locations/components/LocationForm";
 import {
+  Location,
   createLocation,
   deleteLocation,
-  getLocationsByClient,
   getPaginatedLocations,
   updateLocation,
 } from "@app/modules/locations/service/locations.service";
 import { ITButton, ITDataTable, ITDialog } from "@axzydev/axzy_ui_system";
 import { useCallback, useState } from "react";
-import { FaEdit, FaPlus, FaQrcode, FaSync, FaTrash } from "react-icons/fa";
+import {
+  FaEdit,
+  FaMapMarkerAlt,
+  FaPlus,
+  FaQrcode,
+  FaSync,
+  FaTrash,
+} from "react-icons/fa";
 import { useDispatch } from "react-redux";
 
 interface Props {
@@ -21,7 +29,7 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
   const dispatch = useDispatch();
   const [refreshKey, setRefreshKey] = useState(0);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isPrintingAll, setIsPrintingAll] = useState(false);
+  const [isBulkPrintOpen, setIsBulkPrintOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
 
   const memoizedFetch = useCallback(
@@ -45,6 +53,7 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
       const url = window.URL.createObjectURL(blob);
       window.open(url, "_blank");
       dispatch(showToast({ message: "PDF de QRs generado", type: "success" }));
+      setIsBulkPrintOpen(false);
     } catch (error) {
       dispatch(
         showToast({ message: "Error al generar el PDF", type: "error" }),
@@ -52,48 +61,43 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
     }
   };
 
-  const handlePrintAll = async () => {
-    setIsPrintingAll(true);
-    try {
-      const res = await getLocationsByClient(clientId);
-      if (res.success && res.data) {
-        const ids = res.data.map((l) => l.id);
-        if (ids.length === 0) {
-          dispatch(
-            showToast({
-              message: "No hay ubicaciones para imprimir",
-              type: "warning",
-            }),
-          );
-          return;
-        }
-        await handlePrintBulk(ids);
-      }
-    } finally {
-      setIsPrintingAll(false);
-    }
-  };
-
-  const handlePrintQR = async (location: Location) => {
-    await handlePrintBulk([location.id]);
-  };
-
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!window.confirm("¿Estás seguro de eliminar esta ubicación?")) return;
     const res = await deleteLocation(id);
     if (res.success) {
       dispatch(showToast({ message: "Ubicación eliminada", type: "success" }));
       setRefreshKey((prev) => prev + 1);
+    } else {
+      dispatch(
+        showToast({
+          message: res.messages?.[0] || "Error al eliminar",
+          type: "error",
+        }),
+      );
     }
   };
 
   const columns = [
     {
       key: "name",
-      label: "Ubicación",
+      label: "Identificación de Ubicación",
       type: "string",
       render: (row: Location) => (
-        <div className="font-bold text-slate-700">{row.name}</div>
+        <div className="flex items-center gap-3 py-1">
+          <div className="p-2 bg-slate-50 rounded-lg text-slate-400 group-hover:text-emerald-500 transition-colors">
+            <FaMapMarkerAlt size={14} />
+          </div>
+          <div>
+            <div className="font-bold text-slate-700 tracking-tight">
+              {row.name}
+            </div>
+            {row.reference && (
+              <div className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-0.5">
+                Ref: {row.reference}
+              </div>
+            )}
+          </div>
+        </div>
       ),
     },
     {
@@ -101,9 +105,9 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
       label: "Zona / Recurrente",
       type: "string",
       render: (row: any) => (
-        <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] font-bold uppercase">
+        <div className="px-3 py-1 bg-emerald-50/50 text-emerald-600 border border-emerald-100/50 rounded-full text-[10px] font-black uppercase tracking-widest inline-block">
           {row.zone?.name || "Sin Zona"}
-        </span>
+        </div>
       ),
     },
     {
@@ -111,33 +115,35 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
       label: "Acciones",
       type: "actions",
       actions: (row: Location) => (
-        <div className="flex gap-2">
+        <div className="flex gap-1 justify-end">
           <ITButton
-            onClick={() => handlePrintQR(row)}
+            onClick={() => {
+              setIsBulkPrintOpen(true);
+            }}
             size="small"
             variant="ghost"
-            className="text-emerald-600"
-            title="QR"
+            className="text-slate-400 hover:text-emerald-600 p-2"
+            title="Asistente QR"
           >
-            <FaQrcode />
+            <FaQrcode size={14} />
           </ITButton>
           <ITButton
             onClick={() => setEditingLocation(row)}
             size="small"
             variant="ghost"
-            className="text-slate-400"
+            className="text-slate-400 hover:text-slate-600 p-2"
             title="Editar"
           >
-            <FaEdit />
+            <FaEdit size={14} />
           </ITButton>
           <ITButton
             onClick={() => handleDelete(row.id)}
             size="small"
             variant="ghost"
-            className="text-red-300"
+            className="text-red-200 hover:text-red-500 p-2"
             title="Eliminar"
           >
-            <FaTrash />
+            <FaTrash size={14} />
           </ITButton>
         </div>
       ),
@@ -145,31 +151,37 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-          Listado de Ubicaciones
-        </h3>
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h3 className="text-sm font-black text-slate-800 uppercase tracking-[0.1em]">
+            Directorio de Ubicaciones
+          </h3>
+          <p className="text-[11px] text-slate-400 font-bold uppercase mt-1 tracking-widest">
+            Gestión de puntos de control y códigos QR
+          </p>
+        </div>
         <div className="flex gap-2">
           <ITButton
             onClick={() => setRefreshKey((prev) => prev + 1)}
             size="small"
-            variant="outlined"
-            className="h-9 w-9 p-0 flex justify-center items-center"
+            variant="ghost"
+            className="h-10 w-10 p-0 flex justify-center items-center bg-slate-50 rounded-xl hover:bg-slate-100"
           >
             <FaSync className="text-slate-400" />
           </ITButton>
           <ITButton
-            onClick={handlePrintAll}
-            disabled={isPrintingAll}
-            className="border-emerald-600 text-emerald-600 hover:bg-emerald-50 h-9 px-4 rounded-xl font-bold flex items-center gap-2 border"
+            onClick={() => setIsBulkPrintOpen(true)}
+            variant="outline"
+            className="h-10 px-6 rounded-xl font-black text-[11px] uppercase tracking-widest border-emerald-100 text-emerald-600 hover:bg-emerald-50 flex items-center gap-2 transition-all"
           >
             <FaQrcode size={12} />
-            {isPrintingAll ? "Generando..." : "Imprimir Todos (QR)"}
+            Imprimir
           </ITButton>
           <ITButton
             onClick={() => setIsCreateModalOpen(true)}
-            className="bg-emerald-600 text-white h-9 px-4 rounded-xl font-bold flex items-center gap-2"
+            color="primary"
+            className="h-10 px-6 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-500/10"
           >
             <FaPlus size={12} />
             Nueva Ubicación
@@ -177,61 +189,97 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
         </div>
       </div>
 
-      <ITDataTable
-        key={refreshKey}
-        columns={columns as any}
-        fetchData={memoizedFetch as any}
-        defaultItemsPerPage={5}
-      />
+      <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+        <ITDataTable
+          key={refreshKey}
+          columns={columns as any}
+          fetchData={memoizedFetch as any}
+          defaultItemsPerPage={5}
+        />
+      </div>
 
       <ITDialog
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title="Nueva Ubicación"
+        title="Registrar Nueva Ubicación"
       >
-        <LocationForm
-          initialData={{
-            clientId: String(clientId),
-            aisle: "",
-            spot: "",
-            number: "",
-            name: "",
-          }}
-          onSubmit={async (data, keepOpen) => {
-            await createLocation(data);
-            if (!keepOpen) {
-              setIsCreateModalOpen(false);
-            }
-            setRefreshKey((prev) => prev + 1);
-            dispatch(
-              showToast({
-                message: "Ubicación creada con éxito",
-                type: "success",
-              }),
-            );
-          }}
-          onCancel={() => setIsCreateModalOpen(false)}
-        />
+        <div className="p-2">
+          <LocationForm
+            initialData={{
+              clientId: String(clientId),
+              aisle: "",
+              spot: "",
+              number: "",
+              name: "",
+            }}
+            onSubmit={async (data, keepOpen) => {
+              const res = await createLocation(data);
+              if (res.success) {
+                if (!keepOpen) {
+                  setIsCreateModalOpen(false);
+                }
+                setRefreshKey((prev) => prev + 1);
+                dispatch(
+                  showToast({
+                    message: "Ubicación creada con éxito",
+                    type: "success",
+                  }),
+                );
+              } else {
+                dispatch(
+                  showToast({
+                    message: res.messages?.[0] || "Error al crear",
+                    type: "error",
+                  }),
+                );
+              }
+            }}
+            onCancel={() => setIsCreateModalOpen(false)}
+          />
+        </div>
       </ITDialog>
 
       <ITDialog
         isOpen={!!editingLocation}
         onClose={() => setEditingLocation(null)}
-        title="Editar Ubicación"
+        title="Actualizar Información de Ubicación"
       >
         {editingLocation && (
-          <LocationForm
-            initialData={editingLocation}
-            onSubmit={async (data) => {
-              await updateLocation(editingLocation.id, data);
-              setEditingLocation(null);
-              setRefreshKey((prev) => prev + 1);
-              dispatch(showToast({ message: "Actualizado", type: "success" }));
-            }}
-            onCancel={() => setEditingLocation(null)}
-          />
+          <div className="p-2">
+            <LocationForm
+              initialData={editingLocation}
+              onSubmit={async (data) => {
+                const res = await updateLocation(editingLocation.id, data);
+                if (res.success) {
+                  setEditingLocation(null);
+                  setRefreshKey((prev) => prev + 1);
+                  dispatch(
+                    showToast({
+                      message: "Ubicación actualizada",
+                      type: "success",
+                    }),
+                  );
+                } else {
+                  dispatch(
+                    showToast({
+                      message: res.messages?.[0] || "Error al actualizar",
+                      type: "error",
+                    }),
+                  );
+                }
+              }}
+              onCancel={() => setEditingLocation(null)}
+            />
+          </div>
         )}
       </ITDialog>
+
+      <BulkPrintModal
+        isOpen={isBulkPrintOpen}
+        onClose={() => setIsBulkPrintOpen(false)}
+        onConfirm={handlePrintBulk}
+        initialClientId={clientId}
+      />
     </div>
   );
 };

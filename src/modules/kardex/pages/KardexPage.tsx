@@ -1,416 +1,463 @@
-import { MediaCarousel } from "@app/core/components/MediaCarousel";
-import { showToast } from "@app/core/store/toast/toast.slice";
+import { ITMediaGrid } from "@app/core/components/ITMediaGrid";
+import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
+import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { translateScanType } from "@app/core/utils/status.utils";
-import { ITBadget, ITButton, ITDataTable, ITDatePicker } from "@axzydev/axzy_ui_system";
+import {
+  ITBadget,
+  ITButton,
+  ITDataTable,
+  ITDatePicker,
+  ITDialog,
+  ITInput,
+} from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaBook, FaEye, FaFileAlt, FaLayerGroup, FaMapMarkerAlt, FaSync, FaTimesCircle, FaUser } from "react-icons/fa";
-import { useDispatch } from "react-redux";
+import { useCallback, useMemo, useState } from "react";
+import {
+  FaBook,
+  FaCalendarAlt,
+  FaCheckCircle,
+  FaEye,
+  FaFileAlt,
+  FaMapMarkerAlt,
+  FaSync,
+  FaTimes,
+  FaUser,
+} from "react-icons/fa";
 import { GoogleMapComponent } from "../../../core/components/GoogleMapComponent";
-import { getUsers } from "../../users/services/UserService";
-import { deleteKardexEntry, deleteKardexMedia, getPaginatedKardex, KardexEntry } from "../services/KardexService";
+import {
+  getPaginatedKardex,
+  KardexEntry,
+} from "../services/KardexService";
 
 const KardexPage = () => {
-    const today = useMemo(() => dayjs().tz("America/Tijuana").toDate(), []);
-    const [selectedDate, setSelectedDate] = useState<any>([today, today]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [refreshKey, setRefreshKey] = useState(0);
-    const [guards, setGuards] = useState<any[]>([]);
-    const dispatch = useDispatch();
-    
-    /* State for viewing details */
-    const [viewingEntry, setViewingEntry] = useState<KardexEntry | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [scanTypeFilter, setScanTypeFilter] = useState("ALL");
+  const [selectedDate, setSelectedDate] = useState<any>([
+    dayjs().tz("America/Tijuana").toDate(),
+    dayjs().tz("America/Tijuana").toDate(),
+  ]);
+  const [viewingEntry, setViewingEntry] = useState<KardexEntry | null>(null);
 
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setRefreshKey(prev => prev + 1);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchTerm]);
+  const externalFilters = useMemo(() => {
+    const filters: any = {};
+    if (Array.isArray(selectedDate) && selectedDate[0] && selectedDate[1]) {
+      filters.date = [
+        dayjs(selectedDate[0]).tz("America/Tijuana").startOf("day").format(),
+        dayjs(selectedDate[1]).tz("America/Tijuana").endOf("day").format(),
+      ];
+    }
+    if (searchTerm.trim()) {
+      filters.search = searchTerm.trim();
+    }
+    if (scanTypeFilter !== "ALL") {
+      filters.scanType = scanTypeFilter;
+    }
+    return filters;
+  }, [selectedDate, searchTerm, scanTypeFilter]);
 
-    // Fetch filters data (Users)
-    useEffect(() => {
-        getUsers().then(res => {
-            if (res.success && res.data) {
-                const onlyGuards = res.data.filter((u: any) => 
-                    u.role === 'GUARD' || u.role === 'SHIFT_GUARD' || u.role === 'MANTENIMIENTO'
-                );
-                setGuards(onlyGuards);
+  const memoizedFetch = useCallback(
+    (params: any) => {
+      return getPaginatedKardex({
+        ...params,
+        filters: { ...params.filters, ...externalFilters },
+      });
+    },
+    [externalFilters],
+  );
+
+  const columns = useMemo(
+    () => [
+      {
+        key: "user",
+        label: "Responsable",
+        render: (row: KardexEntry) => (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-black border border-slate-100 uppercase text-[10px]">
+              {row.user?.name?.[0]}
+              {row.user?.lastName?.[0]}
+            </div>
+            <div>
+              <p className="font-black text-slate-800 uppercase text-[10px] tracking-tight line-clamp-1">
+                {row.user?.name} {row.user?.lastName}
+              </p>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                @{row.user?.username}
+              </span>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: "location",
+        label: "Punto de Control",
+        render: (row: KardexEntry) => (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 border border-indigo-100">
+              <FaMapMarkerAlt size={12} />
+            </div>
+            <div>
+              <p className="font-black text-slate-700 uppercase text-[10px] tracking-tight">
+                {row.location?.name}
+              </p>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: "timestamp",
+        label: "Cronometría",
+        render: (row: KardexEntry) => (
+          <div className="flex flex-col">
+            <span className="text-slate-700 font-black text-[10px] uppercase tracking-tight">
+              {dayjs(row.timestamp).format("HH:mm:ss [HRS]") || "00:00:00"}
+            </span>
+            <span className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">
+              {dayjs(row.timestamp).format("DD MMM, YYYY")}
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: "scanType",
+        label: "Clasificación",
+        render: (row: KardexEntry) => (
+          <ITBadget
+            color={
+              row.scanType === "ASSIGNMENT"
+                ? "success"
+                : row.scanType === "RECURRING"
+                  ? "warning"
+                  : "primary"
             }
-        });
-    }, []);
-
-    const externalFilters = useMemo(() => {
-        const filters: any = {};
-        if (Array.isArray(selectedDate) && selectedDate[0] && selectedDate[1]) {
-            filters.date = [
-                   dayjs(selectedDate[0]).tz("America/Tijuana").startOf("day").format(),
-                   dayjs(selectedDate[1]).tz("America/Tijuana").endOf("day").format(),
-                 ];
-        }
-        if (searchTerm && searchTerm.trim().length > 0) {
-            filters.search = searchTerm.trim();
-        }
-        return filters;
-    }, [selectedDate, searchTerm]);
-
-    const memoizedFetch = useCallback((params: any) => {
-        return getPaginatedKardex(params);
-    }, []);
-
-    const handleDelete = async (row: any) => {
-        if (!window.confirm("¿Deseas eliminar este registro permanentemente?")) return;
-        const res = await deleteKardexEntry(row.id);
-        if (res.success) {
-            dispatch(showToast({ message: "Registro eliminado", type: "success" }));
-            setRefreshKey(prev => prev + 1);
-        }
-    };
-
-    const handleDeleteMedia = async (item: any) => {
-        if (!viewingEntry) return;
-        const key = item.key || item.url.split('/').pop();
-        if (!key) return;
-
-        const res = await deleteKardexMedia(viewingEntry.id, key);
-        if (res.success) {
-            dispatch(showToast({ message: "Archivo eliminado", type: "success" }));
-            setViewingEntry(prev => {
-                if (!prev) return null;
-                return {
-                    ...prev,
-                    media: prev.media?.filter((m: any) => (m.key || m.url.split('/').pop()) !== key)
-                };
-            });
-            setRefreshKey(prev => prev + 1);
-        }
-    };
-
-    const columns = useMemo(() => [
-        { 
-            key: "timestamp", 
-            label: "Fecha/Hora", 
-            type: "string", 
-            sortable: true, 
-            render: (row: any) => dayjs(row.timestamp).format("DD/MM/YYYY HH:mm") 
-        },
-        { 
-            key: "userId", 
-            label: "Usuario", 
-            type: "string", 
-            render: (row: any) => (
-                <div className="flex flex-col">
-                    <span className="font-medium text-slate-700">{row.user?.name} {row.user?.lastName || ''}</span>
-                    <span className="text-xs text-slate-400">{row.user?.username}</span>
-                </div>
-            )
-        },
-        { 
-            key: "location", 
-            label: "Ubicación", 
-            type: "string", 
-            sortable: false, 
-            render: (row: any) => (
-                <div className="flex items-center gap-1.5">
-                    <FaMapMarkerAlt className="text-indigo-400 text-xs" />
-                    <span>{row.location?.name}</span>
-                </div>
-            )
-        },
-        { 
-            key: "scanType", 
-            label: "Tipo", 
-            type: "string", 
-            sortable: true,
-            render: (row: any) => (
-                <ITBadget 
-                    color={row.scanType === 'ASSIGNMENT' ? 'success' : row.scanType === 'RECURRING' ? 'warning' : 'primary'} 
-                    size="small"
-                    variant="filled"
-                >
-                    {translateScanType(row.scanType)}
-                </ITBadget>
-            )
-        },
-        { 
-            key: "media", 
-            label: "Multimedia", 
-            type: "string", 
-            sortable: false, 
-            render: (row: any) => (
-                <div className="flex items-center gap-1 text-slate-500">
-                    {row.media && row.media.length > 0 ? (
-                        <>
-                            <FaFileAlt className="text-blue-400" />
-                            <span className="text-xs font-medium">{row.media.length}</span>
-                        </>
-                    ) : (
-                        <span className="text-xs text-slate-300">-</span>
-                    )}
-                </div>
-            )
-        },
-        {
-            key: "actions",
-            label: "Acciones",
-            type: "actions",
-            actions: (row: any) => (
-                <div className="flex items-center gap-2">
-                    <ITButton
-                        onClick={() => setViewingEntry(row)}
-                        size="small"
-                        color='secondary'
-                        variant="outlined"
-                        className="!p-2"
-                    >
-                        <FaEye />
-                    </ITButton>
-                </div>
-            )
-        }
-    ], [guards, handleDelete]);
+            variant="outlined"
+            className="font-black text-[9px] tracking-widest !px-3"
+          >
+            {translateScanType(row.scanType)}
+          </ITBadget>
+        ),
+      },
+      {
+        key: "multimedia",
+        label: "Evidencia",
+        render: (row: KardexEntry) => (
+          <div className="flex items-center gap-2">
+            {row.media && row.media.length > 0 ? (
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
+                <FaFileAlt size={10} />
+                <span className="text-[10px] font-black">
+                  {row.media.length}
+                </span>
+              </div>
+            ) : (
+              <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+                Sin Archivos
+              </span>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: "actions",
+        label: "Control",
+        render: (row: KardexEntry) => (
+          <ITButton
+            onClick={() => setViewingEntry(row)}
+            variant="outlined"
+            size="small"
+            color="secondary"
+            title="Ver Detalle"
+          >
+            <FaEye size={14} />
+          </ITButton>
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
-    <div className="p-6 min-h-screen">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-          <FaBook className="text-indigo-500" />
-          Kardex
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">Historial de actividades y reportes en tiempo real</p>
-      </div>
+    <div className="p-6 bg-[#F8FAFC] min-h-screen font-sans">
+      <ModuleHeader
+        title="Expediente Kardex"
+        subtitle="Registro histórico de marcajes, evidencias y reportes de campo"
+        icon={FaBook}
+        actions={
+          <div className="flex flex-wrap items-center gap-3 w-full sm:justify-end">
+            <div className="relative w-full sm:w-64">
+              <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+              <ITInput
+                placeholder="BUSCAR RESPONSABLE..."
+                name="search"
+                value={searchTerm}
+                onChange={(e: any) => setSearchTerm(e.target.value)}
+                onBlur={() => {}}
+                className="!h-[44px] !pl-10 !rounded-xl border-slate-100 bg-white !text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors"
+                >
+                  <FaTimes size={12} />
+                </button>
+              )}
+            </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
-        <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 h-[42px] w-full sm:w-64 shadow-sm focus-within:border-emerald-500/50 transition-all">
-          <FaUser className="text-slate-300 text-xs mr-2" />
-          <input
-            type="text"
-            placeholder="Buscar por Guardia..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-transparent text-sm font-bold text-slate-600 outline-none w-full placeholder:text-slate-300 placeholder:font-normal"
-          />
-          {searchTerm.length > 0 && (
-            <button
-              onClick={() => setSearchTerm("")}
-              className="text-slate-300 hover:text-red-400 transition-all"
-              title="Limpiar búsqueda"
-            >
-              <FaTimesCircle className="text-xs" />
-            </button>
-          )}
-        </div>
+            <ITTripleFilter
+              value={scanTypeFilter}
+              onChange={(val) => {
+                setScanTypeFilter(val);
+                setRefreshKey((prev) => prev + 1);
+              }}
+              options={[
+                { label: "TODOS", value: "ALL" },
+                { label: "ASIGNACIÓN", value: "ASSIGNMENT" },
+                { label: "RECURRENTE", value: "RECURRING" },
+              ]}
+            />
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <ITDatePicker
-            label=""
-            name="date"
-            value={selectedDate as any}
-            range
-            onChange={(e) => {
-              const val = e.target.value as any;
-              if (Array.isArray(val)) {
-                const parsedDates = val.map((d) => (d ? new Date(d) : null));
-                setSelectedDate(parsedDates);
-                if (parsedDates[0] && parsedDates[1]) {
-                  setRefreshKey(prev => prev + 1);
+            <ITDatePicker
+              label=""
+              name="date"
+              value={selectedDate as any}
+              range
+              onChange={(e) => {
+                const val = e.target.value as any;
+                if (Array.isArray(val) && val[0] && val[1]) {
+                  setSelectedDate(val.map((d) => (d ? new Date(d) : null)));
+                  setRefreshKey((prev) => prev + 1);
                 }
-              } else if (val) {
-                const date = new Date(val);
-                setSelectedDate([date, date]);
-                setRefreshKey(prev => prev + 1);
-              } else {
-                setSelectedDate(null);
-                setRefreshKey(prev => prev + 1);
-              }
-            }}
-            className="text-sm text-slate-600 outline-none font-medium h-[42px] !border-slate-200"
-          />
-          <ITButton
-            onClick={() => setRefreshKey(prev => prev + 1)}
-            color="secondary"
-            variant="outlined"
-            className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
-            size="small"
-            title="Actualizar tabla"
-          >
-            <FaSync className={`text-xs text-slate-500`} />
-            <span className="text-xs font-bold text-slate-600">Refrescar</span>
-          </ITButton>
-        </div>
-      </div>
+              }}
+              className="!h-[44px] !rounded-xl !w-full sm:!w-64"
+            />
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-        <ITDataTable
-            key={refreshKey}
-            columns={columns as any}
-            fetchData={memoizedFetch as any}
-            externalFilters={externalFilters}
-            defaultItemsPerPage={10}
+            <ITButton
+              onClick={() => setRefreshKey((prev) => prev + 1)}
+              variant="outline"
+              className="!h-[44px] !rounded-xl border-slate-200"
+            >
+              <FaSync className="text-slate-400" />
+            </ITButton>
+          </div>
+        }
+      />
+
+      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mt-6">
+        <ITDataTable<KardexEntry & Record<string, unknown>>
+          key={refreshKey}
+          columns={columns as any}
+          fetchData={memoizedFetch as any}
+          externalFilters={externalFilters}
+          defaultItemsPerPage={10}
         />
       </div>
 
-      {viewingEntry && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-          <div 
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
-            onClick={() => setViewingEntry(null)}
-          />
-      
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border border-slate-100 animate-in fade-in zoom-in duration-200">
-            
-            <div className="px-8 py-6 flex justify-between items-center bg-white border-b border-slate-100 z-10">
-              <div>
-                <div className="flex items-center gap-3 mb-1">
-                   <h3 className="text-2xl font-bold text-slate-800">Detalle de Actividad</h3>
+      <ITDialog
+        isOpen={!!viewingEntry}
+        onClose={() => setViewingEntry(null)}
+        title="Detalle del Registro"
+        className="!max-w-5xl !max-h-[90vh] !overflow-y-auto"
+      >
+        {viewingEntry && (
+          <div className="p-8 space-y-10">
+            {/* Header Detail */}
+            <div className="flex flex-col lg:flex-row justify-between gap-8 pb-8 border-b border-slate-100">
+              <div className="flex items-start gap-5">
+                <div className="w-16 h-16 rounded-[24px] bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 shadow-sm text-xl font-black uppercase">
+                  {viewingEntry.user?.name?.[0]}
+                  {viewingEntry.user?.lastName?.[0]}
                 </div>
-                <p className="text-sm text-slate-500">Registrado el {dayjs(viewingEntry.timestamp).format("DD [de] MMMM, YYYY [a las] HH:mm a")}</p>
-              </div>
-              <button 
-                onClick={() => setViewingEntry(null)} 
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-all"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-            
-            <div className="p-8 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                
-                <div className="lg:col-span-8 space-y-8">
-                  {/* Multimedia Section - Prominent */}
-                  <section>
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                          <span className="w-1 h-4 bg-indigo-500 rounded-full block"></span>
-                          Evidencia Multimedia
-                      </h4>
-                      {viewingEntry.media && viewingEntry.media.length > 0 && 
-                          <span className="text-xs bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-bold">
-                              {viewingEntry.media.length} elementos
-                          </span>
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+                      {viewingEntry.user?.name} {viewingEntry.user?.lastName}
+                    </h2>
+                    <ITBadget
+                      color={
+                        viewingEntry.scanType === "ASSIGNMENT"
+                          ? "success"
+                          : "warning"
                       }
+                      variant="outlined"
+                      className="font-black text-[9px] tracking-widest px-3"
+                    >
+                      {translateScanType(viewingEntry.scanType)}
+                    </ITBadget>
+                  </div>
+                  <div className="flex items-center gap-4 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                    <div className="flex items-center gap-1.5">
+                      <FaCalendarAlt className="text-indigo-400" />
+                      {dayjs(viewingEntry.timestamp).format("DD MMMM, YYYY")}
                     </div>
-      
-                    {viewingEntry.media && viewingEntry.media.length > 0 ? (
-                      <MediaCarousel 
-                        media={viewingEntry.media as any} 
-                        title="Evidencia" 
-                        onDelete={handleDeleteMedia}
-                      />
+                    <div className="flex items-center gap-1.5">
+                      <FaSync className="text-emerald-400" />
+                      {dayjs(viewingEntry.timestamp).format("HH:mm:ss [HRS]")}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 h-fit self-end lg:self-center">
+                {/* <ITButton
+                  variant="outline"
+                  className="!h-11 !px-5 !rounded-xl border-slate-100 !text-slate-400 hover:!text-rose-500 hover:!bg-rose-50"
+                  onClick={handleDeleteEntry}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? <ITLoader size="sm" /> : <FaTrash />}
+                </ITButton> */}
+                <ITButton
+                  variant="filled"
+                  onClick={() => setViewingEntry(null)}
+                  className="!h-11 !px-8 !rounded-xl shadow-xl shadow-emerald-100"
+                >
+                  CERRAR EXPEDIENTE
+                </ITButton>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+              {/* Left Column: Evidence & Notes */}
+              <div className="lg:col-span-7 space-y-10">
+                <section className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                      Evidencia Fotográfica
+                    </h4>
+                  </div>
+                  {viewingEntry.media && viewingEntry.media.length > 0 ? (
+                    <ITMediaGrid media={viewingEntry.media} gridSize={240} />
+                  ) : (
+                    <div className="py-16 bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center">
+                      <FaFileAlt className="text-slate-200 text-4xl mb-4" />
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Sin material adjunto
+                      </p>
+                    </div>
+                  )}
+                </section>
+
+                <section className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                      Reporte y Observaciones
+                    </h4>
+                  </div>
+                  <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
+                    {viewingEntry.notes ? (
+                      <div className="space-y-4">
+                        {viewingEntry.notes.split("\n").map((line, i) => {
+                          const trimmed = line.trim();
+                          if (
+                            trimmed.startsWith("[ ]") ||
+                            trimmed.startsWith("[x]")
+                          ) {
+                            const isChecked = trimmed.startsWith("[x]");
+                            return (
+                              <div
+                                key={i}
+                                className="flex items-center gap-3 p-3 bg-slate-50/50 rounded-xl border border-slate-50 transition-all hover:bg-white hover:border-slate-100"
+                              >
+                                <div
+                                  className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] ${isChecked ? "bg-emerald-500 text-white shadow-lg shadow-emerald-100" : "bg-white text-slate-200 border border-slate-100"}`}
+                                >
+                                  <FaCheckCircle />
+                                </div>
+                                <span
+                                  className={`text-[11px] font-black uppercase tracking-tight ${isChecked ? "text-slate-300 line-through" : "text-slate-600"}`}
+                                >
+                                  {trimmed.replace(/\[.\]/, "").trim()}
+                                </span>
+                              </div>
+                            );
+                          }
+                          if (trimmed.startsWith("---"))
+                            return (
+                              <div
+                                key={i}
+                                className="border-t border-slate-50 my-6"
+                              />
+                            );
+                          if (!trimmed) return <div key={i} className="h-2" />;
+                          return (
+                            <p
+                              key={i}
+                              className="text-[12px] font-bold text-slate-600 leading-relaxed pl-4 border-l-2 border-indigo-100 italic"
+                            >
+                              "{trimmed}"
+                            </p>
+                          );
+                        })}
+                      </div>
                     ) : (
-                      <div className="py-12 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-center bg-slate-50/50">
-                        <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3">
-                          <FaFileAlt className="text-slate-300" />
-                        </div>
-                        <p className="text-sm font-medium text-slate-500">Sin evidencia adjunta</p>
-                        <p className="text-xs text-slate-400">El usuario no subió fotos ni videos en este reporte.</p>
+                      <div className="text-center py-6">
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                          No se registraron notas adicionales
+                        </p>
                       </div>
                     )}
-                  </section>
-                  
-                  <section className="space-y-3">
-                      <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2.5">
-                              <h4 className="text-sm font-bold text-slate-800">Observaciones</h4>
-                          </div>
-                          <span className="text-xs font-medium px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200/60">
-                              {viewingEntry.notes ? `${viewingEntry.notes.split('\n').filter(l => l.trim()).length} notas` : 'Vacío'}
-                          </span>
-                      </div>
-                      <div className="bg-white p-5 rounded-xl border border-slate-200/60">
-                          {viewingEntry.notes ? (
-                              <div className="space-y-2.5">
-                                  {viewingEntry.notes.split('\n').map((line, i) => {
-                                      if (line.trim().startsWith('[ ]') || line.trim().startsWith('[x]')) {
-                                          const isChecked = line.trim().startsWith('[x]');
-                                          const text = line.replace(/\[.\]/, '').trim();
-                                          return (
-                                              <div key={i} className="flex items-start gap-3 p-2 rounded-lg hover:bg-emerald-50/50 transition-all">
-                                                  <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                                                      isChecked ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-slate-300'
-                                                  }`}>
-                                                      {isChecked && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
-                                                  </div>
-                                                  <span className={`text-sm ${isChecked ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{text}</span>
-                                              </div>
-                                          );
-                                      }
-                                      if (line.trim().startsWith('---')) return <hr key={i} className="my-4 border-slate-100" />;
-                                      if (!line.trim()) return <div key={i} className="h-2"></div>;
-                                      return (
-                                          <p key={i} className="text-sm text-slate-700 leading-relaxed pl-2 border-l-2 border-emerald-500/20">{line}</p>
-                                      );
-                                  })}
-                              </div>
-                          ) : (
-                              <div className="flex flex-col items-center justify-center py-8 text-center text-slate-400">
-                                  <FaFileAlt className="text-2xl mb-2 opacity-20" />
-                                  <span className="text-sm font-medium">Sin observaciones registradas</span>
-                              </div>
-                          )}
-                      </div>
-                  </section>
-                </div>
-      
-                <div className="lg:col-span-4 space-y-6">
-                   {viewingEntry.latitude && viewingEntry.longitude ? (
-                       <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-                           <h5 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-4 flex items-center gap-2">
-                               <FaMapMarkerAlt className="text-indigo-400" />
-                               Ubicación de Escaneo
-                           </h5>
-                           <GoogleMapComponent 
-                               lat={Number(viewingEntry.latitude)} 
-                               lng={Number(viewingEntry.longitude)} 
-                               height="200px"
-                           />
-                           <div className="mt-3">
-                               <p className="text-[10px] text-slate-400 font-medium italic">
-                                   GPS: {viewingEntry.latitude.toFixed(6)}, {viewingEntry.longitude.toFixed(6)}
-                               </p>
-                           </div>
-                       </div>
-                   ) : null}
+                  </div>
+                </section>
+              </div>
 
-                   <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-                      <h5 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-4">Detalles del Reporte</h5>
-                      <div className="space-y-4">
-                          <div className="flex items-start gap-4">
-                              <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0 text-indigo-500"><FaUser /></div>
-                              <div>
-                                  <p className="text-xs text-slate-400 font-medium">Realizado por</p>
-                                  <p className="text-sm font-bold text-slate-800">{viewingEntry.user?.name} {viewingEntry.user?.lastName || ''}</p>
-                                  <p className="text-xs text-slate-500">{viewingEntry.user?.username}</p>
-                              </div>
-                          </div>
-                          <div className="flex items-start gap-4">
-                              <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0 text-emerald-500"><FaMapMarkerAlt /></div>
-                              <div>
-                                  <p className="text-xs text-slate-400 font-medium">Ubicación</p>
-                                  <p className="text-sm font-bold text-slate-800">{viewingEntry.location?.name}</p>
-                                  <p className="text-xs text-slate-500">Pasillo {viewingEntry.location?.aisle}</p>
-                              </div>
-                          </div>
-                          <div className="flex items-start gap-4">
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                  viewingEntry.scanType === 'ASSIGNMENT' ? 'bg-blue-50 text-blue-500' : 
-                                  viewingEntry.scanType === 'RECURRING' ? 'bg-orange-50 text-orange-500' : 'bg-slate-50 text-slate-500'
-                              }`}><FaLayerGroup /></div>
-                              <div>
-                                  <p className="text-xs text-slate-400 font-medium">Clasificación</p>
-                                  <p className="text-sm font-bold text-slate-800">{translateScanType(viewingEntry.scanType)}</p>
-                              </div>
-                          </div>
+              {/* Right Column: Context & Map */}
+              <div className="lg:col-span-5 space-y-8">
+                <section className="bg-slate-50/50 p-8 rounded-[32px] border border-slate-100 space-y-8">
+                  <div>
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">
+                      Ubicación del Evento
+                    </h4>
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-100 flex-shrink-0">
+                        <FaMapMarkerAlt size={18} />
                       </div>
-                   </div>
-                </div>
+                      <div>
+                        <p className="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">
+                          {viewingEntry.location?.name}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {viewingEntry.latitude && (
+                    <div className="rounded-[24px] overflow-hidden border-4 border-white shadow-xl shadow-slate-200/50">
+                      <GoogleMapComponent
+                        lat={Number(viewingEntry.latitude)}
+                        lng={Number(viewingEntry.longitude)}
+                        height="280px"
+                        zoom={17}
+                        gestureHandling="cooperative"
+                      />
+                    </div>
+                  )}
+
+                  <div className="pt-6 border-t border-slate-100 grid grid-cols-2 gap-4">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                        Clasificación
+                      </p>
+                      <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight">
+                        {translateScanType(viewingEntry.scanType)}
+                      </p>
+                    </div>
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                        ID Transacción
+                      </p>
+                      <p className="text-[10px] font-black text-slate-700 uppercase tracking-tight truncate">
+                        #{viewingEntry.id.slice(0, 8)}
+                      </p>
+                    </div>
+                  </div>
+                </section>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </ITDialog>
     </div>
   );
 };

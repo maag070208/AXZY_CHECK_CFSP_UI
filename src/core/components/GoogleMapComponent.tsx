@@ -9,6 +9,7 @@ interface GoogleMapComponentProps {
     className?: string;
     onLocationSelect?: (lat: number, lng: number) => void;
     isEditable?: boolean;
+    gestureHandling?: 'greedy' | 'cooperative' | 'none' | 'auto';
 }
 
 // Sub-component to handle map centering when props change
@@ -29,7 +30,8 @@ export const GoogleMapComponent = ({
     height = "300px",
     className = "",
     onLocationSelect,
-    isEditable = false
+    isEditable = false,
+    gestureHandling = 'cooperative'
 }: GoogleMapComponentProps) => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBEcey4scuaufZ6TD4oOZZKjO';
 
@@ -61,7 +63,7 @@ export const GoogleMapComponent = ({
                 <Map
                     defaultCenter={{ lat, lng }}
                     defaultZoom={zoom}
-                    gestureHandling={'greedy'}
+                    gestureHandling={gestureHandling}
                     disableDefaultUI={false}
                     onClick={handleMapClick}
                     mapId="bf3fcca21542f575"

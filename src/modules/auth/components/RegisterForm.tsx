@@ -1,11 +1,11 @@
+import { IAuthRegister } from "@app/core/types/auth.types";
 import { ITButton, ITInput } from "@axzydev/axzy_ui_system";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required("El nombre es requerido"),
-  lastName: Yup.string().required("El apellido es requerido"),
-  email: Yup.string().email("Correo inválido").required("El correo es requerido"),
+  username: Yup.string().required("El usuario es requerido"),
   password: Yup.string()
     .min(6, "La contraseña debe tener al menos 6 caracteres")
     .required("La contraseña es requerida"),
@@ -15,13 +15,13 @@ const validationSchema = Yup.object().shape({
 });
 
 interface RegisterFormProps {
-  onSubmit: (values: any) => void;
+  onSubmit: (values: IAuthRegister) => void;
 }
 
 const RegisterForm = ({ onSubmit }: RegisterFormProps) => {
   return (
     <Formik
-      initialValues={{ name: "", lastName: "", email: "", password: "", confirmPassword: "" }}
+      initialValues={{ name: "", username: "", password: "", confirmPassword: "", roleId: "GUARD_ROLE_ID" }}
       validationSchema={validationSchema}
       onSubmit={(values) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -49,22 +49,13 @@ const RegisterForm = ({ onSubmit }: RegisterFormProps) => {
             placeholder="Ingrese nombre"
           />
           <ITInput
-            label="Apellido"
-            name="lastName"
-            value={values.lastName}
+            label="Usuario"
+            name="username"
+            value={values.username}
             onChange={handleChange}
             onBlur={handleBlur}
-            error={touched.lastName && errors.lastName ? errors.lastName : undefined}
-            placeholder="Ingrese apellido"
-          />
-          <ITInput
-            label="Correo"
-            name="email"
-            value={values.email}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.email && errors.email ? errors.email : undefined}
-            placeholder="Ingrese correo"
+            error={touched.username && errors.username ? errors.username : undefined}
+            placeholder="Ingrese usuario"
           />
 
           <ITInput

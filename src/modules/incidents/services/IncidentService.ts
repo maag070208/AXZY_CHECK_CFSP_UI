@@ -3,29 +3,41 @@ import { TResult } from "@app/core/types/TResult";
 
 export interface Incident {
   id: string;
+  guardId: string;
   title: string;
+  categoryId: string;
+  typeId: string;
   description: string;
-  categoryId?: string;
-  typeId?: string;
-  category?: { id: string; name: string; value: string };
-  type?: { id: string; name: string; value: string };
-  status: "PENDING" | "ATTENDED";
-  createdAt: string;
-  resolvedAt?: string;
+  media: string[];
   latitude?: number;
   longitude?: number;
-  media?: { type: 'IMAGE' | 'VIDEO'; url: string; key?: string }[];
-  guard?: { 
-      id: string;
-      name: string; 
-      lastName: string;
-      username: string;
+  createdAt: string;
+  resolvedAt?: string;
+  resolvedById?: string;
+  status: "PENDING" | "ATTENDED";
+  clientId: string;
+  guard: {
+    id: string;
+    name: string;
+    lastName: string;
+    username: string;
   };
   resolvedBy?: {
-      id: string;
-      name: string;
-      lastName: string;
-      username: string;
+    id: string;
+    name: string;
+    lastName: string;
+  };
+  category: {
+    id: string;
+    name: string;
+  };
+  type: {
+    id: string;
+    name: string;
+  };
+  client: {
+    id: string;
+    name: string;
   };
 }
 

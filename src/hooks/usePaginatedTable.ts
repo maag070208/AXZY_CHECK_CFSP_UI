@@ -135,7 +135,7 @@ export function usePaginatedTable({
               filters
             });
           } else {
-            setError(response.message || "Error al obtener los datos");
+            setError(response.messages?.[0] || "Error al obtener los datos");
           }
         }
       } catch (err) {
@@ -232,7 +232,7 @@ const fetchDataWithOverride = useCallback(
             }
           }
         } else {
-          setError(response.message || "Error al obtener los datos");
+          setError(response.messages?.[0] || "Error al obtener los datos");
         }
       }
     } catch (err) {

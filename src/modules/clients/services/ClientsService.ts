@@ -1,71 +1,69 @@
 import { get, post, put, remove } from "@app/core/axios/axios";
+import { TResult } from "@app/core/types/TResult";
 
 export interface Client {
-    id: number;
+    id: string;
+    name: string;
+    address?: string | null;
+    rfc?: string | null;
+    contactName?: string | null;
+    contactPhone?: string | null;
+    active: boolean;
+    softDelete: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+    deletedAt?: string | null;
+    locations?: any[]; // Basic representation
+    users?: any[];
+    zones?: any[];
+}
+
+export interface ClientCreate {
     name: string;
     address?: string;
     rfc?: string;
     contactName?: string;
     contactPhone?: string;
-    active: boolean;
-    _count?: {
-        locations: number;
-    };
-    users?: Array<{ id: number; username: string }>;
+    active?: boolean;
+    appUsername?: string;
+    appPassword?: string;
 }
 
-export const getClientById = async (id: string | number) => {
-    try {
-        const res = await get<any>(`/clients/${id}`);
-        return res;
-    } catch (error) {
-        console.error("Error fetching client by id", error);
-        throw error;
-    }
+export interface ClientUpdate {
+    name?: string;
+    address?: string;
+    rfc?: string;
+    contactName?: string;
+    contactPhone?: string;
+    active?: boolean;
+    appUsername?: string;
+    appPassword?: string;
+    softDelete?: boolean;
+}
+
+export interface DatatableResponse<T> {
+    rows: T[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
+export const getClientById = async (id: string | number): Promise<TResult<Client>> => {
+    return await get<Client>(`/clients/${id}`);
 };
 
-export const getPaginatedClients = async (params: any) => {
-    try {
-        const res = await post<any>("/clients/datatable", params);
-        if (res.success && res.data) {
-            return {
-                data: res.data.rows || [],
-                total: res.data.total || 0,
-            };
-        }
-        return { data: [], total: 0 };
-    } catch (error) {
-        console.error("Error fetching clients", error);
-        throw error;
-    }
+export const getPaginatedClients = async (params: any): Promise<TResult<DatatableResponse<Client>>> => {
+    return await post<DatatableResponse<Client>>("/clients/datatable", params);
 };
 
-export const createClient = async (data: Partial<Client>) => {
-    try {
-        const response = await post("/clients", data);
-        return response.data;
-    } catch (error) {
-        console.error("Error creating client", error);
-        throw error;
-    }
+export const createClient = async (data: ClientCreate): Promise<TResult<Client[]>> => {
+    return await post<Client[]>("/clients", data);
 };
 
-export const updateClient = async (id: number, data: Partial<Client>) => {
-    try {
-        const response = await put(`/clients/${id}`, data);
-        return response.data;
-    } catch (error) {
-        console.error("Error updating client", error);
-        throw error;
-    }
+export const updateClient = async (id: string | number, data: ClientUpdate): Promise<TResult<Client[]>> => {
+    return await put<Client[]>(`/clients/${id}`, data);
 };
 
-export const deleteClient = async (id: number) => {
-    try {
-        const response = await remove(`/clients/${id}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error deleting client", error);
-        throw error;
-    }
+export const deleteClient = async (id: string | number): Promise<TResult<Client[]>> => {
+    return await remove<Client[]>(`/clients/${id}`);
 };

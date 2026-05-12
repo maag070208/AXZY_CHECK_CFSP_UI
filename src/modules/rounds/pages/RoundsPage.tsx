@@ -1,3 +1,6 @@
+import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
+import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITBadget,
@@ -5,34 +8,34 @@ import {
   ITDataTable,
   ITDatePicker,
   ITDialog,
+  ITInput,
+  ITLoader,
   ITSearchSelect,
 } from "@axzydev/axzy_ui_system";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  FaClock,
+  FaBuilding,
   FaEye,
+  FaRoute,
   FaStop,
   FaSync,
-  FaTimesCircle,
+  FaTimes,
   FaUser,
-  FaBuilding,
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getRoutesList } from "../../routes/services/RoutesService";
-import { getUsers } from "../../users/services/UserService";
 import {
   endRound,
   getPaginatedRounds,
   IRound,
 } from "../services/RoundsService";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import tz from "dayjs/plugin/timezone";
-import { useCatalog } from "@app/core/hooks/catalog.hook";
 
 dayjs.extend(utc);
-dayjs.extend(tz);
+dayjs.extend(timezone);
 
 const RoundsPage = () => {
   const [searchParams] = useSearchParams();
@@ -46,6 +49,7 @@ const RoundsPage = () => {
     searchParams.get("clientId") || "",
   );
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isFinishing, setIsFinishing] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -53,67 +57,7 @@ const RoundsPage = () => {
   const user = useSelector((state: any) => state.auth);
   const isResident = user?.role === "RESDN";
 
-  // Debounce search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setRefreshKey((prev) => prev + 1);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // Sync selectedClientId with URL
-  useEffect(() => {
-    const cid = searchParams.get("clientId");
-    if (cid) {
-      setSelectedClientId(cid);
-      setRefreshKey((prev) => prev + 1);
-    }
-  }, [searchParams]);
-
-  const externalFilters = useMemo(() => {
-    const filters: any = { refreshKey };
-
-    if (Array.isArray(selectedDate) && selectedDate[0] && selectedDate[1]) {
-      filters.date = [
-        dayjs(selectedDate[0]).tz("America/Tijuana").startOf("day").format(),
-        dayjs(selectedDate[1]).tz("America/Tijuana").endOf("day").format(),
-      ];
-    }
-
-    if (searchTerm && searchTerm.trim().length > 0) {
-      filters.search = searchTerm.trim();
-    }
-
-    if (statusFilter && statusFilter !== "ALL") {
-      filters.status = statusFilter;
-    }
-
-    if (selectedClientId) {
-      filters.clientId = selectedClientId;
-    } else if (isResident && user?.clientId) {
-      filters.clientId = user.clientId;
-    }
-
-    return filters;
-  }, [
-    selectedDate,
-    refreshKey,
-    searchTerm,
-    statusFilter,
-    selectedClientId,
-    isResident,
-    user?.id,
-  ]);
-
-  const memoizedFetch = useCallback((params: any) => {
-    return getPaginatedRounds({
-      ...params,
-      sort: params.sort || { key: "startTime", direction: "desc" },
-    });
-  }, []);
-
   const [routesMap, setRoutesMap] = useState<Record<string, string>>({});
-  const [guards, setGuards] = useState<any[]>([]);
   const [roundToFinishId, setRoundToFinishId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -126,130 +70,145 @@ const RoundsPage = () => {
         setRoutesMap(map);
       }
     });
-
-    getUsers().then((res) => {
-      if (res.success && res.data) {
-        const onlyGuards = res.data.filter((u: any) => {
-          const roleName = typeof u.role === "object" ? u.role.name : u.role;
-          return (
-            roleName === "GUARD" || roleName === "SHIFT" || roleName === "MAINT"
-          );
-        });
-        setGuards(onlyGuards);
-      }
-    });
   }, []);
 
-  const handleEndRound = (roundId: string) => {
-    setRoundToFinishId(roundId);
-  };
+  const externalFilters = useMemo(() => {
+    const filters: any = {};
+
+    if (Array.isArray(selectedDate) && selectedDate[0] && selectedDate[1]) {
+      filters.date = [
+        dayjs(selectedDate[0]).tz("America/Tijuana").startOf("day").format(),
+        dayjs(selectedDate[1]).tz("America/Tijuana").endOf("day").format(),
+      ];
+    }
+
+    if (searchTerm.trim()) {
+      filters.search = searchTerm.trim();
+    }
+
+    if (statusFilter !== "ALL") {
+      filters.status = statusFilter;
+    }
+
+    if (selectedClientId) {
+      filters.clientId = selectedClientId;
+    } else if (isResident && user?.clientId) {
+      filters.clientId = user.clientId;
+    }
+
+    return filters;
+  }, [
+    selectedDate,
+    searchTerm,
+    statusFilter,
+    selectedClientId,
+    isResident,
+    user?.clientId,
+  ]);
+
+  const memoizedFetch = useCallback(
+    async (params: any) => {
+      const res = await getPaginatedRounds({
+        ...params,
+        filters: { ...params.filters, ...externalFilters },
+        sort: params.sort || { key: "startTime", direction: "desc" },
+      });
+      return res;
+    },
+    [externalFilters],
+  );
 
   const confirmEndRound = async () => {
-    if (!roundToFinishId) return;
-    try {
-      const res = await endRound(roundToFinishId);
-      setRoundToFinishId(null);
-      if (res.success) {
-        dispatch(
-          showToast({
-            message: "Ronda finalizada correctamente",
-            type: "success",
-          }),
-        );
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        dispatch(
-          showToast({
-            message: res.messages?.join("\n") || "Error al finalizar ronda",
-            type: "error",
-          }),
-        );
-      }
-    } catch (e) {
-      setRoundToFinishId(null);
-      dispatch(
-        showToast({ message: "Error al finalizar ronda", type: "error" }),
-      );
+    if (!roundToFinishId || isFinishing) return;
+    setIsFinishing(true);
+    const res = await endRound(roundToFinishId);
+    setIsFinishing(false);
+    setRoundToFinishId(null);
+    if (res.success) {
+      dispatch(showToast({ message: "Ronda finalizada", type: "success" }));
+      setRefreshKey((prev) => prev + 1);
+    } else {
+      dispatch(showToast({ message: "Error al finalizar", type: "error" }));
     }
   };
 
-  const memoizedColumns = useMemo(
+  const columns = useMemo(
     () => [
-      ...(isResident
-        ? []
-        : [
-            {
-              key: "client",
-              label: "Cliente",
-              type: "string",
-              render: (row: any) => (
-                <div className="flex items-center gap-2">
-                  <FaBuilding className="text-slate-400 text-xs" />
-                  <span className="font-bold text-slate-700 uppercase text-[11px] tracking-tight">
-                    {row.client?.name ||
-                      row.recurringConfiguration?.client?.name ||
-                      row.guard?.client?.name ||
-                      "Sin Cliente"}
-                  </span>
-                </div>
-              ),
-            },
-          ]),
       {
         key: "recurringConfiguration",
-        label: "Ronda",
-        type: "string",
-        sortable: true,
-        render: (row: any) => (
-          <span className="font-semibold text-slate-700">
-            {row.recurringConfiguration?.title ||
-              routesMap[row.recurringConfigurationId] ||
-              "Ronda General"}
-          </span>
-        ),
-      },
-      {
-        key: "guard",
-        label: "Guardia",
-        type: "string",
+        label: "Ruta de Servicio",
         render: (row: IRound) => (
-          <div className="font-medium text-slate-700">
-            {row.guard.name} {row.guard.lastName}
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100/50">
+              <FaRoute size={16} />
+            </div>
+            <div>
+              <p className="font-black text-slate-800 uppercase text-[11px] tracking-tight line-clamp-1">
+                {row.recurringConfiguration?.title ||
+                  routesMap[row.recurringConfigurationId] ||
+                  "Ronda General"}
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <FaBuilding className="text-slate-400 text-[9px]" />
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                  {row.recurringConfiguration?.client?.name ||
+                    row.client?.name ||
+                    "Sin Cliente"}
+                </span>
+              </div>
+            </div>
           </div>
         ),
       },
       {
-        key: "startTime",
-        label: "Inicio",
-        type: "string",
-        sortable: true,
+        key: "guard",
+        label: "Personal Asignado",
         render: (row: IRound) => (
-          <span className="text-slate-600 text-sm">
-            {new Date(row.startTime).toLocaleString()}
-          </span>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-black border border-slate-100 uppercase text-[10px]">
+              {row.guard.name?.[0]}
+              {row.guard.lastName?.[0]}
+            </div>
+            <div>
+              <p className="font-black text-slate-800 uppercase text-[10px] tracking-tight line-clamp-1">
+                {row.guard.name} {row.guard.lastName}
+              </p>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                ID: {row.guard.id.substring(0, 8)}
+              </span>
+            </div>
+          </div>
         ),
       },
       {
-        key: "endTime",
-        label: "Fin",
-        type: "string",
-        sortable: true,
+        key: "times",
+        label: "Cronología",
         render: (row: IRound) => (
-          <span className="text-slate-600 text-sm">
-            {row.endTime ? new Date(row.endTime).toLocaleString() : "-"}
-          </span>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="text-slate-700 font-black text-[10px] uppercase tracking-tight">
+                {dayjs(row.startTime).format("DD MMM, HH:mm")}
+              </span>
+            </div>
+            {row.endTime && (
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                <span className="text-red-500 font-bold text-[10px] uppercase tracking-tight">
+                  {dayjs(row.endTime).format("DD MMM, HH:mm")}
+                </span>
+              </div>
+            )}
+          </div>
         ),
       },
       {
         key: "status",
         label: "Estado",
-        type: "string",
-        sortable: true,
         render: (row: IRound) => (
           <ITBadget
-            color={row.status === "COMPLETED" ? "secondary" : "warning"}
-            variant="filled"
             size="small"
+            color={row.status === "COMPLETED" ? "success" : "warning"}
           >
             {row.status === "COMPLETED" ? "FINALIZADA" : "EN CURSO"}
           </ITBadget>
@@ -257,174 +216,171 @@ const RoundsPage = () => {
       },
       {
         key: "actions",
-        label: "Acciones",
-        type: "actions",
-        actions: (row: IRound) => (
-          <div className="flex gap-2">
+        label: "Control",
+        render: (row: IRound) => (
+          <div className="flex items-center gap-2">
             <ITButton
               onClick={() => navigate(`/rounds/${row.id}`)}
-              size="small"
-              color="primary"
               variant="outlined"
-              className="!p-2"
-              title="Ver detalles"
+              size="small"
+              title="Detalles"
             >
-              <FaEye />
+              <FaEye size={14} />
             </ITButton>
-
             {row.status === "IN_PROGRESS" && (
               <ITButton
-                onClick={() => handleEndRound(row.id)}
+                onClick={() => setRoundToFinishId(row.id)}
+                variant="outlined"
                 size="small"
-                color="danger"
-                variant="filled"
-                className="!p-2"
-                title="Finalizar Ronda (Admin)"
+                color="error"
+                title="Finalizar"
               >
-                <FaStop />
+                <FaStop size={12} />
               </ITButton>
             )}
           </div>
         ),
       },
     ],
-    [routesMap, navigate, guards],
+    [navigate, routesMap],
   );
 
   return (
-    <div className="p-6 min-h-screen">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-          <FaClock className="text-blue-500" />
-          Historial de recorridos
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">
-          Historial y supervisión de recorridos por cliente
-        </p>
-      </div>
+    <div className="p-6 bg-[#F8FAFC] min-h-screen font-sans">
+      <ModuleHeader
+        title="Historial de Rondas"
+        subtitle="Supervisión y cronología de recorridos operativos en tiempo real"
+        icon={FaRoute}
+        actions={
+          <div className="flex flex-wrap items-center gap-3 w-full sm:justify-end">
+            {!isResident && (
+              <div className="w-full sm:w-56">
+                <ITSearchSelect
+                  placeholder="FILTRAR POR CLIENTE..."
+                  options={(clients || []).map((c: any) => ({
+                    label: c.name,
+                    value: c.id,
+                  }))}
+                  value={selectedClientId}
+                  onChange={(val) => {
+                    setSelectedClientId(val);
+                    setRefreshKey((prev) => prev + 1);
+                  }}
+                  className="!h-[44px] !rounded-xl"
+                />
+              </div>
+            )}
 
-      <div className="flex flex-wrap items-center justify-end gap-3 mb-8 w-full">
-        {!isResident && (
-          <div className="w-full sm:w-64">
-            <ITSearchSelect
-              placeholder="Filtrar por Cliente"
-              options={(clients || []).map((c: any) => ({
-                label: c.name,
-                value: c.id,
-              }))}
-              value={selectedClientId}
+            <div className="relative w-full sm:w-56">
+              <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+              <ITInput
+                placeholder="BUSCAR GUARDIA..."
+                name="search"
+                value={searchTerm}
+                onChange={(e: any) => setSearchTerm(e.target.value)}
+                onBlur={() => {}}
+                className="!h-[44px] !pl-10 !rounded-xl border-slate-100 bg-white !text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors"
+                >
+                  <FaTimes size={12} />
+                </button>
+              )}
+            </div>
+
+            <ITTripleFilter
+              value={statusFilter}
               onChange={(val) => {
-                setSelectedClientId(val);
+                setStatusFilter(val);
                 setRefreshKey((prev) => prev + 1);
               }}
+              options={[
+                { label: "TODAS", value: "ALL" },
+                { label: "ACTIVAS", value: "IN_PROGRESS" },
+                { label: "HISTORIAL", value: "COMPLETED" },
+              ]}
             />
-          </div>
-        )}
 
-        <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 h-[42px] w-full sm:w-64 shadow-sm focus-within:border-emerald-500/50 transition-all">
-          <FaUser className="text-slate-300 text-xs mr-2" />
-          <input
-            type="text"
-            placeholder="Buscar Guardia..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-transparent text-sm font-bold text-slate-600 outline-none w-full placeholder:text-slate-300 placeholder:font-normal"
-          />
-          {searchTerm.length > 0 && (
-            <button
-              onClick={() => setSearchTerm("")}
-              className="text-slate-300 hover:text-red-400 transition-all"
-            >
-              <FaTimesCircle className="text-xs" />
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 h-[42px] w-full sm:w-auto min-w-[130px] shadow-sm">
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setRefreshKey((prev) => prev + 1);
-            }}
-            className="bg-transparent text-sm font-bold text-slate-600 outline-none w-full"
-          >
-            <option value="ALL">Todos los estados</option>
-            <option value="IN_PROGRESS">En curso</option>
-            <option value="COMPLETED">Finalizadas</option>
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <ITDatePicker
-            label=""
-            name="date"
-            value={selectedDate as any}
-            range
-            onChange={(e) => {
-              const val = e.target.value as any;
-              if (Array.isArray(val)) {
-                const parsedDates = val.map((d) => (d ? new Date(d) : null));
-                setSelectedDate(parsedDates);
-                if (parsedDates[0] && parsedDates[1])
+            <ITDatePicker
+              label=""
+              name="date"
+              value={selectedDate as any}
+              range
+              onChange={(e) => {
+                const val = e.target.value as any;
+                if (Array.isArray(val) && val[0] && val[1]) {
+                  setSelectedDate(val.map((d) => (d ? new Date(d) : null)));
                   setRefreshKey((prev) => prev + 1);
-              } else if (val) {
-                const date = new Date(val);
-                setSelectedDate([date, date]);
-                setRefreshKey((prev) => prev + 1);
-              } else {
-                setSelectedDate(null);
-                setRefreshKey((prev) => prev + 1);
-              }
-            }}
-            className="text-sm text-slate-600 outline-none font-medium h-[42px]"
-          />
-          <ITButton
-            onClick={() => setRefreshKey((prev) => prev + 1)}
-            color="secondary"
-            variant="outlined"
-            className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all"
-            size="small"
-          >
-            <FaSync className={`text-xs text-slate-500`} />
-          </ITButton>
-        </div>
-      </div>
+                }
+              }}
+              className="!h-[44px] !rounded-xl !w-full sm:!w-64"
+            />
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <ITDataTable
+            <ITButton
+              onClick={() => setRefreshKey((prev) => prev + 1)}
+              variant="outline"
+              color="secondary"
+              className="!h-[44px] !rounded-xl border-slate-200"
+            >
+              <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase text-slate-500">
+                <FaSync
+                  className={
+                    refreshKey % 2 !== 0 ? "rotate-180 transition-all" : ""
+                  }
+                />
+              </div>
+            </ITButton>
+          </div>
+        }
+      />
+
+      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mt-6">
+        <ITDataTable<IRound & Record<string, unknown>>
           key={refreshKey}
-          columns={memoizedColumns as any}
+          columns={columns as any}
           fetchData={memoizedFetch as any}
           externalFilters={externalFilters}
           defaultItemsPerPage={10}
+          title=""
         />
       </div>
 
+      {/* FINISH ROUND DIALOG */}
       <ITDialog
         isOpen={!!roundToFinishId}
         onClose={() => setRoundToFinishId(null)}
-        title="Confirmar Finalización"
+        title="Finalizar Recorrido"
       >
-        <div className="p-6">
-          <p className="text-[#1b1b1f] text-base mb-6">
-            ¿Seguro que deseas FINALIZAR esta ronda manualmente? Esta acción no
-            se puede deshacer.
+        <div className="p-10 text-center">
+          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-rose-100 shadow-sm">
+            <FaStop size={32} />
+          </div>
+          <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3">
+            ¿Forzar Cierre de Ronda?
+          </h4>
+          <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto">
+            Esta acción detendrá el seguimiento en tiempo real y marcará el
+            registro como finalizado de forma definitiva.
           </p>
-          <div className="flex justify-end gap-3">
+          <div className="flex gap-4 justify-center">
             <ITButton
-              variant="outlined"
-              color="secondary"
+              variant="ghost"
+              className="px-8 font-black text-[11px] uppercase tracking-widest text-slate-400"
               onClick={() => setRoundToFinishId(null)}
             >
               Cancelar
             </ITButton>
             <ITButton
-              variant="outlined"
+              variant="filled"
               color="danger"
+              className="px-10 !rounded-2xl shadow-xl shadow-rose-200"
               onClick={confirmEndRound}
+              disabled={isFinishing}
             >
-              Finalizar Ronda
+              {isFinishing ? <ITLoader size="sm" /> : "FINALIZAR AHORA"}
             </ITButton>
           </div>
         </div>

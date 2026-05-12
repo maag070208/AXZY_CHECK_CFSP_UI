@@ -12,6 +12,15 @@ export const getZonesByClient = async (clientId: string) => {
   return res.data || [];
 };
 
+export const getZones = async () => {
+  const res = await post<any>("/zones/datatable", { page: 1, limit: 1000 });
+  return {
+    success: res.success,
+    data: res.data?.rows || [],
+    messages: res.messages || [],
+  };
+};
+
 export const getPaginatedZones = async (params: any) => {
   const res = await post<any>("/zones/datatable", params);
   if (res.success && res.data) {

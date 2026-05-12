@@ -1,31 +1,33 @@
+import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
+import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITButton,
+  ITDataTable,
   ITDialog,
   ITInput,
+  ITLoader,
   ITTimePicker,
-  ITDataTable,
 } from "@axzydev/axzy_ui_system";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
+  FaClock,
   FaEdit,
   FaPlus,
-  FaTrash,
-  FaClock,
-  FaSync,
   FaSearch,
+  FaTimes,
+  FaTrash,
   FaUser,
 } from "react-icons/fa";
+import { useDispatch } from "react-redux";
 import {
   Schedule,
   createSchedule,
   deleteSchedule,
-  updateSchedule,
   getPaginatedSchedules,
   getUsersBySchedule,
+  updateSchedule,
 } from "../SchedulesService";
-import { useDispatch } from "react-redux";
-import { showToast } from "@app/core/store/toast/toast.slice";
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
 
 const SchedulesPage = () => {
   const dispatch = useDispatch();
@@ -36,33 +38,32 @@ const SchedulesPage = () => {
     null,
   );
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [viewingUsers, setViewingUsers] = useState(false);
   const [selectedScheduleUsers, setSelectedScheduleUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [viewingScheduleName, setViewingScheduleName] = useState("");
 
-  // Debounce search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setRefreshKey((prev) => prev + 1);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  const externalFilters = useMemo(() => {
-    return { name: searchTerm };
-  }, [searchTerm]);
-
   // Form State
   const [name, setName] = useState("");
   const [startTime, setStartTime] = useState("07:00");
   const [endTime, setEndTime] = useState("15:00");
+  const [isSaving, setIsSaving] = useState(false);
 
-  const memoizedFetch = useCallback((params: any) => {
-    return getPaginatedSchedules(params);
-  }, []);
+  const externalFilters = useMemo(() => {
+    const f: Record<string, string | number | boolean> = {};
+    if (searchTerm.trim()) f.name = searchTerm.trim();
+    if (statusFilter === "ACTIVE") f.active = true;
+    if (statusFilter === "INACTIVE") f.active = false;
+    return f;
+  }, [searchTerm, statusFilter]);
 
-  const refreshTable = () => setRefreshKey((prev) => prev + 1);
+  const memoizedFetch = useCallback(
+    (params: any) => {
+      return getPaginatedSchedules({ ...params, ...externalFilters });
+    },
+    [externalFilters],
+  );
 
   const openModal = (schedule?: Schedule) => {
     if (schedule) {
@@ -79,40 +80,30 @@ const SchedulesPage = () => {
     setIsModalOpen(true);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
+  const closeModal = () => setIsModalOpen(false);
 
   const handleSave = async () => {
+    if (!name || !startTime || !endTime) return;
+    setIsSaving(true);
     try {
       if (editingSchedule) {
         await updateSchedule(editingSchedule.id, { name, startTime, endTime });
         dispatch(
-          showToast({
-            message: "Horario actualizado correctamente",
-            type: "success",
-          }),
+          showToast({ message: "Horario actualizado", type: "success" }),
         );
       } else {
         await createSchedule({ name, startTime, endTime });
-        dispatch(
-          showToast({
-            message: "Horario creado correctamente",
-            type: "success",
-          }),
-        );
+        dispatch(showToast({ message: "Horario creado", type: "success" }));
       }
-      refreshTable();
+      setRefreshKey((p) => p + 1);
       closeModal();
     } catch (error: any) {
       const msg =
-        error.response?.data?.messages?.[0] || "Error al guardar el horario";
+        error.response?.data?.messages?.[0] || "Error al guardar horario";
       dispatch(showToast({ message: msg, type: "error" }));
+    } finally {
+      setIsSaving(false);
     }
-  };
-
-  const handleDelete = (id: number) => {
-    setScheduleToDeleteId(id);
   };
 
   const confirmDelete = async () => {
@@ -120,16 +111,11 @@ const SchedulesPage = () => {
     try {
       await deleteSchedule(scheduleToDeleteId);
       setScheduleToDeleteId(null);
-      refreshTable();
-      dispatch(
-        showToast({
-          message: "Horario eliminado correctamente",
-          type: "success",
-        }),
-      );
+      setRefreshKey((p) => p + 1);
+      dispatch(showToast({ message: "Horario eliminado", type: "success" }));
     } catch (error: any) {
       const msg =
-        error.response?.data?.messages?.[0] || "Error al eliminar el horario";
+        error.response?.data?.messages?.[0] || "Error al eliminar horario";
       dispatch(showToast({ message: msg, type: "error" }));
     }
   };
@@ -150,251 +136,310 @@ const SchedulesPage = () => {
     }
   };
 
+  const columns = useMemo(
+    () => [
+      {
+        key: "name",
+        label: "Turno",
+        render: (row: Schedule) => (
+          <div className="flex items-start gap-3">
+            <div className="mt-1 w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 shrink-0 border border-emerald-100">
+              <FaClock size={12} />
+            </div>
+            <div>
+              <p className="font-black text-slate-800 uppercase text-[11px] tracking-tight line-clamp-1">
+                {row.name}
+              </p>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                ID: #{row.id.toString().padStart(4, "0")}
+              </span>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: "startTime",
+        label: "Entrada",
+        render: (row: Schedule) => (
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight">
+              {row.startTime} HRS
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: "endTime",
+        label: "Salida",
+        render: (row: Schedule) => (
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-slate-300" />
+            <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight">
+              {row.endTime} HRS
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: "users_count",
+        label: "Personal",
+        render: (row: any) => (
+          <button
+            onClick={() => viewUsers(row)}
+            className="flex items-center gap-2 group hover:scale-105 transition-transform"
+          >
+            <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-500 transition-colors">
+              <FaUser size={10} />
+            </div>
+            <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest border-b border-dashed border-slate-200">
+              {row._count?.users || 0} ASIGNADOS
+            </span>
+          </button>
+        ),
+      },
+      {
+        key: "active",
+        label: "Estado",
+        render: (row: Schedule) => (
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-1.5 h-1.5 rounded-full ${row.active ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-slate-300"}`}
+            />
+            <span
+              className={`text-[10px] font-black uppercase tracking-widest ${row.active ? "text-emerald-600" : "text-slate-400"}`}
+            >
+              {row.active ? "ACTIVO" : "INACTIVO"}
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: "actions",
+        label: "Control",
+        render: (row: Schedule) => (
+          <div className="flex items-center gap-1">
+            <ITButton
+              onClick={() => openModal(row)}
+              variant="outline"
+              className="!p-2 !w-9 !h-9 !rounded-xl !border-slate-100 hover:!bg-slate-50 !text-slate-400 hover:!text-slate-600"
+              title="Editar"
+            >
+              <FaEdit size={14} />
+            </ITButton>
+            <ITButton
+              onClick={() => setScheduleToDeleteId(row.id)}
+              variant="outline"
+              className="!p-2 !w-9 !h-9 !rounded-xl !border-rose-100 !bg-rose-50/30 !text-rose-500 hover:!bg-rose-50"
+              title="Eliminar"
+            >
+              <FaTrash size={12} />
+            </ITButton>
+          </div>
+        ),
+      },
+    ],
+    [],
+  );
+
   return (
-    <div className="p-6 bg-[#f8fafc] min-h-screen">
+    <div className="p-6 bg-[#F8FAFC] min-h-screen font-sans">
       <ModuleHeader
         title="Directorio de Horarios"
         subtitle="Gestión de turnos operativos y controles de asistencia"
         icon={FaClock}
         actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative group w-full sm:w-64">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
-              <input
-                type="text"
-                placeholder="Buscar horario..."
+          <div className="flex flex-wrap items-center gap-3 w-full sm:justify-end">
+            <div className="relative w-full sm:w-64">
+              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+              <ITInput
+                placeholder="BUSCAR HORARIO..."
+                name="search"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full py-2 h-[42px] px-11 bg-white border border-slate-100 rounded-xl outline-none text-sm focus:border-emerald-500 transition-all shadow-sm font-medium text-slate-600"
+                onChange={(e: any) => setSearchTerm(e.target.value)}
+                onBlur={() => {}}
+                className="!h-[42px] !pl-10 !rounded-xl border-slate-100 bg-white !text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300"
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors"
+                >
+                  <FaTimes size={12} />
+                </button>
+              )}
             </div>
 
-            <ITButton
-              onClick={() => setRefreshKey((prev) => prev + 1)}
-              color="secondary"
-              variant="outlined"
-              className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
-              size="small"
-            >
-              <FaSync
-                className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? "" : "rotate-180"}`}
-              />
-              <span className="text-xs font-bold text-slate-500">
-                Actualizar
-              </span>
-            </ITButton>
+            <ITTripleFilter
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={[
+                { label: "TODOS", value: "ALL" },
+                { label: "ACTIVOS", value: "ACTIVE" },
+                { label: "INACTIVOS", value: "INACTIVE" },
+              ]}
+            />
 
-            <button
+            <ITButton
               onClick={() => openModal()}
-              className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2.5 h-[42px] rounded-xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-105 transition-all w-full sm:w-auto"
+              color="primary"
+              className="!h-[42px] !rounded-xl shadow-lg shadow-emerald-100"
             >
-              <FaPlus className="text-xs" />
-              <span>Nuevo Horario</span>
-            </button>
+              <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase">
+                <FaPlus size={10} /> Nuevo Horario
+              </div>
+            </ITButton>
           </div>
         }
       />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
         <ITDataTable
           key={refreshKey}
           fetchData={memoizedFetch as any}
+          columns={columns as any}
           externalFilters={externalFilters}
-          columns={[
-            {
-              key: "name",
-              label: "NOMBRE DEL TURNO",
-              type: "string",
-              render: (row: any) => (
-                <div className="flex flex-col py-2">
-                  <span className="font-bold text-slate-800 text-sm uppercase">
-                    {row.name}
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-medium">
-                    Turno Operativo
-                  </span>
-                </div>
-              ),
-            },
-            {
-              key: "startTime",
-              label: "ENTRADA",
-              type: "string",
-              render: (row: any) => (
-                <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
-                  <FaClock size={12} className="text-emerald-400" />
-                  {row.startTime}
-                </div>
-              ),
-            },
-            {
-              key: "endTime",
-              label: "SALIDA",
-              type: "string",
-              render: (row: any) => (
-                <div className="flex items-center gap-2 text-slate-500 font-bold text-sm">
-                  <FaClock size={12} className="text-slate-300" />
-                  {row.endTime}
-                </div>
-              ),
-            },
-            {
-              key: "users_count",
-              label: "PERSONAL ASIGNADO",
-              type: "string",
-              render: (row: any) => (
-                <div
-                  className="flex items-center gap-2 cursor-pointer text-slate-600 hover:text-emerald-600 transition-colors py-2"
-                  onClick={() => viewUsers(row)}
-                >
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 font-bold border border-slate-100 text-xs uppercase">
-                    <FaUser size={12} />
-                  </div>
-                  <span className="text-xs font-bold uppercase tracking-tight">
-                    {row._count?.users || 0} Usuarios
-                  </span>
-                </div>
-              ),
-            },
-            {
-              key: "status",
-              label: "ESTADO",
-              type: "string",
-              render: (row: any) => (
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full ${row.active ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-slate-300"}`}
-                  />
-                  <span
-                    className={`text-[11px] font-bold uppercase tracking-wider ${row.active ? "text-emerald-600" : "text-slate-400"}`}
-                  >
-                    {row.active ? "Activo" : "Inactivo"}
-                  </span>
-                </div>
-              ),
-            },
-            {
-              key: "actions",
-              label: "ACCIONES",
-              type: "actions",
-              actions: (row: any) => (
-                <div className="flex gap-1">
-                  <ITButton
-                    onClick={() => openModal(row)}
-                    size="small"
-                    variant="ghost"
-                    className="!text-slate-400 hover:!text-emerald-600 hover:!bg-emerald-50 !p-2"
-                  >
-                    <FaEdit />
-                  </ITButton>
-                  <ITButton
-                    onClick={() => handleDelete(row.id)}
-                    size="small"
-                    variant="ghost"
-                    className="!text-slate-400 hover:!text-rose-600 hover:!bg-rose-50 !p-2"
-                  >
-                    <FaTrash />
-                  </ITButton>
-                </div>
-              ),
-            },
-          ]}
+          defaultItemsPerPage={10}
+          title=""
         />
       </div>
 
+      {/* CREATE/EDIT MODAL */}
       <ITDialog
         isOpen={isModalOpen}
         onClose={closeModal}
-        title={editingSchedule ? "Editar Horario" : "Nuevo Horario"}
-        className="!w-full !max-w-md"
+        className="!max-w-md !w-full"
       >
-        <div className="p-4 space-y-8">
-          <ITInput
-            label="Nombre del Horario"
-            name="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onBlur={() => {}}
-            placeholder="Ej. Matutino"
-            className="!bg-slate-50 !border-none !h-12 !rounded-2xl"
-          />
-          <div className="grid grid-cols-2 gap-6">
-            <ITTimePicker
-              label="Entrada"
-              name="startTime"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              onBlur={() => {}}
-              className="!bg-slate-50 !border-none !h-12 !rounded-2xl"
-            />
-            <ITTimePicker
-              label="Salida"
-              name="endTime"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              onBlur={() => {}}
-              className="!bg-slate-50 !border-none !h-12 !rounded-2xl"
-            />
+        <div className="p-8">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+              <FaClock size={20} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                {editingSchedule ? "Editar Turno" : "Nuevo Turno"}
+              </h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                Configuración de horarios operativos
+              </p>
+            </div>
           </div>
 
-          <div className="flex justify-end gap-4 mt-10">
-            <ITButton variant="outlined" color="secondary" onClick={closeModal}>
+          <div className="space-y-6">
+            <ITInput
+              label="Nombre del Horario"
+              name="name"
+              placeholder="EJ. MATUTINO 12X12"
+              value={name}
+              onChange={(e: any) => setName(e.target.value.toUpperCase())}
+              onBlur={() => {}}
+              className="!h-12 !rounded-2xl !bg-slate-50/50"
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <ITTimePicker
+                label="Entrada"
+                name="startTime"
+                value={startTime}
+                onChange={(e: any) => setStartTime(e.target.value)}
+                onBlur={() => {}}
+                className="!h-12 !rounded-2xl !bg-slate-50/50"
+              />
+              <ITTimePicker
+                label="Salida"
+                name="endTime"
+                value={endTime}
+                onChange={(e: any) => setEndTime(e.target.value)}
+                onBlur={() => {}}
+                className="!h-12 !rounded-2xl !bg-slate-50/50"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-10">
+            <ITButton
+              variant="ghost"
+              className="px-8 font-black text-[10px] uppercase tracking-widest text-slate-400"
+              onClick={closeModal}
+            >
               Cancelar
             </ITButton>
             <ITButton
-              variant="outlined"
-              onClick={handleSave}
+              variant="filled"
               color="primary"
-              disabled={!name || !startTime || !endTime}
+              className="px-10 !rounded-2xl shadow-xl shadow-emerald-200"
+              onClick={handleSave}
+              disabled={isSaving || !name || !startTime || !endTime}
             >
-              Guardar Horario
+              {isSaving ? <ITLoader size="sm" /> : "GUARDAR CAMBIOS"}
             </ITButton>
           </div>
         </div>
       </ITDialog>
 
-      {/* Delete Confirmation Modal */}
+      {/* DELETE DIALOG */}
       <ITDialog
         isOpen={!!scheduleToDeleteId}
         onClose={() => setScheduleToDeleteId(null)}
-        title="Confirmar Eliminación"
+        title="Eliminar Registro"
       >
-        <div className="p-4">
-          <p className="text-slate-600 mb-6">
-            ¿Estás seguro de eliminar este horario? Esta acción no se puede
-            deshacer.
+        <div className="p-10 text-center">
+          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-rose-100 shadow-sm">
+            <FaTrash size={32} />
+          </div>
+          <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3">
+            ¿Eliminar Horario?
+          </h4>
+          <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto">
+            Esta acción es definitiva y podría afectar la asignación de personal
+            activo.
           </p>
-          <div className="flex justify-end gap-3">
+          <div className="flex gap-4 justify-center">
             <ITButton
-              variant="outlined"
-              color="secondary"
+              variant="ghost"
+              className="px-8 font-black text-[11px] uppercase tracking-widest text-slate-400"
               onClick={() => setScheduleToDeleteId(null)}
             >
               Cancelar
             </ITButton>
             <ITButton
-              className="!bg-red-600 text-white"
+              variant="filled"
+              color="danger"
+              className="px-10 !rounded-2xl shadow-xl shadow-rose-200"
               onClick={confirmDelete}
             >
-              Eliminar
+              ELIMINAR AHORA
             </ITButton>
           </div>
         </div>
       </ITDialog>
-      {/* User List Modal */}
+
+      {/* USER LIST MODAL */}
       <ITDialog
         isOpen={viewingUsers}
         onClose={() => setViewingUsers(false)}
-        title={`Personal Asignado: ${viewingScheduleName}`}
         className="!w-full !max-w-lg"
       >
-        <div className="p-4">
+        <div className="p-8">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100">
+              <FaUser size={20} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                Personal Asignado
+              </h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                {viewingScheduleName}
+              </p>
+            </div>
+          </div>
+
           {loadingUsers ? (
             <div className="py-20 flex flex-col items-center justify-center space-y-4">
-              <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-              <p className="text-slate-400 text-xs font-black uppercase tracking-widest">
-                Cargando personal...
+              <ITLoader size="lg" />
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                Sincronizando...
               </p>
             </div>
           ) : selectedScheduleUsers.length === 0 ? (
@@ -406,8 +451,8 @@ const SchedulesPage = () => {
                 <p className="text-slate-900 font-black text-sm uppercase tracking-tight">
                   Sin personal asignado
                 </p>
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">
-                  Este horario no tiene usuarios vinculados
+                <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest mt-1">
+                  No hay usuarios vinculados a este turno
                 </p>
               </div>
             </div>
@@ -420,19 +465,19 @@ const SchedulesPage = () => {
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-black border border-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-500 transition-colors uppercase">
-                      {user.name.charAt(0)}
-                      {user.lastName.charAt(0)}
+                      {user.name?.[0]}
+                      {user.lastName?.[0]}
                     </div>
                     <div>
-                      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                      <p className="text-xs font-black text-slate-900 uppercase tracking-tight">
                         {user.name} {user.lastName}
                       </p>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
                         @{user.username}
                       </p>
                     </div>
                   </div>
-                  <span
+                  <div
                     className={`w-2 h-2 rounded-full ${user.active ? "bg-emerald-500 shadow-lg shadow-emerald-200" : "bg-slate-300"}`}
                   />
                 </div>
@@ -443,7 +488,8 @@ const SchedulesPage = () => {
           <div className="mt-8 flex justify-end">
             <ITButton
               onClick={() => setViewingUsers(false)}
-              className="!bg-slate-900 !text-white !rounded-2xl !px-10 !h-12 shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-95 transition-all font-black uppercase text-[11px] tracking-widest"
+              variant="ghost"
+              className="px-8 font-black text-[10px] uppercase tracking-widest text-slate-400"
             >
               Cerrar
             </ITButton>
