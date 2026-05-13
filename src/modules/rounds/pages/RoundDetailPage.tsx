@@ -59,7 +59,7 @@ const RoundDetailPage = () => {
       );
 
     const visitedLocations = new Set<string>();
-    let validScansCount = 0;
+    const coveredLocations = new Set<string>();
 
     const mapNodes: any[] = [];
     let previousTime = start;
@@ -85,6 +85,7 @@ const RoundDetailPage = () => {
         scan.data?.media &&
         Array.isArray(scan.data.media) &&
         scan.data.media.length > 0;
+
       let status = hasEvidence ? "SUCCESS" : "INCOMPLETE";
 
       if (isDuplicate && hasEvidence) {
@@ -95,7 +96,9 @@ const RoundDetailPage = () => {
         if (alreadyHadSuccess) status = "DUPLICATE";
       }
 
-      if (status === "SUCCESS" && !isDuplicate) validScansCount++;
+      if (status === "SUCCESS") {
+        coveredLocations.add(locId);
+      }
 
       mapNodes.push({
         type: "POINT",
@@ -106,6 +109,8 @@ const RoundDetailPage = () => {
       });
       previousTime = current;
     });
+
+    const validScansCount = coveredLocations.size;
 
     const expectedLocs =
       data.round.recurringConfiguration?.recurringLocations ||

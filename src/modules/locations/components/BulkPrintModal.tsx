@@ -40,6 +40,7 @@ export const BulkPrintModal = ({
   const [allZones, setAllZones] = useState<Zone[]>([]);
   const [locationsToChoose, setLocationsToChoose] = useState<Location[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<Location[]>([]);
   const [animateBadge, setAnimateBadge] = useState(false);
 
   const { data: clients } = useCatalog("client");
@@ -209,12 +210,17 @@ export const BulkPrintModal = ({
                       type="checkbox"
                       checked={selectedIds.includes(loc.id)}
                       onChange={(e) => {
-                        if (e.target.checked)
+                        if (e.target.checked) {
                           setSelectedIds([...selectedIds, loc.id]);
-                        else
+                          setSelectedLocations([...selectedLocations, loc]);
+                        } else {
                           setSelectedIds(
                             selectedIds.filter((id) => id !== loc.id),
                           );
+                          setSelectedLocations(
+                            selectedLocations.filter((l) => l.id !== loc.id),
+                          );
+                        }
                       }}
                       className="hidden"
                     />
@@ -250,9 +256,7 @@ export const BulkPrintModal = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {locationsToChoose
-                .filter((l) => selectedIds.includes(l.id))
-                .map((loc) => (
+              {selectedLocations.map((loc) => (
                   <div
                     key={loc.id}
                     className="flex items-center justify-between p-4 rounded-2xl border border-emerald-200 bg-emerald-50/40"
@@ -271,11 +275,14 @@ export const BulkPrintModal = ({
                       </div>
                     </div>
                     <button
-                      onClick={() =>
+                      onClick={() => {
                         setSelectedIds(
                           selectedIds.filter((id) => id !== loc.id),
-                        )
-                      }
+                        );
+                        setSelectedLocations(
+                          selectedLocations.filter((l) => l.id !== loc.id),
+                        );
+                      }}
                       className="text-red-400 hover:text-red-600 p-2"
                     >
                       <FaTimes size={14} />
@@ -291,16 +298,16 @@ export const BulkPrintModal = ({
             <ITButton
               size="small"
               variant="ghost"
-              onClick={() =>
-                setSelectedIds(
-                  Array.from(
-                    new Set([
-                      ...selectedIds,
-                      ...locationsToChoose.map((l) => l.id),
-                    ]),
-                  ),
-                )
-              }
+              onClick={() => {
+                const newLocations = locationsToChoose.filter(
+                  (l) => !selectedIds.includes(l.id),
+                );
+                setSelectedIds([
+                  ...selectedIds,
+                  ...newLocations.map((l) => l.id),
+                ]);
+                setSelectedLocations([...selectedLocations, ...newLocations]);
+              }}
               className="text-emerald-600 font-bold text-[11px] uppercase tracking-wider"
             >
               Agregar Resultados
@@ -308,7 +315,10 @@ export const BulkPrintModal = ({
             <ITButton
               size="small"
               variant="ghost"
-              onClick={() => setSelectedIds([])}
+              onClick={() => {
+                setSelectedIds([]);
+                setSelectedLocations([]);
+              }}
               className="text-slate-400 font-bold text-[11px] uppercase tracking-wider"
             >
               Limpiar

@@ -107,7 +107,13 @@ export const useNavigationItems = (): any[] => {
   ];
 
   if (user?.role === "RESDN") {
-    return baseItems.filter(item => item.id === "home" || item.id === "rounds");
+    return baseItems.filter(item => 
+      item.id === "home" || 
+      item.id === "rounds" || 
+      item.id === "incidents" || 
+      item.id === "maintenances" || 
+      item.id === "guards"
+    );
   }
 
   if (user?.role === "ADMIN" || user?.role === "LIDER") {

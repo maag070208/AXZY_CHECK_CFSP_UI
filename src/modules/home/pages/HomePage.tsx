@@ -56,14 +56,14 @@ const HomePage = () => {
         description: "Reportes de novedades y emergencias",
         icon: <FaExclamationTriangle className="text-white" />,
         action: () => navigate("/incidents"),
-        roles: ["ADMIN", "LIDER", "SHIFT"]
+        roles: ["ADMIN", "LIDER", "SHIFT", "RESDN"]
       },
       {
         title: "Mantenimiento",
         description: "Gestión de reportes técnicos",
         icon: <FaWrench className="text-white" />,
         action: () => navigate("/maintenances"),
-        roles: ["ADMIN", "LIDER", "SHIFT"]
+        roles: ["ADMIN", "LIDER", "SHIFT", "RESDN"]
       },
       {
         title: "Kardex",
@@ -77,7 +77,7 @@ const HomePage = () => {
         description: "Gestión de personal operativo",
         icon: <FaUserShield className="text-white" />,
         action: () => navigate("/guards"),
-        roles: ["ADMIN", "LIDER", "SHIFT"]
+        roles: ["ADMIN", "LIDER", "SHIFT", "RESDN"]
       },
       {
         title: "Horarios",

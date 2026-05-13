@@ -38,6 +38,7 @@ interface Props {
   guard: any;
   onReassignClient: () => void;
   onReassignSchedule: () => void;
+  isClient?: boolean;
 }
 
 const statusTranslations: Record<AssignmentStatus, string> = {
@@ -59,6 +60,7 @@ export const ViewAssignmentsModal = ({
   guard,
   onReassignClient,
   onReassignSchedule,
+  isClient,
 }: Props) => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(false);
@@ -145,25 +147,29 @@ export const ViewAssignmentsModal = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <ITButton
-                onClick={onReassignSchedule}
-                variant="outline"
-                className="!rounded-xl !h-11 !px-5 !border-slate-100 !bg-white !text-amber-500 hover:!bg-amber-50"
-              >
-                <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
-                  <FaClock /> Turno
-                </div>
-              </ITButton>
-              <ITButton
-                onClick={onReassignClient}
-                variant="outline"
-                className="!rounded-xl !h-11 !px-5 !border-slate-100 !bg-white !text-indigo-500 hover:!bg-indigo-50"
-              >
-                <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
-                  <FaUserShield /> Cliente
-                </div>
-              </ITButton>
-              <div className="w-px h-8 bg-slate-100 mx-1" />
+              {!isClient && (
+                <>
+                  <ITButton
+                    onClick={onReassignSchedule}
+                    variant="outline"
+                    className="!rounded-xl !h-11 !px-5 !border-slate-100 !bg-white !text-amber-500 hover:!bg-amber-50"
+                  >
+                    <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
+                      <FaClock /> Turno
+                    </div>
+                  </ITButton>
+                  <ITButton
+                    onClick={onReassignClient}
+                    variant="outline"
+                    className="!rounded-xl !h-11 !px-5 !border-slate-100 !bg-white !text-indigo-500 hover:!bg-indigo-50"
+                  >
+                    <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
+                      <FaUserShield /> Cliente
+                    </div>
+                  </ITButton>
+                  <div className="w-px h-8 bg-slate-100 mx-1" />
+                </>
+              )}
               <ITButton
                 onClick={fetchAssignments}
                 variant="ghost"
@@ -317,7 +323,7 @@ export const ViewAssignmentsModal = ({
                       />
                     </div>
 
-                    {selectedAssignment.status === AssignmentStatus.UNDER_REVIEW && (
+                    {selectedAssignment.status === AssignmentStatus.UNDER_REVIEW && !isClient && (
                       <div className="mt-12">
                         <ITButton
                           onClick={() => handleApprove(selectedAssignment.id)}

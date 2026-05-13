@@ -22,7 +22,7 @@ import {
   FaTimes,
   FaUserShield,
 } from "react-icons/fa";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getSchedules } from "../../schedules/SchedulesService";
 import {
   getPaginatedUsers,
@@ -31,9 +31,13 @@ import {
 } from "../../users/services/UserService";
 import { AssignmentModal } from "../components/AssignmentModal";
 import { ViewAssignmentsModal } from "../components/ViewAssignmentsModal";
+import { AppState } from "@app/core/store/store";
 
 const GuardsPage = () => {
   const dispatch = useDispatch();
+  const auth = useSelector((state: AppState) => state.auth);
+  const isClient = auth.role === "RESDN";
+
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
@@ -218,32 +222,36 @@ const GuardsPage = () => {
         label: "Control",
         render: (row: User) => (
           <div className="flex items-center gap-1">
-            <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100 mr-2">
+            {!isClient && (
+              <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100 mr-2">
+                <ITButton
+                  onClick={() => setChangingScheduleUser(row)}
+                  variant="ghost"
+                  className="!p-2 !w-8 !h-8 !rounded-lg !text-amber-500 hover:!bg-amber-50"
+                  title="Horario"
+                >
+                  <FaClock size={12} />
+                </ITButton>
+                <ITButton
+                  onClick={() => setChangingClientUser(row)}
+                  variant="ghost"
+                  className="!p-2 !w-8 !h-8 !rounded-lg !text-indigo-500 hover:!bg-indigo-50"
+                  title="Cliente"
+                >
+                  <FaUserShield size={12} />
+                </ITButton>
+              </div>
+            )}
+            {!isClient && (
               <ITButton
-                onClick={() => setChangingScheduleUser(row)}
-                variant="ghost"
-                className="!p-2 !w-8 !h-8 !rounded-lg !text-amber-500 hover:!bg-amber-50"
-                title="Horario"
+                onClick={() => setGuardToToggle(row)}
+                variant="outline"
+                className={`!p-2 !w-9 !h-9 !rounded-xl ${row.active ? "!border-rose-100 !bg-rose-50/30 !text-rose-500 hover:!bg-rose-50" : "!border-emerald-100 !text-emerald-500 hover:!bg-emerald-50"}`}
+                title={row.active ? "Desactivar" : "Activar"}
               >
-                <FaClock size={12} />
+                <FaPowerOff size={12} />
               </ITButton>
-              <ITButton
-                onClick={() => setChangingClientUser(row)}
-                variant="ghost"
-                className="!p-2 !w-8 !h-8 !rounded-lg !text-indigo-500 hover:!bg-indigo-50"
-                title="Cliente"
-              >
-                <FaUserShield size={12} />
-              </ITButton>
-            </div>
-            <ITButton
-              onClick={() => setGuardToToggle(row)}
-              variant="outline"
-              className={`!p-2 !w-9 !h-9 !rounded-xl ${row.active ? "!border-rose-100 !bg-rose-50/30 !text-rose-500 hover:!bg-rose-50" : "!border-emerald-100 !text-emerald-500 hover:!bg-emerald-50"}`}
-              title={row.active ? "Desactivar" : "Activar"}
-            >
-              <FaPowerOff size={12} />
-            </ITButton>
+            )}
             <ITButton
               onClick={() => handleViewAssignments(row)}
               variant="outlined"
@@ -253,15 +261,17 @@ const GuardsPage = () => {
             >
               <FaEye size={14} />
             </ITButton>
-            <ITButton
-              onClick={() => handleOpenAssignment(row)}
-              variant="outlined"
-              color="secondary"
-              title="Asignar"
-              size="small"
-            >
-              <FaClipboardList size={12} />
-            </ITButton>
+            {!isClient && (
+              <ITButton
+                onClick={() => handleOpenAssignment(row)}
+                variant="outlined"
+                color="secondary"
+                title="Asignar"
+                size="small"
+              >
+                <FaClipboardList size={12} />
+              </ITButton>
+            )}
           </div>
         ),
       },
@@ -521,6 +531,7 @@ const GuardsPage = () => {
             guard={selectedGuard}
             onReassignClient={() => setChangingClientUser(selectedGuard)}
             onReassignSchedule={() => setChangingScheduleUser(selectedGuard)}
+            isClient={isClient}
           />
         </>
       )}

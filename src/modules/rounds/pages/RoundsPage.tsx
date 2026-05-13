@@ -227,7 +227,7 @@ const RoundsPage = () => {
             >
               <FaEye size={14} />
             </ITButton>
-            {row.status === "IN_PROGRESS" && (
+            {row.status === "IN_PROGRESS" && !isResident && (
               <ITButton
                 onClick={() => setRoundToFinishId(row.id)}
                 variant="outlined"

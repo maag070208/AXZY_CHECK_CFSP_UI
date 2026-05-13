@@ -37,7 +37,8 @@ import {
 const MaintenancesPage = () => {
   const dispatch = useDispatch();
   const auth = useSelector((state: AppState) => state.auth);
-  const isAdmin = auth.role === "ADMIN";
+  const isAdmin = auth.role === "ADMIN" || auth.role === "LIDER";
+  const isClient = auth.role === "RESDN";
 
   const [refreshKey, setRefreshKey] = useState(0);
   const [viewingMaintenance, setViewingMaintenance] =
@@ -198,7 +199,7 @@ const MaintenancesPage = () => {
             >
               <FaEye size={14} />
             </ITButton>
-            {row.status === "PENDING" && (
+            {row.status === "PENDING" && !isClient && (
               <ITButton
                 onClick={() => handleResolve(row.id)}
                 variant="outline"
@@ -469,7 +470,7 @@ const MaintenancesPage = () => {
                       </div>
                     )}
 
-                  {viewingMaintenance.status === "PENDING" && (
+                  {viewingMaintenance.status === "PENDING" && !isClient && (
                     <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100">
                       <h5 className="text-[9px] font-black text-orange-500 uppercase tracking-widest mb-3">
                         Acción Requerida

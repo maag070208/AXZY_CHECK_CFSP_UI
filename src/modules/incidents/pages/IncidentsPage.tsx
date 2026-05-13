@@ -37,7 +37,8 @@ import { AppState } from "@app/core/store/store";
 const IncidentsPage = () => {
   const dispatch = useDispatch();
   const auth = useSelector((state: AppState) => state.auth);
-  const isAdmin = auth.role === "ADMIN";
+  const isAdmin = auth.role === "ADMIN" || auth.role === "LIDER";
+  const isClient = auth.role === "RESDN";
 
   const [refreshKey, setRefreshKey] = useState(0);
   const [viewingIncident, setViewingIncident] = useState<Incident | null>(null);
@@ -195,7 +196,7 @@ const IncidentsPage = () => {
             >
               <FaEye size={14} />
             </ITButton>
-            {row.status === "PENDING" && (
+            {row.status === "PENDING" && !isClient && (
               <ITButton
                 onClick={() => handleResolve(row.id as any)}
                 variant="outlined"
@@ -499,7 +500,7 @@ const IncidentsPage = () => {
                     )}
 
                   {/* Acción Pendiente */}
-                  {viewingIncident.status === "PENDING" && (
+                  {viewingIncident.status === "PENDING" && !isClient && (
                     <div className="bg-rose-50 p-6 rounded-2xl border border-rose-100">
                       <h5 className="text-[9px] font-black text-rose-500 uppercase tracking-widest mb-3">
                         Acción Requerida
