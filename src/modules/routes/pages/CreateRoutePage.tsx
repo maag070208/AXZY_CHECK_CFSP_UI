@@ -124,10 +124,10 @@ const CreateRoutePage = () => {
     if (locRes.success) setAllLocations(locRes.data);
     if (usersRes.success) {
       setAllGuards(
-        usersRes.data.filter((u) => {
+        usersRes.data?.filter((u: any) => {
           const role = typeof u.role === "object" ? u.role.name : u.role;
           return ["GUARD", "SHIFT", "MAINT"].includes(role) && u.active;
-        }),
+        }) || [],
       );
     }
   };

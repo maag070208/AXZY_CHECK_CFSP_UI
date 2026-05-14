@@ -1,5 +1,6 @@
+/// <reference types="vitest" />
 import federation from "@originjs/vite-plugin-federation";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "tailwindcss";
 import path from "path";
@@ -35,6 +36,18 @@ export default defineConfig({
       "@assets": path.resolve(__dirname, "./src/assets"),
       "@types": path.resolve(__dirname, "./src/core/types"),
       "@modules": path.resolve(__dirname, "./src/modules"),
+      "tailwindcss/colors": "tailwindcss/colors.js",
+    },
+  },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./vitest.setup.ts"],
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    server: {
+      deps: {
+        inline: ["@axzydev/axzy_ui_system"],
+      },
     },
   },
 });
