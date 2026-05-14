@@ -11,14 +11,7 @@ import {
 } from "@app/modules/locations/service/locations.service";
 import { ITButton, ITDataTable, ITDialog } from "@axzydev/axzy_ui_system";
 import { useCallback, useState } from "react";
-import {
-  FaEdit,
-  FaMapMarkerAlt,
-  FaPlus,
-  FaQrcode,
-  FaSync,
-  FaTrash,
-} from "react-icons/fa";
+import { FaEdit, FaPlus, FaQrcode, FaSync, FaTrash } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 
 interface Props {

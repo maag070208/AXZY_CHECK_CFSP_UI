@@ -1,13 +1,13 @@
 import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
+import { AppState } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITBadget,
   ITButton,
   ITDataTable,
   ITDialog,
-  ITInput,
   ITLoader,
   ITSelect,
 } from "@axzydev/axzy_ui_system";
@@ -17,9 +17,6 @@ import {
   FaClock,
   FaEye,
   FaPowerOff,
-  FaSearch,
-  FaSync,
-  FaTimes,
   FaUserShield,
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -31,7 +28,6 @@ import {
 } from "../../users/services/UserService";
 import { AssignmentModal } from "../components/AssignmentModal";
 import { ViewAssignmentsModal } from "../components/ViewAssignmentsModal";
-import { AppState } from "@app/core/store/store";
 
 const GuardsPage = () => {
   const dispatch = useDispatch();

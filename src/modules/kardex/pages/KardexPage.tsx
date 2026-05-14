@@ -6,9 +6,7 @@ import {
   ITBadget,
   ITButton,
   ITDataTable,
-  ITDatePicker,
   ITDialog,
-  ITInput,
 } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
@@ -20,7 +18,6 @@ import {
   FaFileAlt,
   FaMapMarkerAlt,
   FaSync,
-  FaTimes,
   FaUser,
 } from "react-icons/fa";
 import { GoogleMapComponent } from "../../../core/components/GoogleMapComponent";

@@ -1,3 +1,5 @@
+import { ITTabs, ITab } from "@app/core/components/ITTabs";
+import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
@@ -15,7 +17,6 @@ import {
   FaGlobe,
   FaLayerGroup,
   FaPlus,
-  FaSearch,
   FaTags,
   FaTrash,
 } from "react-icons/fa";
@@ -40,8 +41,6 @@ import {
 } from "react-icons/md";
 import { useDispatch } from "react-redux";
 import * as SettingsService from "../services/SettingsService";
-import { ITTabs, ITab } from "@app/core/components/ITTabs";
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
 
 const COMMON_ICONS = [
   { name: "shield-alert", icon: <MdShield /> },

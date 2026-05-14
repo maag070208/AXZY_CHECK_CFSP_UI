@@ -7,14 +7,7 @@ import {
   ITSearchSelect,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useState } from "react";
-import {
-  FaBuilding,
-  FaFilter,
-  FaMapMarkerAlt,
-  FaPlus,
-  FaSearch,
-  FaTimes,
-} from "react-icons/fa";
+import { FaMapMarkerAlt, FaPlus, FaSearch, FaTimes } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { Zone, getZones } from "../../zones/services/ZonesService";
 import { Location, getPaginatedLocations } from "../service/locations.service";
@@ -194,10 +187,12 @@ export const BulkPrintModal = ({
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                  {activeTab === "SEARCH" ? "Resultados de Búsqueda" : "Elementos a Imprimir"}
+                  {activeTab === "SEARCH"
+                    ? "Resultados de Búsqueda"
+                    : "Elementos a Imprimir"}
                 </h4>
               </div>
-              
+
               {activeTab === "SEARCH" && locationsToChoose.length > 0 && (
                 <div className="flex items-center gap-4">
                   <button
@@ -205,8 +200,14 @@ export const BulkPrintModal = ({
                       const newLocations = locationsToChoose.filter(
                         (l) => !selectedIds.includes(l.id),
                       );
-                      setSelectedIds([...selectedIds, ...newLocations.map((l) => l.id)]);
-                      setSelectedLocations([...selectedLocations, ...newLocations]);
+                      setSelectedIds([
+                        ...selectedIds,
+                        ...newLocations.map((l) => l.id),
+                      ]);
+                      setSelectedLocations([
+                        ...selectedLocations,
+                        ...newLocations,
+                      ]);
                     }}
                     className="text-[9px] font-black text-emerald-500 uppercase tracking-widest hover:text-emerald-600 transition-colors"
                   >
@@ -246,8 +247,12 @@ export const BulkPrintModal = ({
                             setSelectedIds([...selectedIds, loc.id]);
                             setSelectedLocations([...selectedLocations, loc]);
                           } else {
-                            setSelectedIds(selectedIds.filter((id) => id !== loc.id));
-                            setSelectedLocations(selectedLocations.filter((l) => l.id !== loc.id));
+                            setSelectedIds(
+                              selectedIds.filter((id) => id !== loc.id),
+                            );
+                            setSelectedLocations(
+                              selectedLocations.filter((l) => l.id !== loc.id),
+                            );
                           }
                         }}
                         className="hidden"
@@ -268,7 +273,9 @@ export const BulkPrintModal = ({
                           {loc.name}
                         </span>
                         <div className="flex items-center gap-1.5 mt-1">
-                          <div className={`w-1 h-1 rounded-full ${selectedIds.includes(loc.id) ? "bg-emerald-400" : "bg-slate-300"}`} />
+                          <div
+                            className={`w-1 h-1 rounded-full ${selectedIds.includes(loc.id) ? "bg-emerald-400" : "bg-slate-300"}`}
+                          />
                           <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest truncate">
                             {loc.zone?.name || "General"}
                           </span>
@@ -279,7 +286,9 @@ export const BulkPrintModal = ({
                 ) : (
                   <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-300 gap-4">
                     <FaSearch size={40} className="opacity-20" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Sin resultados encontrados</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      Sin resultados encontrados
+                    </span>
                   </div>
                 )}
               </div>
@@ -304,8 +313,12 @@ export const BulkPrintModal = ({
                       </div>
                       <button
                         onClick={() => {
-                          setSelectedIds(selectedIds.filter((id) => id !== loc.id));
-                          setSelectedLocations(selectedLocations.filter((l) => l.id !== loc.id));
+                          setSelectedIds(
+                            selectedIds.filter((id) => id !== loc.id),
+                          );
+                          setSelectedLocations(
+                            selectedLocations.filter((l) => l.id !== loc.id),
+                          );
                         }}
                         className="w-8 h-8 flex items-center justify-center rounded-xl bg-white text-red-500 hover:bg-red-50 transition-colors shadow-sm"
                       >
@@ -316,7 +329,9 @@ export const BulkPrintModal = ({
                 ) : (
                   <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-300 gap-4">
                     <FaMapMarkerAlt size={40} className="opacity-20" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">No hay ubicaciones seleccionadas</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      No hay ubicaciones seleccionadas
+                    </span>
                   </div>
                 )}
               </div>

@@ -19,7 +19,6 @@ export const ChangePasswordModal: React.FC<Props> = ({
   onCancel,
   onSuccess,
 }) => {
-  const [loading, setLoading] = React.useState(false);
   const dispatch = useDispatch();
 
   const formik = useFormik({
@@ -127,12 +126,8 @@ export const ChangePasswordModal: React.FC<Props> = ({
           Cancelar
         </ITButton>
 
-        <ITButton
-          onClick={() => formik.submitForm()}
-          disabled={loading}
-          color="primary"
-        >
-          {loading ? <ITLoader size="sm" /> : "Actualizar Clave"}
+        <ITButton onClick={() => formik.submitForm()} color="primary">
+          {<ITLoader size="sm" />} Actualizar Clave
         </ITButton>
       </div>
     </div>

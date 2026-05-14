@@ -6,9 +6,7 @@ import {
   ITBadget,
   ITButton,
   ITDataTable,
-  ITDatePicker,
   ITDialog,
-  ITInput,
   ITLoader,
   ITSearchSelect,
 } from "@axzydev/axzy_ui_system";
@@ -16,15 +14,7 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  FaBuilding,
-  FaEye,
-  FaRoute,
-  FaStop,
-  FaSync,
-  FaTimes,
-  FaUser,
-} from "react-icons/fa";
+import { FaEye, FaRoute, FaStop, FaUser } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getRoutesList } from "../../routes/services/RoutesService";

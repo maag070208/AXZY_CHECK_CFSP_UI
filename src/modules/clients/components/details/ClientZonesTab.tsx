@@ -1,27 +1,21 @@
-import { useState, useCallback } from "react";
+import { showToast } from "@app/core/store/toast/toast.slice";
+import { TResult } from "@app/core/types/TResult";
 import {
   ITButton,
-  ITInput,
   ITDataTable,
   ITDialog,
+  ITInput,
 } from "@axzydev/axzy_ui_system";
+import { useCallback, useState } from "react";
+import { FaEdit, FaPlus, FaSync, FaTrash } from "react-icons/fa";
+import { useDispatch } from "react-redux";
 import {
-  FaPlus,
-  FaTrash,
-  FaEdit,
-  FaSync,
-  FaMapMarkedAlt,
-} from "react-icons/fa";
-import {
-  getPaginatedZones,
   createZone,
-  updateZone,
   deleteZone,
+  getPaginatedZones,
+  updateZone,
   Zone,
 } from "../../../zones/services/ZonesService";
-import { showToast } from "@app/core/store/toast/toast.slice";
-import { useDispatch } from "react-redux";
-import { TResult } from "@app/core/types/TResult";
 
 interface Props {
   clientId: string;

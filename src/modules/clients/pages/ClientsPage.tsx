@@ -11,15 +11,7 @@ import {
   ITDialog,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  FaBuilding,
-  FaEdit,
-  FaPlus,
-  FaSearchLocation,
-  FaSync,
-  FaTimes,
-  FaTrash,
-} from "react-icons/fa";
+import { FaBuilding, FaEdit, FaSearchLocation, FaTrash } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { CreateClientWizard } from "../components/CreateClientWizard";

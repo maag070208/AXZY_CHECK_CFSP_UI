@@ -1,13 +1,13 @@
 import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
+import { AppState } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITBadget,
   ITButton,
   ITDataTable,
   ITDialog,
-  ITInput,
   ITLoader,
 } from "@axzydev/axzy_ui_system";
 import { GoogleMapComponent } from "@core/components/GoogleMapComponent";
@@ -20,9 +20,6 @@ import {
   FaExclamationTriangle,
   FaEye,
   FaFileAlt,
-  FaSearch,
-  FaSync,
-  FaTimes,
   FaTrash,
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,7 +29,6 @@ import {
   Incident,
   resolveIncident,
 } from "../services/IncidentService";
-import { AppState } from "@app/core/store/store";
 
 const IncidentsPage = () => {
   const dispatch = useDispatch();
@@ -54,7 +50,7 @@ const IncidentsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  const { data: guardsCatalog, loading: loadingGuards } = useCatalog("guard");
+  const { data: guardsCatalog } = useCatalog("guard");
 
   const externalFilters = useMemo(() => {
     const f: Record<string, string | number> = {};

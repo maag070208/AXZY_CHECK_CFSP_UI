@@ -8,7 +8,6 @@ import {
   ITButton,
   ITDataTable,
   ITDialog,
-  ITInput,
   ITLoader,
 } from "@axzydev/axzy_ui_system";
 import { GoogleMapComponent } from "@core/components/GoogleMapComponent";
@@ -20,9 +19,6 @@ import {
   FaCheckCircle,
   FaEye,
   FaFileAlt,
-  FaSearch,
-  FaSync,
-  FaTimes,
   FaTrash,
   FaWrench,
 } from "react-icons/fa";
@@ -54,7 +50,7 @@ const MaintenancesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  const { data: guardsCatalog, loading: loadingGuards } = useCatalog("guard");
+  const { data: guardsCatalog } = useCatalog("guard");
 
   const externalFilters = useMemo(() => {
     const f: Record<string, string | number> = {};
@@ -111,7 +107,6 @@ const MaintenancesPage = () => {
       dispatch(showToast({ message: "Error al eliminar", type: "error" }));
     }
   };
-
 
   const columns = useMemo(
     () => [

@@ -81,7 +81,7 @@ const SchedulesPage = () => {
     dispatch(showLoader());
     try {
       const data = { name, startTime, endTime };
-      const res = editingSchedule
+      const res: any = editingSchedule
         ? await updateSchedule(editingSchedule.id, data)
         : await createSchedule(data);
 
@@ -109,7 +109,7 @@ const SchedulesPage = () => {
     if (!scheduleToDeleteId) return;
     dispatch(showLoader());
     try {
-      const res = await deleteSchedule(scheduleToDeleteId);
+      const res: any = await deleteSchedule(scheduleToDeleteId);
       if (res.success) {
         dispatch(
           showToast({

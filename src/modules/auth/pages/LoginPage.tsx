@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import LoginFormComponent from "../components/LoginForm";
 import { login } from "../services/AuthService";
+import * as packageJson from "../../../../package.json";
 
 const LoginPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -88,7 +89,8 @@ const LoginPage = () => {
         {/* Support/Footer */}
         <div className="mt-10 text-center animate-in fade-in duration-1000 delay-500">
           <p className="text-xs text-slate-400 font-medium">
-            &copy; {new Date().getFullYear()} AXZY Digital Systems • v1.2.0
+            &copy; {new Date().getFullYear()} AXZY Digital Systems •{" "}
+            {packageJson.version}
           </p>
         </div>
       </div>

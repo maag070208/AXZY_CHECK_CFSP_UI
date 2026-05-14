@@ -1,29 +1,19 @@
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
+import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITBadget,
   ITButton,
   ITDataTable,
   ITDialog,
-  ITInput,
   ITSearchSelect,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  FaBuilding,
-  FaEdit,
-  FaFilter,
-  FaPlus,
-  FaRoute,
-  FaSync,
-  FaTimes,
-  FaTrash,
-} from "react-icons/fa";
+import { FaBuilding, FaEdit, FaRoute, FaTrash } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { deleteRoute, getPaginatedRoutes } from "../services/RoutesService";
-import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 
 const RoutesPage = () => {
   const dispatch = useDispatch();
