@@ -141,42 +141,44 @@ export const ClientZonesTab = ({ clientId }: Props) => {
   const columns = [
     {
       key: "name",
-      label: "Identificador de Zona / Recurrente",
+      label: "ZONA / RECURRENTE",
       type: "string",
       render: (row: Zone) => (
-        <div className="flex items-center gap-3 py-1">
-          <div className="p-2 bg-slate-50 rounded-lg text-slate-400 group-hover:text-emerald-500 transition-colors">
-            <FaMapMarkedAlt size={14} />
-          </div>
-          <span className="font-bold text-slate-700 tracking-tight">
+        <div className="flex flex-col">
+          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
             {row.name}
           </span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+              ÁREA DE CONTROL
+            </span>
+          </div>
         </div>
       ),
     },
     {
       key: "actions",
-      label: "Acciones",
+      label: "CONTROL",
       type: "actions",
       actions: (row: Zone) => (
-        <div className="flex gap-1 justify-end">
+        <div className="flex items-center gap-2">
           <ITButton
             size="small"
-            variant="ghost"
-            className="text-slate-400 p-2 hover:bg-slate-50 hover:text-emerald-600"
+            variant="outlined"
             onClick={() => setEditingZone(row)}
             title="Editar"
           >
-            <FaEdit />
+            <FaEdit size={14} />
           </ITButton>
           <ITButton
             size="small"
-            variant="ghost"
-            className="text-red-200 hover:text-red-500 p-2 hover:bg-red-50"
+            variant="outlined"
+            color="error"
             onClick={() => handleDelete(row.id)}
             title="Eliminar"
           >
-            <FaTrash />
+            <FaTrash size={14} />
           </ITButton>
         </div>
       ),

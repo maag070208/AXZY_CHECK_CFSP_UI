@@ -4,6 +4,7 @@ import { clearSpecificCatalogCache } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import { TResult } from "@app/core/types/TResult";
 import {
+  ITBadget,
   ITButton,
   ITDataTable,
   ITDataTableFetchParams,
@@ -111,60 +112,25 @@ const ClientsPage = () => {
         title="Directorio de Clientes"
         subtitle="Gestión de clientes y sus ubicaciones"
         icon={FaBuilding}
-        actions={
-          <>
-            <div className="w-full sm:w-64 relative">
-              <input
-                type="text"
-                placeholder="Buscar cliente..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full py-2 h-[42px] px-4 pr-10 bg-white border border-slate-100 rounded-xl outline-none text-sm focus:border-emerald-500 transition-all shadow-sm font-medium text-slate-600"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
-                >
-                  <FaTimes size={14} />
-                </button>
-              )}
-            </div>
-
-            <ITTripleFilter
-              value={statusFilter}
-              onChange={(val) => setStatusFilter(val as any)}
-              options={[
-                { label: "Todos", value: "all" },
-                { label: "Activos", value: "active" },
-                { label: "Inactivos", value: "inactive" },
-              ]}
-              className="h-[42px] items-center"
-            />
-
-            <ITButton
-              onClick={refreshTable}
-              color="secondary"
-              variant="outlined"
-              className="h-[42px] px-3 !rounded-xl border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2 w-full sm:w-auto"
-              size="small"
-            >
-              <FaSync
-                className={`text-xs text-slate-500 ${refreshKey % 2 === 0 ? "" : "rotate-180"}`}
-              />
-              <span className="text-xs font-bold text-slate-500">
-                Actualizar
-              </span>
-            </ITButton>
-
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-5 py-2.5 h-[42px] rounded-xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-105 transition-all w-full sm:w-auto"
-            >
-              <FaPlus className="text-xs" />
-              <span>Nuevo Cliente</span>
-            </button>
-          </>
+        search={{
+          value: searchTerm,
+          onChange: setSearchTerm,
+          placeholder: "BUSCAR CLIENTE...",
+        }}
+        onRefresh={refreshTable}
+        refreshKey={refreshKey}
+        onCreate={() => setIsCreateModalOpen(true)}
+        createLabel="Nuevo Cliente"
+        extraFilter={
+          <ITTripleFilter
+            value={statusFilter}
+            onChange={(val) => setStatusFilter(val as any)}
+            options={[
+              { label: "TODOS", value: "all" },
+              { label: "ACTIVOS", value: "active" },
+              { label: "INACTIVOS", value: "inactive" },
+            ]}
+          />
         }
       />
 
@@ -178,15 +144,23 @@ const ClientsPage = () => {
           columns={[
             {
               key: "name",
-              label: "CLIENTE",
+              label: "CLIENTE / ENTIDAD",
               type: "string",
               sortable: true,
               render: (row: Client) => (
-                <div
-                  onClick={() => navigate(`/clients/${row.id}`)}
-                  className="font-bold text-slate-800 hover:text-emerald-600 cursor-pointer transition-colors"
-                >
-                  {row.name}
+                <div className="flex flex-col">
+                  <span
+                    onClick={() => navigate(`/clients/${row.id}`)}
+                    className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 hover:text-emerald-600 cursor-pointer transition-colors"
+                  >
+                    {row.name}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                    <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                      ID: {row.id.substring(0, 8).toUpperCase()}
+                    </span>
+                  </div>
                 </div>
               ),
             },
@@ -195,11 +169,16 @@ const ClientsPage = () => {
               label: "CONTACTO",
               type: "string",
               render: (row: Client) => (
-                <div className="text-xs">
-                  <div className="font-bold text-slate-700">
-                    {row.contactName || "-"}
+                <div className="flex flex-col">
+                  <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+                    {row.contactName || "SIN CONTACTO"}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                      TEL: {row.contactPhone || "N/A"}
+                    </span>
                   </div>
-                  <div className="text-slate-500">{row.contactPhone || ""}</div>
                 </div>
               ),
             },
@@ -208,16 +187,9 @@ const ClientsPage = () => {
               label: "ESTADO",
               type: "string",
               render: (row: Client) => (
-                <div className="text-sm text-slate-600">
-                  <div
-                    className={`flex items-center gap-1.5 font-medium ${row.active ? "text-emerald-600" : "text-slate-400"}`}
-                  >
-                    <div
-                      className={`w-1.5 h-1.5 rounded-full ${row.active ? "bg-emerald-500" : "bg-slate-300"}`}
-                    ></div>
-                    {row.active ? "Activo" : "Inactivo"}
-                  </div>
-                </div>
+                <ITBadget color={row.active ? "success" : "error"} size="small">
+                  {row.active ? "ACTIVO" : "INACTIVO"}
+                </ITBadget>
               ),
             },
             {
@@ -229,29 +201,27 @@ const ClientsPage = () => {
                   <ITButton
                     onClick={() => navigate(`/clients/${row.id}`)}
                     size="small"
-                    variant="ghost"
-                    className="text-emerald-500 hover:text-emerald-700"
+                    variant="outlined"
                     title="Ver Detalles"
                   >
-                    <FaSearchLocation />
+                    <FaSearchLocation size={14} />
                   </ITButton>
                   <ITButton
                     onClick={() => setEditingClient(row)}
                     size="small"
-                    variant="ghost"
-                    className="text-slate-400 hover:text-slate-600"
+                    variant="outlined"
                     title="Editar"
                   >
-                    <FaEdit />
+                    <FaEdit size={14} />
                   </ITButton>
                   <ITButton
                     onClick={() => setClientToDeleteId(row.id)}
                     size="small"
-                    variant="ghost"
-                    className="text-red-300 hover:text-red-500"
+                    variant="outlined"
+                    color="error"
                     title="Eliminar"
                   >
-                    <FaTrash />
+                    <FaTrash size={14} />
                   </ITButton>
                 </div>
               ),

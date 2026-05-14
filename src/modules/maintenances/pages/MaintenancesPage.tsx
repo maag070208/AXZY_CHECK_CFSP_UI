@@ -155,19 +155,16 @@ const MaintenancesPage = () => {
       },
       {
         key: "guardId",
-        label: "Reportado por",
+        label: "REPORTADO POR",
         render: (row: Maintenance) => (
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-600 border border-slate-100 uppercase">
-              {row.guard?.name?.[0]}
-              {row.guard?.lastName?.[0]}
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight truncate max-w-[120px]">
-                {row.guard?.name} {row.guard?.lastName}
-              </span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
-                @{row.guard?.username}
+          <div className="flex flex-col">
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+              {row.guard?.name} {row.guard?.lastName}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                @{row.guard?.username || "S/U"}
               </span>
             </div>
           </div>
@@ -175,19 +172,19 @@ const MaintenancesPage = () => {
       },
       {
         key: "status",
-        label: "Estado",
+        label: "ESTADO",
         render: (row: Maintenance) => (
           <ITBadget
             color={row.status === "ATTENDED" ? "success" : "danger"}
-            variant="outlined"
-            label={row.status === "ATTENDED" ? "ATENDIDA" : "PENDIENTE"}
-            className="font-black text-[9px] tracking-widest"
-          />
+            size="small"
+          >
+            {row.status === "ATTENDED" ? "ATENDIDA" : "PENDIENTE"}
+          </ITBadget>
         ),
       },
       {
         key: "actions",
-        label: "Control",
+        label: "CONTROL",
         render: (row: Maintenance) => (
           <div className="flex items-center gap-2">
             <ITButton
@@ -202,9 +199,10 @@ const MaintenancesPage = () => {
             {row.status === "PENDING" && !isClient && (
               <ITButton
                 onClick={() => handleResolve(row.id)}
-                variant="outline"
-                className="!p-2 !w-9 !h-9 !rounded-xl !border-emerald-100 !bg-emerald-50/30 !text-emerald-500 hover:!bg-emerald-50"
+                variant="outlined"
+                color="success"
                 title="Resolver"
+                size="small"
                 disabled={resolvingId === row.id}
               >
                 {resolvingId === row.id ? (
@@ -218,7 +216,7 @@ const MaintenancesPage = () => {
         ),
       },
     ],
-    [isAdmin, resolvingId, deletingId],
+    [isAdmin, resolvingId, deletingId, isClient],
   );
 
   return (
@@ -227,52 +225,23 @@ const MaintenancesPage = () => {
         title="Gestión de Mantenimientos"
         subtitle="Monitoreo y resolución de desperfectos en instalaciones"
         icon={FaWrench}
-        actions={
-          <div className="flex flex-wrap items-center gap-3 w-full sm:justify-end">
-            <div className="relative w-full sm:w-64">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-              <ITInput
-                placeholder="BUSCAR REPORTE..."
-                name="search"
-                value={searchTerm}
-                onChange={(e: any) => setSearchTerm(e.target.value)}
-                onBlur={() => {}}
-                className="!h-[42px] !pl-10 !rounded-xl border-slate-100 bg-white !text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors"
-                >
-                  <FaTimes size={12} />
-                </button>
-              )}
-            </div>
-
-            <ITTripleFilter
-              value={statusFilter}
-              onChange={setStatusFilter}
-              options={[
-                { label: "TODOS", value: "ALL" },
-                { label: "PENDIENTES", value: "PENDING" },
-                { label: "ATENDIDAS", value: "ATTENDED" },
-              ]}
-            />
-
-            <ITButton
-              onClick={() => setRefreshKey((p) => p + 1)}
-              variant="outline"
-              className="!h-[42px] !rounded-xl !border-slate-100 !bg-white !text-slate-500 hover:!bg-slate-50"
-            >
-              <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase">
-                <FaSync
-                  size={10}
-                  className={loadingGuards ? "animate-spin" : ""}
-                />
-                Refrescar
-              </div>
-            </ITButton>
-          </div>
+        search={{
+          value: searchTerm,
+          onChange: setSearchTerm,
+          placeholder: "BUSCAR REPORTE...",
+        }}
+        onRefresh={() => setRefreshKey((p) => p + 1)}
+        refreshKey={refreshKey}
+        extraFilter={
+          <ITTripleFilter
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { label: "TODOS", value: "ALL" },
+              { label: "PENDIENTES", value: "PENDING" },
+              { label: "ATENDIDAS", value: "ATTENDED" },
+            ]}
+          />
         }
       />
 
@@ -482,7 +451,7 @@ const MaintenancesPage = () => {
                         onClick={() => handleResolve(viewingMaintenance.id)}
                         variant="filled"
                         color="success"
-                        className="w-full !rounded-xl !h-[48px] shadow-lg shadow-emerald-200"
+                        className="w-full"
                       >
                         <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase">
                           <FaCheck size={12} /> Resolver Ahora

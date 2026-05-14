@@ -1,11 +1,12 @@
-import React from "react";
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import { ITInput, ITButton, ITLoader } from "@axzydev/axzy_ui_system";
-import { resetPassword, User } from "../services/UserService";
-import { useDispatch } from "react-redux";
+import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { FaKey, FaShieldAlt } from "react-icons/fa";
+import { ITButton, ITInput, ITLoader } from "@axzydev/axzy_ui_system";
+import { useFormik } from "formik";
+import React from "react";
+import { FaKey } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import * as Yup from "yup";
+import { resetPassword, User } from "../services/UserService";
 
 interface Props {
   user: User;
@@ -35,7 +36,7 @@ export const ChangePasswordModal: React.FC<Props> = ({
         .required("Requerido"),
     }),
     onSubmit: async (values) => {
-      setLoading(true);
+      dispatch(showLoader());
       try {
         const res = await resetPassword(user.id, values.newPassword);
         if (res.success) {
@@ -55,83 +56,83 @@ export const ChangePasswordModal: React.FC<Props> = ({
           );
         }
       } catch (error) {
-        dispatch(
-          showToast({ message: "Error de conexión", type: "error" }),
-        );
+        dispatch(showToast({ message: "Error de conexión", type: "error" }));
       } finally {
-        setLoading(false);
+        dispatch(hideLoader());
       }
     },
   });
 
   return (
-    <div className="p-8 space-y-8">
-      <div className="flex flex-col items-center text-center space-y-4">
-        <div className="w-20 h-20 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shadow-sm">
-          <FaKey size={32} />
-        </div>
-        <div>
-          <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
-            Seguridad de Cuenta
-          </h3>
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">
-            @{user.username} • {user.name}
-          </p>
-        </div>
+    <div className="flex flex-col bg-white overflow-hidden max-h-[85vh]">
+      <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
+        <section>
+          <div className="flex items-center gap-2 mb-8">
+            <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              Seguridad de Cuenta
+            </h4>
+          </div>
+
+          <div className="space-y-8">
+            <div className="bg-slate-50 p-6 rounded-[24px] border border-slate-100 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-500 border border-slate-100">
+                <FaKey size={20} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                  @{user.username}
+                </span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                  {user.name} {user.lastName}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <ITInput
+                label="Nueva Contraseña"
+                name="newPassword"
+                type="password"
+                value={formik.values.newPassword}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.newPassword}
+                touched={formik.touched.newPassword}
+                placeholder="••••••••"
+              />
+              <ITInput
+                label="Confirmar Contraseña"
+                name="confirmPassword"
+                type="password"
+                value={formik.values.confirmPassword}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.confirmPassword}
+                touched={formik.touched.confirmPassword}
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+        </section>
       </div>
 
-      <div className="bg-amber-50/50 p-5 rounded-2xl border border-amber-100 flex gap-4 items-start">
-        <div className="mt-1 text-amber-500">
-          <FaShieldAlt size={16} />
-        </div>
-        <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider leading-relaxed">
-          Estás asignando una nueva clave de acceso. El usuario deberá utilizar esta credencial en su siguiente inicio de sesión.
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        <ITInput
-          label="Nueva Contraseña"
-          name="newPassword"
-          type="password"
-          value={formik.values.newPassword}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={formik.errors.newPassword}
-          touched={formik.touched.newPassword}
-          placeholder="••••••••"
-          className="!h-12 !rounded-2xl !bg-slate-50/50"
-        />
-        <ITInput
-          label="Confirmar Contraseña"
-          name="confirmPassword"
-          type="password"
-          value={formik.values.confirmPassword}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={formik.errors.confirmPassword}
-          touched={formik.touched.confirmPassword}
-          placeholder="••••••••"
-          className="!h-12 !rounded-2xl !bg-slate-50/50"
-        />
-      </div>
-
-      <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-10">
+      <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
         <ITButton
-          variant="ghost"
-          className="px-8 font-black text-[10px] uppercase tracking-widest text-slate-400"
+          type="button"
+          variant="filled"
           onClick={onCancel}
+          color="secondary"
         >
           Cancelar
         </ITButton>
+
         <ITButton
-          variant="filled"
-          color="primary"
-          className="px-10 !rounded-2xl shadow-xl shadow-emerald-200"
-          onClick={formik.submitForm}
+          onClick={() => formik.submitForm()}
           disabled={loading}
+          color="primary"
         >
-          {loading ? <ITLoader size="sm" /> : "ACTUALIZAR CONTRASEÑA"}
+          {loading ? <ITLoader size="sm" /> : "Actualizar Clave"}
         </ITButton>
       </div>
     </div>

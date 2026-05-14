@@ -136,45 +136,37 @@ const RoundsPage = () => {
     () => [
       {
         key: "recurringConfiguration",
-        label: "Ruta de Servicio",
+        label: "RUTA / REFERENCIA",
         render: (row: IRound) => (
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100/50">
-              <FaRoute size={16} />
-            </div>
-            <div>
-              <p className="font-black text-slate-800 uppercase text-[11px] tracking-tight line-clamp-1">
-                {row.recurringConfiguration?.title ||
-                  routesMap[row.recurringConfigurationId] ||
-                  "Ronda General"}
-              </p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <FaBuilding className="text-slate-400 text-[9px]" />
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                  {row.recurringConfiguration?.client?.name ||
-                    row.client?.name ||
-                    "Sin Cliente"}
-                </span>
-              </div>
+          <div className="flex flex-col">
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+              {row.recurringConfiguration?.title ||
+                routesMap[row.recurringConfigurationId] ||
+                "Ronda General"}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                {row.recurringConfiguration?.client?.name ||
+                  row.client?.name ||
+                  "SIN CLIENTE ASIGNADO"}
+              </span>
             </div>
           </div>
         ),
       },
       {
         key: "guard",
-        label: "Personal Asignado",
+        label: "PERSONAL OPERATIVO",
         render: (row: IRound) => (
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-black border border-slate-100 uppercase text-[10px]">
-              {row.guard.name?.[0]}
-              {row.guard.lastName?.[0]}
-            </div>
-            <div>
-              <p className="font-black text-slate-800 uppercase text-[10px] tracking-tight line-clamp-1">
-                {row.guard.name} {row.guard.lastName}
-              </p>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                ID: {row.guard.id.substring(0, 8)}
+          <div className="flex flex-col">
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+              {row.guard.name} {row.guard.lastName}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                @{row.guard.name || "S/U"}
               </span>
             </div>
           </div>
@@ -182,29 +174,63 @@ const RoundsPage = () => {
       },
       {
         key: "times",
-        label: "Cronología",
-        render: (row: IRound) => (
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-slate-700 font-black text-[10px] uppercase tracking-tight">
-                {dayjs(row.startTime).format("DD MMM, HH:mm")}
-              </span>
-            </div>
-            {row.endTime && (
+        label: "CRONOLOGÍA",
+        render: (row: IRound) => {
+          const isActive = !row.endTime;
+          const startDate = dayjs(row.startTime);
+          const endDate = row.endTime ? dayjs(row.endTime) : null;
+
+          return (
+            <div className="flex flex-col gap-1.5">
+              {/* INICIO - destacado */}
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                <span className="text-red-500 font-bold text-[10px] uppercase tracking-tight">
-                  {dayjs(row.endTime).format("DD MMM, HH:mm")}
-                </span>
+                <div className="w-5 text-center">
+                  <span className="text-[10px] font-black text-indigo-500">
+                    ▶
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[12px] font-mono font-bold text-slate-800">
+                    {startDate.format("DD MMM · HH:mm:ss")}
+                  </span>
+                </div>
               </div>
-            )}
-          </div>
-        ),
+
+              {/* FIN / EN PROCESO - dinámico */}
+              <div className="flex items-center gap-2">
+                <div className="w-5 text-center">
+                  {isActive ? (
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-200" />
+                  ) : (
+                    <span className="text-[10px] text-slate-400">■</span>
+                  )}
+                </div>
+                <div>
+                  <span
+                    className={`text-[10px] font-semibold uppercase tracking-wide ${
+                      isActive ? "text-emerald-600" : "text-slate-500"
+                    }`}
+                  >
+                    {isActive ? "EN PROCESO" : ""}
+                  </span>
+                  <div
+                    className={`text-[12px] font-mono font-bold ${
+                      isActive ? "text-emerald-600" : "text-slate-500"
+                    }`}
+                  >
+                    {isActive
+                      ? "— en curso —"
+                      : endDate?.format("DD MMM · HH:mm:ss")}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        },
       },
       {
         key: "status",
-        label: "Estado",
+        label: "ESTADO",
         render: (row: IRound) => (
           <ITBadget
             size="small"
@@ -216,7 +242,7 @@ const RoundsPage = () => {
       },
       {
         key: "actions",
-        label: "Control",
+        label: "CONTROL",
         render: (row: IRound) => (
           <div className="flex items-center gap-2">
             <ITButton
@@ -235,14 +261,14 @@ const RoundsPage = () => {
                 color="error"
                 title="Finalizar"
               >
-                <FaStop size={12} />
+                <FaStop size={14} />
               </ITButton>
             )}
           </div>
         ),
       },
     ],
-    [navigate, routesMap],
+    [navigate, routesMap, isResident],
   );
 
   return (
@@ -251,90 +277,52 @@ const RoundsPage = () => {
         title="Historial de Rondas"
         subtitle="Supervisión y cronología de recorridos operativos en tiempo real"
         icon={FaRoute}
-        actions={
-          <div className="flex flex-wrap items-center gap-3 w-full sm:justify-end">
-            {!isResident && (
-              <div className="w-full sm:w-56">
-                <ITSearchSelect
-                  placeholder="FILTRAR POR CLIENTE..."
-                  options={(clients || []).map((c: any) => ({
-                    label: c.name,
-                    value: c.id,
-                  }))}
-                  value={selectedClientId}
-                  onChange={(val) => {
-                    setSelectedClientId(val);
-                    setRefreshKey((prev) => prev + 1);
-                  }}
-                  className="!h-[44px] !rounded-xl"
-                />
-              </div>
-            )}
-
-            <div className="relative w-full sm:w-56">
-              <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-              <ITInput
-                placeholder="BUSCAR GUARDIA..."
-                name="search"
-                value={searchTerm}
-                onChange={(e: any) => setSearchTerm(e.target.value)}
-                onBlur={() => {}}
-                className="!h-[44px] !pl-10 !rounded-xl border-slate-100 bg-white !text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors"
-                >
-                  <FaTimes size={12} />
-                </button>
-              )}
-            </div>
-
-            <ITTripleFilter
-              value={statusFilter}
+        filter={
+          !isResident && (
+            <ITSearchSelect
+              placeholder="FILTRAR POR CLIENTE..."
+              options={(clients || []).map((c: any) => ({
+                label: c.name,
+                value: c.id,
+              }))}
+              value={selectedClientId}
               onChange={(val) => {
-                setStatusFilter(val);
+                setSelectedClientId(val);
                 setRefreshKey((prev) => prev + 1);
               }}
-              options={[
-                { label: "TODAS", value: "ALL" },
-                { label: "ACTIVAS", value: "IN_PROGRESS" },
-                { label: "HISTORIAL", value: "COMPLETED" },
-              ]}
+              className="w-full"
             />
-
-            <ITDatePicker
-              label=""
-              name="date"
-              value={selectedDate as any}
-              range
-              onChange={(e) => {
-                const val = e.target.value as any;
-                if (Array.isArray(val) && val[0] && val[1]) {
-                  setSelectedDate(val.map((d) => (d ? new Date(d) : null)));
-                  setRefreshKey((prev) => prev + 1);
-                }
-              }}
-              className="!h-[44px] !rounded-xl !w-full sm:!w-64"
-            />
-
-            <ITButton
-              onClick={() => setRefreshKey((prev) => prev + 1)}
-              variant="outline"
-              color="secondary"
-              className="!h-[44px] !rounded-xl border-slate-200"
-            >
-              <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase text-slate-500">
-                <FaSync
-                  className={
-                    refreshKey % 2 !== 0 ? "rotate-180 transition-all" : ""
-                  }
-                />
-              </div>
-            </ITButton>
-          </div>
+          )
         }
+        search={{
+          value: searchTerm,
+          onChange: setSearchTerm,
+          placeholder: "BUSCAR GUARDIA...",
+          icon: FaUser,
+        }}
+        dateRange={{
+          value: selectedDate as [Date | null, Date | null],
+          onChange: (val) => {
+            setSelectedDate(val);
+            setRefreshKey((prev) => prev + 1);
+          },
+        }}
+        extraFilter={
+          <ITTripleFilter
+            value={statusFilter}
+            onChange={(val) => {
+              setStatusFilter(val);
+              setRefreshKey((prev) => prev + 1);
+            }}
+            options={[
+              { label: "TODAS", value: "ALL" },
+              { label: "ACTIVAS", value: "IN_PROGRESS" },
+              { label: "HISTORIAL", value: "COMPLETED" },
+            ]}
+          />
+        }
+        onRefresh={() => setRefreshKey((prev) => prev + 1)}
+        refreshKey={refreshKey}
       />
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mt-6">

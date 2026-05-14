@@ -1,27 +1,18 @@
 import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
+import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITBadget,
   ITButton,
   ITDataTable,
   ITDialog,
-  ITInput,
   ITLoader,
   ITSelect,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  FaClock,
-  FaEdit,
-  FaKey,
-  FaPlus,
-  FaSearch,
-  FaTimes,
-  FaTrash,
-  FaUserShield,
-} from "react-icons/fa";
+import { FaClock, FaEdit, FaKey, FaTrash, FaUserShield } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { getSchedules } from "../../schedules/SchedulesService";
 import { ChangePasswordModal } from "../components/ChangePasswordModal";
@@ -87,17 +78,54 @@ const UsersPage = () => {
 
   const confirmDelete = async () => {
     if (!userToDeleteId || isDeleting) return;
+    dispatch(showLoader());
     setIsDeleting(true);
-    const res = await deleteUser(userToDeleteId.toString());
-    setIsDeleting(false);
-    setUserToDeleteId(null);
-    if (res.success) {
-      dispatch(showToast({ message: "Usuario eliminado", type: "success" }));
-      refreshTable();
-    } else {
-      dispatch(
-        showToast({ message: "Error al eliminar usuario", type: "error" }),
-      );
+    try {
+      const res = await deleteUser(userToDeleteId.toString());
+      if (res.success) {
+        dispatch(showToast({ message: "Usuario eliminado", type: "success" }));
+        refreshTable();
+      } else {
+        dispatch(
+          showToast({ message: "Error al eliminar usuario", type: "error" }),
+        );
+      }
+    } finally {
+      setIsDeleting(false);
+      setUserToDeleteId(null);
+      dispatch(hideLoader());
+    }
+  };
+
+  const handleReassignClient = async (clientId: string) => {
+    if (!changingClientUser) return;
+    dispatch(showLoader());
+    try {
+      const res = await updateUser(changingClientUser.id, { clientId });
+      if (res.success) {
+        dispatch(showToast({ message: "Cliente reasignado", type: "success" }));
+        handleSuccess();
+        setChangingClientUser(null);
+      }
+    } finally {
+      dispatch(hideLoader());
+    }
+  };
+
+  const handleReassignSchedule = async (scheduleId: string) => {
+    if (!changingScheduleUser) return;
+    dispatch(showLoader());
+    try {
+      const res = await updateUser(changingScheduleUser.id, { scheduleId });
+      if (res.success) {
+        dispatch(
+          showToast({ message: "Horario actualizado", type: "success" }),
+        );
+        handleSuccess();
+        setChangingScheduleUser(null);
+      }
+    } finally {
+      dispatch(hideLoader());
     }
   };
 
@@ -105,18 +133,15 @@ const UsersPage = () => {
     () => [
       {
         key: "user",
-        label: "Usuario",
+        label: "USUARIO / EXPEDIENTE",
         render: (row: User) => (
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 font-black border border-slate-100 uppercase text-sm">
-              {row.name?.[0]}
-              {row.lastName?.[0]}
-            </div>
-            <div>
-              <p className="font-black text-slate-800 uppercase text-[11px] tracking-tight line-clamp-1">
-                {row.name} {row.lastName}
-              </p>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+          <div className="flex flex-col">
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+              {row.name} {row.lastName}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
                 @{row.username}
               </span>
             </div>
@@ -125,7 +150,7 @@ const UsersPage = () => {
       },
       {
         key: "roleId",
-        label: "Rol / Categoría",
+        label: "ROL / CATEGORÍA",
         render: (row: User) => {
           const roleValue = row.role?.value || "S/R";
           const roleName = row.role?.name || "";
@@ -137,105 +162,99 @@ const UsersPage = () => {
           if (roleName === "MAINT") color = "danger";
 
           return (
-            <ITBadget
-              label={roleValue}
-              color={color}
-              variant="outlined"
-              className="font-black text-[9px] tracking-widest"
-            />
+            <ITBadget color={color} size="small">
+              {roleValue}
+            </ITBadget>
           );
         },
       },
       {
         key: "client",
-        label: "Asignación",
+        label: "ASIGNACIÓN",
         render: (row: User) => {
           const roleName = row.role?.name || "";
           const isOp = ["GUARD", "SHIFT", "MAINT"].includes(roleName);
           if (!isOp)
             return (
               <span className="text-[10px] text-slate-300 font-black tracking-widest italic">
-                N/A
+                SISTEMA
               </span>
             );
 
           return (
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-emerald-600 uppercase tracking-tight">
-                {row.client?.name || "Sin Asignar"}
+              <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+                {row.client?.name || "SIN ASIGNAR"}
               </span>
-              {row.schedule && (
-                <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">
-                  {row.schedule.name} ({row.schedule.startTime}-
-                  {row.schedule.endTime})
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                  {row.schedule
+                    ? `${row.schedule.name} (${row.schedule.startTime}-${row.schedule.endTime})`
+                    : "SIN HORARIO"}
                 </span>
-              )}
+              </div>
             </div>
           );
         },
       },
       {
         key: "active",
-        label: "Estado",
+        label: "ESTADO",
         render: (row: User) => (
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-1.5 h-1.5 rounded-full ${row.active ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-slate-300"}`}
-            />
-            <span
-              className={`text-[10px] font-black uppercase tracking-widest ${row.active ? "text-emerald-600" : "text-slate-400"}`}
-            >
-              {row.active ? "ACTIVO" : "INACTIVO"}
-            </span>
-          </div>
+          <ITBadget color={row.active ? "success" : "error"} size="small">
+            {row.active ? "ACTIVO" : "INACTIVO"}
+          </ITBadget>
         ),
       },
       {
         key: "actions",
-        label: "Control",
+        label: "CONTROL",
         render: (row: User) => (
-          <div className="flex items-center gap-1">
-            <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100 mr-2">
-              <ITButton
-                onClick={() => setChangingScheduleUser(row)}
-                variant="ghost"
-                className="!p-2 !w-8 !h-8 !rounded-lg !text-amber-500 hover:!bg-amber-50"
-                title="Horario"
-              >
-                <FaClock size={12} />
-              </ITButton>
-              <ITButton
-                onClick={() => setChangingClientUser(row)}
-                variant="ghost"
-                className="!p-2 !w-8 !h-8 !rounded-lg !text-indigo-500 hover:!bg-indigo-50"
-                title="Cliente"
-              >
-                <FaUserShield size={12} />
-              </ITButton>
-            </div>
+          <div className="flex items-center gap-2">
+            <ITButton
+              onClick={() => setChangingScheduleUser(row)}
+              variant="outlined"
+              color="warning"
+              size="small"
+              title="Horario"
+            >
+              <FaClock size={14} />
+            </ITButton>
+            <ITButton
+              onClick={() => setChangingClientUser(row)}
+              variant="outlined"
+              color="info"
+              size="small"
+              title="Cliente"
+            >
+              <FaUserShield size={14} />
+            </ITButton>
             <ITButton
               onClick={() => setChangingPasswordUser(row)}
-              variant="outline"
-              className="!p-2 !w-9 !h-9 !rounded-xl !border-emerald-100 !text-emerald-500 hover:!bg-emerald-50"
+              variant="outlined"
+              size="small"
               title="Seguridad"
+              color="danger"
             >
-              <FaKey size={12} />
+              <FaKey size={14} />
             </ITButton>
             <ITButton
               onClick={() => setEditingUser(row)}
-              variant="outline"
-              className="!p-2 !w-9 !h-9 !rounded-xl !border-slate-100 hover:!bg-slate-50 !text-slate-400 hover:!text-slate-600"
+              variant="outlined"
+              size="small"
               title="Editar"
             >
               <FaEdit size={14} />
             </ITButton>
             <ITButton
               onClick={() => setUserToDeleteId(row.id as any)}
-              variant="outline"
-              className="!p-2 !w-9 !h-9 !rounded-xl !border-rose-100 !bg-rose-50/30 !text-rose-500 hover:!bg-rose-50"
+              variant="outlined"
+              color="error"
+              size="small"
               title="Eliminar"
             >
-              <FaTrash size={12} />
+              <FaTrash size={14} />
             </ITButton>
           </div>
         ),
@@ -250,48 +269,25 @@ const UsersPage = () => {
         title="Directorio de Usuarios"
         subtitle="Gestión de expedientes operativos y controles de acceso"
         icon={FaUserShield}
-        actions={
-          <div className="flex flex-wrap items-center gap-3 w-full sm:justify-end">
-            <div className="relative w-full sm:w-64">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-              <ITInput
-                placeholder="BUSCAR USUARIO..."
-                name="search"
-                value={searchTerm}
-                onChange={(e: any) => setSearchTerm(e.target.value)}
-                onBlur={() => {}}
-                className="!h-[42px] !pl-10 !rounded-xl border-slate-100 bg-white !text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors"
-                >
-                  <FaTimes size={12} />
-                </button>
-              )}
-            </div>
-
-            <ITTripleFilter
-              value={activeFilter}
-              onChange={setActiveFilter}
-              options={[
-                { label: "TODOS", value: "all" },
-                { label: "ACTIVOS", value: "active" },
-                { label: "INACTIVOS", value: "inactive" },
-              ]}
-            />
-
-            <ITButton
-              onClick={() => setIsCreateModalOpen(true)}
-              color="primary"
-              className="!h-[42px] !rounded-xl shadow-lg shadow-emerald-100"
-            >
-              <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase">
-                <FaPlus size={10} /> Nuevo Usuario
-              </div>
-            </ITButton>
-          </div>
+        search={{
+          value: searchTerm,
+          onChange: setSearchTerm,
+          placeholder: "BUSCAR USUARIO...",
+        }}
+        onRefresh={refreshTable}
+        refreshKey={refreshKey}
+        onCreate={() => setIsCreateModalOpen(true)}
+        createLabel="Nuevo Usuario"
+        extraFilter={
+          <ITTripleFilter
+            value={activeFilter}
+            onChange={setActiveFilter}
+            options={[
+              { label: "TODOS", value: "all" },
+              { label: "ACTIVOS", value: "active" },
+              { label: "INACTIVOS", value: "inactive" },
+            ]}
+          />
         }
       />
 
@@ -313,6 +309,7 @@ const UsersPage = () => {
           setIsCreateModalOpen(false);
           setEditingUser(null);
         }}
+        title={editingUser ? "Editar Usuario" : "Registro de Usuario"}
         className="!max-w-2xl !w-full"
       >
         <CreateUserWizard
@@ -329,6 +326,7 @@ const UsersPage = () => {
       <ITDialog
         isOpen={!!changingPasswordUser}
         onClose={() => setChangingPasswordUser(null)}
+        title="Cambiar Contraseña"
         className="!max-w-lg !w-full"
       >
         {changingPasswordUser && (
@@ -344,57 +342,53 @@ const UsersPage = () => {
       <ITDialog
         isOpen={!!changingClientUser}
         onClose={() => setChangingClientUser(null)}
-        className="!max-w-md !w-full"
+        title="Reasignar Cliente"
+        className="!max-w-xl !w-full"
       >
-        <div className="p-10 space-y-8">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="w-20 h-20 rounded-3xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-sm">
-              <FaUserShield size={40} />
-            </div>
-            <div>
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
-                Reasignar Cliente
-              </h3>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">
-                {changingClientUser?.name} {changingClientUser?.lastName}
-              </p>
-            </div>
+        <div className="flex flex-col bg-white overflow-hidden">
+          <div className="p-10 space-y-10">
+            <section>
+              <div className="flex items-center gap-2 mb-8">
+                <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                  Asignación Corporativa
+                </h4>
+              </div>
+
+              <div className="space-y-6">
+                <div className="p-6 bg-slate-50 rounded-[24px] border border-slate-100 flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-indigo-500 border border-slate-100">
+                    <FaUserShield size={20} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                      {changingClientUser?.name} {changingClientUser?.lastName}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                      ID: {changingClientUser?.id?.slice(0, 8)}
+                    </span>
+                  </div>
+                </div>
+
+                <ITSelect
+                  label="Seleccionar Cliente Destino"
+                  name="clientId"
+                  placeholder="SELECCIONAR CLIENTE..."
+                  options={
+                    clients.map((c) => ({ label: c.name, value: c.id })) as any
+                  }
+                  value={changingClientUser?.clientId || ""}
+                  onChange={(e: any) => handleReassignClient(e.target.value)}
+                />
+              </div>
+            </section>
           </div>
 
-          <ITSelect
-            label="Seleccionar Cliente Destino"
-            name="clientId"
-            placeholder="BUSCAR CLIENTE..."
-            options={
-              clients.map((c) => ({ label: c.name, value: c.id })) as any
-            }
-            value={changingClientUser?.clientId || ""}
-            onChange={(e: any) => {
-              const val = e.target.value;
-              if (!changingClientUser) return;
-              updateUser(changingClientUser.id, {
-                clientId: val as string,
-              }).then((res) => {
-                if (res.success) {
-                  dispatch(
-                    showToast({
-                      message: "Cliente reasignado",
-                      type: "success",
-                    }),
-                  );
-                  handleSuccess();
-                  setChangingClientUser(null);
-                }
-              });
-            }}
-            className="!h-14 !rounded-2xl !bg-slate-50/50"
-          />
-
-          <div className="flex justify-center pt-4">
+          <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
             <ITButton
-              variant="ghost"
+              variant="filled"
+              color="secondary"
               onClick={() => setChangingClientUser(null)}
-              className="px-10 font-black text-[10px] uppercase tracking-widest text-slate-400"
             >
               Cancelar
             </ITButton>
@@ -406,58 +400,56 @@ const UsersPage = () => {
       <ITDialog
         isOpen={!!changingScheduleUser}
         onClose={() => setChangingScheduleUser(null)}
-        className="!max-w-md !w-full"
+        title="Cambiar Turno"
+        className="!max-w-xl !w-full"
       >
-        <div className="p-10 space-y-8">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="w-20 h-20 rounded-3xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100 shadow-sm">
-              <FaClock size={40} />
-            </div>
-            <div>
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
-                Cambiar Turno
-              </h3>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">
-                {changingScheduleUser?.name} {changingScheduleUser?.lastName}
-              </p>
-            </div>
+        <div className="flex flex-col bg-white overflow-hidden">
+          <div className="p-10 space-y-10">
+            <section>
+              <div className="flex items-center gap-2 mb-8">
+                <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                  Control de Horario
+                </h4>
+              </div>
+
+              <div className="space-y-6">
+                <div className="p-6 bg-slate-50 rounded-[24px] border border-slate-100 flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-amber-500 border border-slate-100">
+                    <FaClock size={20} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                      {changingScheduleUser?.name}{" "}
+                      {changingScheduleUser?.lastName}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                      HORARIO ACTUAL:{" "}
+                      {changingScheduleUser?.schedule?.name || "N/A"}
+                    </span>
+                  </div>
+                </div>
+
+                <ITSelect
+                  label="Horario Operativo"
+                  name="scheduleId"
+                  placeholder="SELECCIONAR TURNO..."
+                  options={schedules.map((s) => ({
+                    label: `${s.name} (${s.startTime} - ${s.endTime})`,
+                    value: s.id,
+                  }))}
+                  value={changingScheduleUser?.scheduleId || ""}
+                  onChange={(e: any) => handleReassignSchedule(e.target.value)}
+                />
+              </div>
+            </section>
           </div>
 
-          <ITSelect
-            label="Horario Operativo"
-            name="scheduleId"
-            placeholder="SELECCIONAR TURNO..."
-            options={schedules.map((s) => ({
-              label: `${s.name} (${s.startTime} - ${s.endTime})`,
-              value: s.id,
-            }))}
-            value={changingScheduleUser?.scheduleId || ""}
-            onChange={(e: any) => {
-              const val = e.target.value;
-              if (!changingScheduleUser) return;
-              updateUser(changingScheduleUser.id, {
-                scheduleId: val as string,
-              }).then((res) => {
-                if (res.success) {
-                  dispatch(
-                    showToast({
-                      message: "Horario actualizado",
-                      type: "success",
-                    }),
-                  );
-                  handleSuccess();
-                  setChangingScheduleUser(null);
-                }
-              });
-            }}
-            className="!h-14 !rounded-2xl !bg-slate-50/50"
-          />
-
-          <div className="flex justify-center pt-4">
+          <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
             <ITButton
-              variant="ghost"
+              variant="filled"
+              color="secondary"
               onClick={() => setChangingScheduleUser(null)}
-              className="px-10 font-black text-[10px] uppercase tracking-widest text-slate-400"
             >
               Cancelar
             </ITButton>

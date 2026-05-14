@@ -1,6 +1,7 @@
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
+  ITBadget,
   ITButton,
   ITDataTable,
   ITDialog,
@@ -40,6 +41,7 @@ import {
 import { useDispatch } from "react-redux";
 import * as SettingsService from "../services/SettingsService";
 import { ITTabs, ITab } from "@app/core/components/ITTabs";
+import { ModuleHeader } from "@app/core/components/ModuleHeader";
 
 const COMMON_ICONS = [
   { name: "shield-alert", icon: <MdShield /> },
@@ -319,60 +321,62 @@ const SettingsPage = () => {
             columns={[
               {
                 key: "name",
-                label: "NOMBRE",
+                label: "IDENTIFICACIÓN / VALOR",
                 type: "string",
                 render: (row: any) => (
-                  <span className="font-bold text-slate-700">{row.name}</span>
-                ),
-              },
-              {
-                key: "value",
-                label: "VALOR",
-                type: "string",
-                render: (row: any) => (
-                  <code className="bg-slate-50 px-2.5 py-1.5 rounded-lg text-emerald-600 text-[11px] font-bold border border-slate-100">
-                    {row.value}
-                  </code>
+                  <div className="flex flex-col">
+                    <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+                      {row.name}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                        VALOR: {row.value}
+                      </span>
+                    </div>
+                  </div>
                 ),
               },
               {
                 key: "type",
-                label: "TIPO",
+                label: "CLASIFICACIÓN",
                 type: "string",
                 render: (row: any) => (
-                  <span
-                    className={`px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest ${row.type === "INCIDENT" ? "bg-amber-50 text-amber-600 border border-amber-100" : "bg-blue-50 text-blue-600 border border-blue-100"}`}
+                  <ITBadget
+                    color={row.type === "INCIDENT" ? "warning" : "info"}
+                    size="small"
                   >
                     {row.type === "INCIDENT" ? "INCIDENTE" : "MANTENIMIENTO"}
-                  </span>
+                  </ITBadget>
                 ),
               },
               {
                 key: "actions",
-                label: "ACCIONES",
+                label: "CONTROL",
                 type: "actions",
                 actions: (row: any) => (
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <ITButton
                       size="small"
-                      variant="ghost"
+                      variant="outlined"
                       onClick={() => openCategoryModal(row)}
-                      className="!text-slate-400 hover:!text-emerald-600 hover:!bg-emerald-50 !p-2"
+                      title="Editar"
                     >
-                      <FaEdit />
+                      <FaEdit size={14} />
                     </ITButton>
                     <ITButton
                       size="small"
-                      variant="ghost"
+                      variant="outlined"
+                      color="error"
                       onClick={async () => {
                         if (confirm("¿Eliminar?")) {
                           await SettingsService.deleteIncidentCategory(row.id);
                           refresh();
                         }
                       }}
-                      className="!text-slate-400 hover:!text-red-600 hover:!bg-red-50 !p-2"
+                      title="Eliminar"
                     >
-                      <FaTrash />
+                      <FaTrash size={14} />
                     </ITButton>
                   </div>
                 ),
@@ -393,59 +397,50 @@ const SettingsPage = () => {
             fetchData={fetchTypes as any}
             columns={[
               {
-                key: "category",
-                label: "CATEGORÍA",
-                type: "string",
-                render: (row: any) => (
-                  <span className="text-emerald-600 font-bold bg-emerald-50/50 px-3 py-1 rounded-lg border border-emerald-100/50">
-                    {row.category?.name}
-                  </span>
-                ),
-              },
-              {
                 key: "name",
-                label: "NOMBRE",
+                label: "TIPO / CATEGORÍA",
                 type: "string",
                 render: (row: any) => (
-                  <span className="font-bold text-slate-700">{row.name}</span>
-                ),
-              },
-              {
-                key: "value",
-                label: "VALOR",
-                type: "string",
-                render: (row: any) => (
-                  <code className="bg-slate-50 px-2.5 py-1.5 rounded-lg text-emerald-600 text-[11px] font-bold border border-slate-100">
-                    {row.value}
-                  </code>
+                  <div className="flex flex-col">
+                    <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+                      {row.name}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                      <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                        CAT: {row.category?.name || "SIN CATEGORÍA"}
+                      </span>
+                    </div>
+                  </div>
                 ),
               },
               {
                 key: "actions",
-                label: "ACCIONES",
+                label: "CONTROL",
                 type: "actions",
                 actions: (row: any) => (
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <ITButton
                       size="small"
-                      variant="ghost"
+                      variant="outlined"
                       onClick={() => openTypeModal(row)}
-                      className="!text-slate-400 hover:!text-emerald-600 hover:!bg-emerald-50 !p-2"
+                      title="Editar"
                     >
-                      <FaEdit />
+                      <FaEdit size={14} />
                     </ITButton>
                     <ITButton
                       size="small"
-                      variant="ghost"
+                      variant="outlined"
+                      color="error"
                       onClick={async () => {
                         if (confirm("¿Eliminar?")) {
                           await SettingsService.deleteIncidentType(row.id);
                           refresh();
                         }
                       }}
-                      className="!text-slate-400 hover:!text-red-600 hover:!bg-red-50 !p-2"
+                      title="Eliminar"
                     >
-                      <FaTrash />
+                      <FaTrash size={14} />
                     </ITButton>
                   </div>
                 ),
@@ -467,50 +462,59 @@ const SettingsPage = () => {
             columns={[
               {
                 key: "key",
-                label: "CLAVE",
+                label: "PARÁMETRO / CLAVE",
                 type: "string",
                 render: (row: any) => (
-                  <span className="font-mono text-xs font-black text-slate-600 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
-                    {row.key}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+                      {row.key}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                      <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                        CONFIGURACIÓN INTERNA
+                      </span>
+                    </div>
+                  </div>
                 ),
               },
               {
                 key: "value",
-                label: "VALOR",
+                label: "VALOR ACTUAL",
                 type: "string",
                 render: (row: any) => (
-                  <span className="text-slate-800 font-medium">
+                  <code className="bg-slate-50 px-2.5 py-1.5 rounded-lg text-emerald-600 text-[11px] font-bold border border-slate-100">
                     {row.value}
-                  </span>
+                  </code>
                 ),
               },
               {
                 key: "actions",
-                label: "ACCIONES",
+                label: "CONTROL",
                 type: "actions",
                 actions: (row: any) => (
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <ITButton
                       size="small"
-                      variant="ghost"
+                      variant="outlined"
                       onClick={() => openConfigModal(row)}
-                      className="!text-slate-400 hover:!text-emerald-600 hover:!bg-emerald-50 !p-2"
+                      title="Editar"
                     >
-                      <FaEdit />
+                      <FaEdit size={14} />
                     </ITButton>
                     <ITButton
                       size="small"
-                      variant="ghost"
+                      variant="outlined"
+                      color="error"
                       onClick={async () => {
                         if (confirm("¿Eliminar?")) {
                           await SettingsService.deleteSysConfig(row.key);
                           refresh();
                         }
                       }}
-                      className="!text-slate-400 hover:!text-red-600 hover:!bg-red-50 !p-2"
+                      title="Eliminar"
                     >
-                      <FaTrash />
+                      <FaTrash size={14} />
                     </ITButton>
                   </div>
                 ),
@@ -524,65 +528,40 @@ const SettingsPage = () => {
 
   return (
     <div className="p-10 min-h-screen bg-slate-50/50">
-      {/* Header Standard */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-        <div className="flex items-center gap-5">
-          <div className="w-16 h-16 bg-white rounded-3xl shadow-xl shadow-emerald-100/20 flex items-center justify-center border border-emerald-50">
-            <FaCogs className="text-emerald-600 text-2xl" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">
-              Configuración del Sistema
-            </h1>
-            <p className="text-slate-400 text-sm font-medium mt-1">
-              Administración de catálogos y parámetros globales
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          {/* Search Bar */}
-          <div className="relative group">
-            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
-            <input
-              type="text"
-              placeholder="Buscar..."
-              className="w-full sm:w-64 h-12 pl-12 pr-4 bg-white border border-slate-100 rounded-2xl outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold shadow-sm"
-              value={
-                activeTab === "CATEGORIES"
-                  ? searchCat
-                  : activeTab === "TYPES"
-                    ? searchType
-                    : searchConfig
-              }
-              onChange={(e) => {
-                if (activeTab === "CATEGORIES") setSearchCat(e.target.value);
-                else if (activeTab === "TYPES") setSearchType(e.target.value);
-                else setSearchConfig(e.target.value);
-              }}
-            />
-          </div>
-
-          <ITButton
-            onClick={() => {
-              if (activeTab === "CATEGORIES") openCategoryModal();
-              else if (activeTab === "TYPES") openTypeModal();
-              else openConfigModal();
-            }}
-            className="!bg-emerald-600 !text-white !rounded-2xl !px-6 !h-12 shadow-xl shadow-emerald-200 hover:scale-[1.02] active:scale-95 transition-all"
-          >
-            <div className="flex items-center gap-2">
-              <FaPlus />
-              <span className="font-black uppercase text-[11px] tracking-widest">
-                Agregar
-              </span>
-            </div>
-          </ITButton>
-        </div>
-      </div>
+      <ModuleHeader
+        title="Configuración del Sistema"
+        subtitle="Administración de catálogos y parámetros globales"
+        icon={FaCogs}
+        search={{
+          value:
+            activeTab === "CATEGORIES"
+              ? searchCat
+              : activeTab === "TYPES"
+                ? searchType
+                : searchConfig,
+          onChange: (val) => {
+            if (activeTab === "CATEGORIES") setSearchCat(val);
+            else if (activeTab === "TYPES") setSearchType(val);
+            else setSearchConfig(val);
+          },
+          placeholder: "BUSCAR...",
+        }}
+        onRefresh={() => setRefreshKey((p) => p + 1)}
+        refreshKey={refreshKey}
+        onCreate={() => {
+          if (activeTab === "CATEGORIES") openCategoryModal();
+          else if (activeTab === "TYPES") openTypeModal();
+          else openConfigModal();
+        }}
+        createLabel="Agregar"
+      />
 
       <div className="bg-white rounded-[40px] p-8 shadow-2xl shadow-slate-200/40 border border-white">
-        <ITTabs tabs={tabs} activeTab={activeTab} onChange={(id: any) => setActiveTab(id)} />
+        <ITTabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onChange={(id: any) => setActiveTab(id)}
+        />
       </div>
 
       {/* Modals Improvements */}

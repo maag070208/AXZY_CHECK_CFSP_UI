@@ -1,5 +1,6 @@
 import { post } from "@app/core/axios/axios";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
+import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITButton,
@@ -7,19 +8,22 @@ import {
   ITInput,
   ITLoader,
   ITSearchSelect,
+  ITSlideToggle,
 } from "@axzydev/axzy_ui_system";
-import { ITStepper } from "@app/core/components/ITStepper";
-import { CreateUserWizard } from "../../users/components/CreateUserWizard";
 import { useEffect, useMemo, useState } from "react";
 import {
   FaCheck,
+  FaChevronDown,
   FaChevronLeft,
+  FaChevronRight,
+  FaChevronUp,
   FaClipboardCheck,
+  FaCopy,
   FaInfoCircle,
   FaMapMarkerAlt,
-  FaMinus,
   FaPlus,
   FaRoute,
+  FaSearch,
   FaTrash,
   FaUserFriends,
 } from "react-icons/fa";
@@ -29,6 +33,7 @@ import {
   getLocations,
   Location,
 } from "../../locations/service/locations.service";
+import { CreateUserWizard } from "../../users/components/CreateUserWizard";
 import { getUsers, User } from "../../users/services/UserService";
 import {
   createRoute,
@@ -54,13 +59,13 @@ const CreateRoutePage = () => {
   const [selectedLocId, setSelectedLocId] = useState<string>("");
   const [selectedClientId, setSelectedClientId] = useState<string | number>("");
   const [selectedZoneId, setSelectedZoneId] = useState<string | number>("");
-  const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [active, setActive] = useState(true);
+  const [guardSearch, setGuardSearch] = useState("");
 
   const { data: clients } = useCatalog("client");
 
-  // --- Logic (Mantenida igual) ---
   useEffect(() => {
     fetchInitialData();
     if (isEditing) fetchFullData(id);
@@ -92,6 +97,7 @@ const CreateRoutePage = () => {
       if (res.success && res.data) {
         const data = res.data;
         setTitle(data.title);
+        setActive(data.active ?? true);
         setAddedLocations(
           (data.recurringLocations || []).map((rl: any) => ({
             locationId: rl.location?.id,
@@ -105,8 +111,6 @@ const CreateRoutePage = () => {
         setSelectedGuards(data.guards?.map((g: any) => g.id) || []);
         if (data.recurringLocations?.[0]?.location?.clientId)
           setSelectedClientId(data.recurringLocations[0].location.clientId);
-        if (data.recurringLocations?.[0]?.location?.zoneId)
-          setSelectedZoneId(data.recurringLocations[0].location.zoneId);
       }
     } catch (e) {
       dispatch(showToast({ message: "Error al cargar datos", type: "error" }));
@@ -171,6 +175,32 @@ const CreateRoutePage = () => {
     setAddedLocations(copy);
   };
 
+  const handleCloneTasks = (idx: number) => {
+    const sourceTasks = [...addedLocations[idx].tasks];
+    setAddedLocations(
+      addedLocations.map((loc) => ({
+        ...loc,
+        tasks: sourceTasks.map((t) => ({ ...t })),
+      })),
+    );
+    dispatch(
+      showToast({
+        message: "Tareas clonadas a todos los puntos",
+        type: "info",
+      }),
+    );
+  };
+
+  const moveLocation = (idx: number, direction: "up" | "down") => {
+    const newIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= addedLocations.length) return;
+    const copy = [...addedLocations];
+    const item = copy[idx];
+    copy.splice(idx, 1);
+    copy.splice(newIdx, 0, item);
+    setAddedLocations(copy);
+  };
+
   const toggleGuard = (id: string) => {
     setSelectedGuards((prev) =>
       prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id],
@@ -181,11 +211,13 @@ const CreateRoutePage = () => {
     () =>
       allGuards.filter(
         (g) =>
-          !selectedClientId ||
-          String(g.clientId) === String(selectedClientId) ||
-          !g.clientId,
+          (!selectedClientId ||
+            String(g.clientId) === String(selectedClientId) ||
+            !g.clientId) &&
+          (g.name.toLowerCase().includes(guardSearch.toLowerCase()) ||
+            g.lastName?.toLowerCase().includes(guardSearch.toLowerCase())),
       ),
-    [allGuards, selectedClientId],
+    [allGuards, selectedClientId, guardSearch],
   );
 
   const availableLocations = useMemo(
@@ -200,13 +232,14 @@ const CreateRoutePage = () => {
   );
 
   const handleSave = async () => {
-    setLoading(true);
+    dispatch(showLoader());
     try {
       const payload = {
         title,
         clientId: selectedClientId,
         locations: addedLocations,
         guardIds: selectedGuards,
+        active,
       };
       const res = isEditing
         ? await updateRoute(id!, payload)
@@ -216,263 +249,312 @@ const CreateRoutePage = () => {
         navigate("/routes");
       }
     } finally {
-      setLoading(false);
+      dispatch(hideLoader());
     }
   };
 
   const steps = [
     {
       title: "Identificación",
+      subtitle: "Nombre y Cliente",
       icon: <FaInfoCircle />,
       isValid: !!title && !!selectedClientId,
     },
     {
       title: "Puntos de Control",
+      subtitle: "Secuencia QR",
       icon: <FaMapMarkerAlt />,
       isValid: addedLocations.length > 0,
     },
     {
       title: "Asignación",
+      subtitle: "Personal",
       icon: <FaUserFriends />,
       isValid: selectedGuards.length > 0,
     },
-    { title: "Resumen", icon: <FaClipboardCheck />, isValid: true },
+    {
+      title: "Resumen",
+      subtitle: "Verificación",
+      icon: <FaClipboardCheck />,
+      isValid: true,
+    },
   ];
 
   if (fetchingData)
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-50">
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-[#f8fafc]">
         <ITLoader size="lg" />
-        <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-xs">
-          Sincronizando datos...
+        <p className="mt-6 text-slate-400 font-black uppercase tracking-[0.2em] text-[10px]">
+          Sincronizando configuración operativa...
         </p>
       </div>
     );
 
   return (
-    <div className="h-screen bg-[#F8FAFC] flex flex-col font-sans overflow-hidden">
-      {/* Cabecera Compacta */}
-      <header className="bg-white border-b border-slate-100 px-6 py-3 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate("/routes")}
-            className="w-8 h-8 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors"
-          >
-            <FaChevronLeft size={14} />
-          </button>
-          <div>
-            <h1 className="text-sm font-black text-slate-800 uppercase tracking-tight">
-              {isEditing ? "Editar Ruta" : "Nueva Ruta"}
+    <div className="h-full bg-[#f8fafc] flex overflow-hidden">
+      {/* SIDEBAR STEPS */}
+      <aside className="w-[280px] bg-white border-r border-slate-100 flex flex-col p-6 shrink-0 shadow-xl shadow-slate-200/40 relative z-20">
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-100">
+              <FaRoute size={14} />
+            </div>
+            <h1 className="text-sm font-black text-slate-800 uppercase tracking-tighter">
+              Asistente <span className="text-emerald-500">Rutas</span>
             </h1>
           </div>
         </div>
 
-        <div className="flex-1 max-w-xl mx-12">
-          <ITStepper
-            steps={steps.map((s) => ({
-              label: s.title,
-              icon: s.icon,
-            }))}
-            currentStep={currentStep}
-          />
+        <div className="flex-1 space-y-2">
+          {steps.map((step, idx) => {
+            const isActive = currentStep === idx;
+            const isCompleted = currentStep > idx;
+            return (
+              <div
+                key={idx}
+                className={`flex items-center gap-4 p-4 rounded-[20px] transition-all duration-300 ${
+                  isActive
+                    ? "bg-emerald-50 border border-emerald-100 shadow-md shadow-emerald-100/20"
+                    : "opacity-60 grayscale hover:grayscale-0 hover:opacity-100"
+                }`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    isActive
+                      ? "bg-emerald-500 text-white shadow-sm"
+                      : isCompleted
+                        ? "bg-emerald-100 text-emerald-600"
+                        : "bg-slate-50 text-slate-400"
+                  }`}
+                >
+                  {isCompleted ? <FaCheck size={12} /> : step.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4
+                    className={`text-[10px] font-black uppercase tracking-widest leading-none ${
+                      isActive ? "text-emerald-700" : "text-slate-500"
+                    }`}
+                  >
+                    {step.title}
+                  </h4>
+                  <p
+                    className={`text-[8px] font-bold mt-1 uppercase tracking-tight ${
+                      isActive ? "text-emerald-600/60" : "text-slate-300"
+                    }`}
+                  >
+                    {step.subtitle}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        <div className="w-32 flex justify-end">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-            Operaciones
-          </span>
+        <div className="pt-10 border-t border-slate-100">
+          <div className="flex items-center gap-3 text-slate-400">
+            <FaInfoCircle size={14} />
+            <span className="text-[9px] font-black uppercase tracking-widest">
+              ID: {isEditing ? id?.slice(-8) : "NUEVA_RUTA"}
+            </span>
+          </div>
         </div>
-      </header>
+      </aside>
 
-      <main className="flex-1 p-4 overflow-hidden flex flex-col min-h-0">
-        <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col min-h-0">
-          <div className="max-h-[calc(100vh-280px)] bg-white rounded-[20px] shadow-xl shadow-slate-200/20 border border-slate-100 flex-1 flex flex-col min-h-0 overflow-hidden">
-            {/* Contenido SIN SCROLL - Usando grid responsive */}
-            <div className="flex-1 p-6 min-h-0">
-              {/* STEP 1: IDENTIFICACIÓN */}
-              {currentStep === 0 && (
-                <div className="h-full flex items-center justify-center">
-                  <div className="max-w-4xl w-full">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                      <div className="space-y-4">
-                        <div className="bg-emerald-50 w-12 h-12 rounded-xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100/50">
-                          <FaInfoCircle size={20} />
-                        </div>
+      {/* MAIN CONTENT AREA */}
+      <div className="flex-1 flex flex-col overflow-hidden relative">
+        {/* Main Step Container */}
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 min-h-0">
+            {/* STEP 0: IDENTITY */}
+            {currentStep === 0 && (
+              <div className="h-full overflow-y-auto p-6 lg:p-8">
+                <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
+                  <section>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-1 h-3 bg-emerald-500 rounded-full" />
+                      <h2 className="text-lg font-black text-slate-800 uppercase tracking-tighter">
+                        Identidad
+                      </h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <ITInput
+                        label="Nombre del Recorrido"
+                        placeholder="Ej. Ronda Perimetral Nocturna"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        name="title"
+                        onBlur={() => {}}
+                      />
+                      <ITSearchSelect
+                        label="Cliente Responsable"
+                        placeholder="Seleccionar cliente..."
+                        options={
+                          clients?.map((c: any) => ({
+                            label: c.name,
+                            value: c.id,
+                          })) || []
+                        }
+                        value={selectedClientId}
+                        onChange={(val) => {
+                          setSelectedClientId(val);
+                          setSelectedZoneId("");
+                          setAddedLocations([]);
+                        }}
+                      />
+                    </div>
+
+                    {isEditing && (
+                      <div className="mt-6 flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
                         <div>
-                          <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">
-                            Identidad
-                          </h2>
-                          <p className="text-slate-500 text-xs mt-1 leading-relaxed">
-                            Nombre operativo y cliente responsable.
-                          </p>
+                          <h5 className="text-[10px] font-black text-slate-700 uppercase tracking-tight">
+                            Estado Operativo
+                          </h5>
                         </div>
+                        <ITSlideToggle
+                          isOn={active}
+                          onToggle={(val) => setActive(val)}
+                        />
                       </div>
+                    )}
+                  </section>
 
-                      <div className="bg-slate-50/50 p-6 rounded-[1.5rem] border border-slate-100 space-y-4">
-                        <ITInput
-                          label="Nombre de Referencia"
-                          placeholder="Ej. Perímetro Planta Norte"
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                          name="title"
-                          onBlur={() => {}}
-                          className="!h-[44px] !rounded-xl !bg-white"
-                          iconLeft={<FaRoute className="text-slate-400" />}
+                  <div className="bg-slate-50 p-5 rounded-2xl flex items-start gap-3 border border-slate-100">
+                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-emerald-500 shadow-sm shrink-0">
+                      <FaInfoCircle size={14} />
+                    </div>
+                    <div>
+                      <h5 className="text-[9px] font-black text-slate-700 uppercase tracking-tight">
+                        Validación de Seguridad
+                      </h5>
+                      <p className="text-[9px] text-slate-500 leading-tight font-medium">
+                        Datos filtrados por cliente.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 1: LOCATIONS */}
+            {currentStep === 1 && (
+              <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-300">
+                <div className="shrink-0 p-6 lg:px-8 border-b border-slate-50 bg-white">
+                  <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-4 bg-emerald-500 rounded-full" />
+                      <h2 className="text-xl font-black text-slate-800 uppercase tracking-tighter">
+                        Puntos de Control
+                      </h2>
+                    </div>
+
+                    <div className="flex flex-1 flex-col md:flex-row items-end gap-4 max-w-3xl">
+                      <div className="flex-1 w-full grid grid-cols-2 gap-3">
+                        <ITSearchSelect
+                          label="Cargar Zona"
+                          placeholder="Zona..."
+                          options={clientZones.map((z) => ({
+                            label: z.name,
+                            value: z.id,
+                          }))}
+                          value={selectedZoneId}
+                          onChange={setSelectedZoneId}
                         />
                         <ITSearchSelect
-                          label="Cliente Responsable"
-                          placeholder="Seleccionar cliente..."
-                          options={
-                            clients?.map((c: any) => ({
-                              label: c.name,
-                              value: c.id,
-                            })) || []
-                          }
-                          value={selectedClientId}
-                          onChange={(val) => {
-                            setSelectedClientId(val);
-                            setSelectedZoneId("");
-                            setAddedLocations([]);
-                          }}
+                          label="Punto Individual"
+                          placeholder="Punto..."
+                          options={availableLocations.map((l) => ({
+                            label: l.name,
+                            value: l.id,
+                          }))}
+                          value={selectedLocId}
+                          onChange={setSelectedLocId as any}
                         />
+                      </div>
+                      <div className="flex gap-2">
+                        <ITButton
+                          onClick={handleBulkAddByZone}
+                          disabled={!selectedZoneId}
+                          variant="outlined"
+                        >
+                          Importar Zona
+                        </ITButton>
+                        <ITButton
+                          onClick={handleAddLocation}
+                          disabled={!selectedLocId}
+                          color="primary"
+                        >
+                          Agregar
+                        </ITButton>
                       </div>
                     </div>
                   </div>
                 </div>
-              )}
 
-              {/* STEP 2: PUNTOS DE CONTROL - Layout horizontal sin scroll */}
-              {currentStep === 1 && (
-                <div className="h-full grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-auto">
-                  {/* Panel izquierdo - fijo */}
-                  <div className="lg:col-span-4 h-full">
-                    <div className="bg-emerald-600 p-6 rounded-[2rem] text-white shadow-xl shadow-emerald-200/50 h-full flex flex-col">
-                      <div className="mb-6">
-                        <h3 className="text-[10px] font-black text-emerald-200 uppercase tracking-[0.2em] mb-1">
-                          Operación
-                        </h3>
-                        <p className="text-lg font-black">Puntos QR</p>
-                      </div>
-
-                      <div className="space-y-6 flex-1">
-                        <div className="space-y-3">
-                          <label className="text-[9px] font-black text-emerald-100 uppercase tracking-widest ml-1">
-                            Carga por Zona
-                          </label>
-                          <ITSearchSelect
-                            label=""
-                            options={clientZones.map((z) => ({
-                              label: z.name,
-                              value: z.id,
-                            }))}
-                            value={selectedZoneId}
-                            onChange={setSelectedZoneId}
-                            className="dark-select"
-                          />
-                          <ITButton
-                            onClick={handleBulkAddByZone}
-                            disabled={!selectedZoneId}
-                            className="w-full !rounded-xl !h-[40px] !bg-white/10 hover:!bg-white/20 !border-white/10 !text-white font-black text-[9px] uppercase tracking-widest"
-                          >
-                            Importar Zona
-                          </ITButton>
-                        </div>
-
-                        <div className="h-px bg-white/10" />
-
-                        <div className="space-y-3">
-                          <label className="text-[9px] font-black text-emerald-100 uppercase tracking-widest ml-1">
-                            Punto Individual
-                          </label>
-                          <ITSearchSelect
-                            label=""
-                            options={availableLocations.map((l) => ({
-                              label: l.name,
-                              value: l.id,
-                            }))}
-                            value={selectedLocId}
-                            onChange={setSelectedLocId as any}
-                          />
-                          <ITButton
-                            onClick={handleAddLocation}
-                            disabled={!selectedLocId}
-                            className="w-full !rounded-xl !h-[40px] !bg-white !text-emerald-600 hover:!bg-emerald-50 shadow-lg shadow-emerald-700/20 !border-none font-black text-[9px] uppercase tracking-widest"
-                          >
-                            Vincular Punto
-                          </ITButton>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 pt-4 border-t border-white/10">
-                        <div className="text-center">
-                          <span className="text-2xl font-black">
-                            {addedLocations.length}
-                          </span>
-                          <span className="text-[9px] block text-emerald-200">
-                            Puntos agregados
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Panel derecho - Grid de ubicaciones con scroll controlado */}
-                  <div className="lg:col-span-8 h-full flex flex-col min-h-0">
-                    <div className="flex justify-between items-center mb-4 px-2 shrink-0">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">
-                          Secuencia Operativa
-                        </h3>
-                      </div>
+                <div className="flex-1 overflow-y-auto p-6 lg:p-8 bg-slate-50/30">
+                  <div className="max-w-6xl mx-auto">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">
+                        Secuencia ({addedLocations.length})
+                      </h4>
                       {addedLocations.length > 0 && (
                         <button
                           onClick={() => setAddedLocations([])}
-                          className="text-[10px] font-black text-rose-500 uppercase hover:text-rose-600 transition-colors tracking-widest"
+                          className="text-[9px] font-black text-red-400 uppercase tracking-widest hover:text-red-600 transition-all"
                         >
-                          Limpiar todo
+                          Limpiar
                         </button>
                       )}
                     </div>
 
-                    <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-0">
-                      {addedLocations.length === 0 ? (
-                        <div className="h-full flex items-center justify-center text-slate-300 border-2 border-dashed border-slate-100 rounded-[2rem] bg-slate-50/30">
-                          <div className="text-center">
-                            <FaMapMarkerAlt
-                              size={48}
-                              className="mb-4 opacity-10 mx-auto"
-                            />
-                            <p className="font-black text-[10px] uppercase tracking-[0.2em]">
-                              Sin puntos de control
-                            </p>
-                            <p className="text-[8px] mt-2 text-slate-400">
-                              Selecciona ubicaciones del panel izquierdo
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          className={`grid gap-4 pb-4 ${
-                            addedLocations.length === 1
-                              ? "grid-cols-1 max-w-2xl mx-auto"
-                              : "grid-cols-1 md:grid-cols-2"
-                          }`}
-                        >
-                          {addedLocations.map((loc, idx) => (
-                            <div
-                              key={loc.locationId}
-                              className="bg-white border border-slate-100 rounded-[1.5rem] p-5 hover:border-emerald-200 transition-all shadow-sm hover:shadow-md group"
-                            >
-                              <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-black border border-emerald-100 shrink-0 shadow-sm group-hover:scale-110 transition-transform">
-                                    {idx + 1}
-                                  </div>
-                                  <p className="font-black text-slate-800 uppercase text-xs tracking-tight line-clamp-1">
-                                    {loc.locationName}
-                                  </p>
+                    {addedLocations.length === 0 ? (
+                      <div className="h-[300px] flex flex-col items-center justify-center border-2 border-dashed border-slate-100 rounded-[24px] bg-white gap-3">
+                        <FaMapMarkerAlt size={20} className="text-slate-200" />
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                          Agrega puntos de control.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {addedLocations.map((loc, idx) => (
+                          <div
+                            key={loc.locationId}
+                            className="bg-white min-h-[100px] border border-slate-100 p-4 rounded-[24px] shadow-sm hover:shadow-md transition-all"
+                          >
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="flex items-center gap-2">
+                                <div className="flex flex-col">
+                                  <button
+                                    disabled={idx === 0}
+                                    onClick={() => moveLocation(idx, "up")}
+                                    className="text-slate-300 hover:text-emerald-500 disabled:opacity-0"
+                                  >
+                                    <FaChevronUp size={8} />
+                                  </button>
+                                  <button
+                                    disabled={idx === addedLocations.length - 1}
+                                    onClick={() => moveLocation(idx, "down")}
+                                    className="text-slate-300 hover:text-emerald-500 disabled:opacity-0"
+                                  >
+                                    <FaChevronDown size={8} />
+                                  </button>
                                 </div>
+                                <div className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black">
+                                  {idx + 1}
+                                </div>
+                                <span className="text-[10px] font-black text-slate-800 uppercase truncate max-w-[200px] text-wrap">
+                                  {loc.locationName}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                {loc.tasks.length > 0 && (
+                                  <button
+                                    onClick={() => handleCloneTasks(idx)}
+                                    className="p-1.5 text-slate-300 hover:text-emerald-500"
+                                  >
+                                    <FaCopy size={10} />
+                                  </button>
+                                )}
                                 <button
                                   onClick={() =>
                                     setAddedLocations(
@@ -481,271 +563,279 @@ const CreateRoutePage = () => {
                                       ),
                                     )
                                   }
-                                  className="w-7 h-7 rounded-full bg-slate-50 text-slate-300 hover:bg-rose-50 hover:text-rose-500 transition-all flex items-center justify-center shrink-0"
+                                  className="p-1.5 text-slate-300 hover:text-red-500"
                                 >
                                   <FaTrash size={10} />
                                 </button>
                               </div>
+                            </div>
 
-                              <div className="space-y-2">
-                                {loc.tasks.map((task, tIdx) => (
-                                  <div
-                                    key={tIdx}
-                                    className="flex items-center gap-2 bg-slate-50/50 p-2.5 rounded-xl border border-slate-100/50 group/task"
-                                  >
-                                    <input
-                                      className="flex-1 bg-transparent text-[10px] outline-none px-1 font-black text-slate-600 uppercase placeholder:text-slate-300"
-                                      placeholder="Definir tarea..."
-                                      value={task.description}
-                                      onChange={(e) =>
-                                        handleTaskChange(
-                                          idx,
-                                          tIdx,
-                                          e.target.value,
-                                        )
-                                      }
-                                    />
-                                    <button
-                                      onClick={() => {
-                                        const copy = [...addedLocations];
-                                        copy[idx].tasks.splice(tIdx, 1);
-                                        setAddedLocations(copy);
-                                      }}
-                                      className="text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover/task:opacity-100"
-                                    >
-                                      <FaMinus size={8} />
-                                    </button>
-                                  </div>
-                                ))}
-                                <button
-                                  onClick={() => handleAddTask(idx)}
-                                  className="w-full border border-dashed border-slate-200 rounded-xl py-2.5 text-[9px] font-black text-slate-400 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 transition-all flex items-center justify-center gap-2"
+                            <div className="space-y-1.5">
+                              {loc.tasks.map((task, tIdx) => (
+                                <div
+                                  key={tIdx}
+                                  className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-100"
                                 >
-                                  <FaPlus size={8} /> AGREGAR TAREA
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 3: PERSONAL ASIGNADO - Grid sin scroll */}
-              {currentStep === 2 && (
-                <div className="h-full flex flex-col space-y-6">
-                  <div className="bg-white p-6 rounded-[2rem] text-slate-800 shadow-xl shadow-slate-200/50 border border-slate-100 flex justify-between items-center shrink-0">
-                    <div>
-                      <h2 className="text-xl font-black tracking-tight text-slate-800">
-                        Equipo Responsable
-                      </h2>
-                      <p className="text-slate-500 text-xs mt-1">
-                        Habilita al personal para este recorrido.
-                      </p>
-                    </div>
-                    <div className="bg-emerald-50 px-5 py-3 rounded-2xl border border-emerald-100 text-center min-w-[100px]">
-                      <span className="block text-2xl font-black text-emerald-600">
-                        {selectedGuards.length}
-                      </span>
-                      <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">
-                        Seleccionados
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {filteredGuards.length === 0 ? (
-                        <div className="col-span-full py-16 flex flex-col items-center justify-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2rem]">
-                          <FaUserFriends
-                            size={48}
-                            className="text-slate-200 mb-4"
-                          />
-                          <p className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-4">
-                            No hay personal disponible
-                          </p>
-                          <ITButton
-                            onClick={() => setShowUserModal(true)}
-                            className="!bg-white !text-slate-900 !border-slate-200 !rounded-xl !h-[40px] font-black uppercase text-[10px] tracking-widest px-6"
-                          >
-                            Alta Rápida de Guardia
-                          </ITButton>
-                        </div>
-                      ) : (
-                        filteredGuards.map((guard) => {
-                          const isSelected = selectedGuards.includes(guard.id);
-                          return (
-                            <div
-                              key={guard.id}
-                              onClick={() => toggleGuard(guard.id)}
-                              className={`cursor-pointer p-3 rounded-[1.5rem] border-2 transition-all flex items-center gap-3 ${
-                                isSelected
-                                  ? "bg-emerald-50 border-emerald-500"
-                                  : "bg-white border-slate-50 hover:border-slate-100 shadow-sm"
-                              }`}
-                            >
-                              <div
-                                className={`w-10 h-10 rounded-xl flex items-center justify-center text-[10px] font-black border-2 border-white shadow-sm shrink-0 ${
-                                  isSelected
-                                    ? "bg-emerald-500 text-white"
-                                    : "bg-slate-100 text-slate-400"
-                                }`}
+                                  <input
+                                    className="flex-1 bg-transparent text-[9px] font-bold text-slate-600 outline-none px-1 uppercase"
+                                    placeholder="Tarea..."
+                                    value={task.description}
+                                    onChange={(e) =>
+                                      handleTaskChange(
+                                        idx,
+                                        tIdx,
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const copy = [...addedLocations];
+                                      copy[idx].tasks.splice(tIdx, 1);
+                                      setAddedLocations(copy);
+                                    }}
+                                    className="text-slate-300 hover:text-red-500"
+                                  >
+                                    <FaPlus size={12} className="rotate-45" />
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                onClick={() => handleAddTask(idx)}
+                                className="w-full py-2 border border-dashed border-slate-200 rounded-xl text-[8px] font-black text-slate-400 hover:border-emerald-500 hover:text-emerald-500 transition-all uppercase tracking-widest flex items-center justify-center gap-1.5"
                               >
-                                {guard.name[0]}
-                                {guard.lastName?.[0]}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[11px] font-black text-slate-700 uppercase truncate">
-                                  {guard.name} {guard.lastName}
-                                </p>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
-                                  ID: {guard.id.slice(-6)}
-                                </p>
-                              </div>
-                              {isSelected && (
-                                <FaCheck
-                                  className="text-emerald-500 shrink-0"
-                                  size={10}
-                                />
-                              )}
+                                <FaPlus size={7} /> Tarea
+                              </button>
                             </div>
-                          );
-                        })
-                      )}
-                    </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-
-              {/* STEP 4: RESUMEN FINAL */}
-              {currentStep === 3 && (
-                <div className="h-full flex items-center justify-center">
-                  <div className="max-w-3xl w-full">
-                    <div className="bg-white border-2 border-slate-50 shadow-2xl shadow-slate-200/60 rounded-[2.5rem] p-8 relative overflow-hidden">
-                      <div className="absolute -top-10 -right-10 text-emerald-50 opacity-20 rotate-12">
-                        <FaRoute size={180} />
-                      </div>
-
-                      <div className="space-y-8 relative z-10">
-                        <div className="border-b border-slate-100 pb-6">
-                          <span className="text-emerald-600 font-black uppercase text-[9px] tracking-[0.4em] mb-2 block">
-                            Validación Final
-                          </span>
-                          <h2 className="text-3xl font-black text-slate-800 uppercase tracking-tighter break-words">
-                            {title}
-                          </h2>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          <div className="space-y-1">
-                            <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                              Cliente
-                            </h4>
-                            <p className="font-black text-slate-700 uppercase tracking-tight text-sm">
-                              {
-                                clients?.find(
-                                  (c) =>
-                                    String(c.id) === String(selectedClientId),
-                                )?.name
-                              }
-                            </p>
-                          </div>
-                          <div className="space-y-1">
-                            <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                              Infraestructura
-                            </h4>
-                            <p className="font-black text-slate-700 uppercase tracking-tight text-sm">
-                              {addedLocations.length} Ubicaciones
-                            </p>
-                          </div>
-                          <div className="space-y-1">
-                            <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                              Efectivos
-                            </h4>
-                            <p className="font-black text-slate-700 uppercase tracking-tight text-sm">
-                              {selectedGuards.length} Asignados
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Footer Navegación - Siempe visible sin scroll */}
-            <div className="bg-slate-50/80 border-t border-slate-100 p-4 flex justify-between items-center shrink-0 mt-4">
-              <ITButton
-                onClick={() => setCurrentStep((prev) => prev - 1)}
-                disabled={currentStep === 0}
-                variant="ghost"
-                className="!text-slate-400 !bg-transparent hover:!text-slate-800 disabled:!opacity-0"
-              >
-                <div className="flex items-center gap-2 font-black uppercase text-[10px] tracking-widest">
-                  <FaChevronLeft /> Anterior
-                </div>
-              </ITButton>
-
-              <div className="flex gap-3">
-                {currentStep < steps.length - 1 ? (
-                  <ITButton
-                    onClick={() => setCurrentStep((prev) => prev + 1)}
-                    disabled={!steps[currentStep].isValid}
-                    className="!rounded-xl !px-8 !h-[42px] !bg-slate-900 font-black text-[10px] uppercase tracking-widest"
-                  >
-                    Siguiente Paso
-                  </ITButton>
-                ) : (
-                  <ITButton
-                    onClick={handleSave}
-                    disabled={loading}
-                    className="!rounded-xl !px-10 !h-[42px] !bg-emerald-600 font-black text-[10px] uppercase tracking-widest"
-                  >
-                    {loading ? "GUARDANDO..." : "FINALIZAR RUTA"}
-                  </ITButton>
-                )}
               </div>
-            </div>
+            )}
+
+            {/* STEP 2: GUARDS */}
+            {currentStep === 2 && (
+              <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-300">
+                <div className="shrink-0 p-6 lg:px-8 border-b border-slate-50 bg-white">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-4 bg-emerald-500 rounded-full" />
+                      <h2 className="text-xl font-black text-slate-800 uppercase tracking-tighter">
+                        Personal Operativo
+                      </h2>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-[200px]">
+                        <FaSearch
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                          size={10}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Filtrar..."
+                          className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-bold uppercase focus:border-emerald-500 outline-none transition-all shadow-sm"
+                          value={guardSearch}
+                          onChange={(e) => setGuardSearch(e.target.value)}
+                        />
+                      </div>
+                      <ITButton
+                        size="small"
+                        variant="outlined"
+                        color="secondary"
+                        className="!rounded-xl !h-[36px]"
+                        onClick={() => {
+                          const allIds = filteredGuards.map((g) => g.id);
+                          const isAllSelected = allIds.every((id) =>
+                            selectedGuards.includes(id),
+                          );
+                          setSelectedGuards(isAllSelected ? [] : allIds);
+                        }}
+                      >
+                        <span className="text-[9px] font-black uppercase tracking-widest px-2">
+                          {filteredGuards.every((g) =>
+                            selectedGuards.includes(g.id),
+                          )
+                            ? "Quitar"
+                            : "Todos"}
+                        </span>
+                      </ITButton>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+                  <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {filteredGuards.map((guard) => {
+                      const isSelected = selectedGuards.includes(guard.id);
+                      return (
+                        <div
+                          key={guard.id}
+                          onClick={() => toggleGuard(guard.id)}
+                          className={`cursor-pointer p-4 rounded-[24px] border-2 transition-all flex items-center gap-3 ${
+                            isSelected
+                              ? "border-emerald-500 bg-emerald-50/30"
+                              : "border-slate-50 bg-white hover:border-slate-100"
+                          }`}
+                        >
+                          <div
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center text-[10px] font-black transition-all ${
+                              isSelected
+                                ? "bg-emerald-500 text-white"
+                                : "bg-slate-50 text-slate-400"
+                            }`}
+                          >
+                            {guard.name[0]}
+                            {guard.lastName?.[0]}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-black text-slate-800 uppercase truncate">
+                              {guard.name} {guard.lastName}
+                            </p>
+                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                              ID: {guard.id.slice(-6)}
+                            </span>
+                          </div>
+                          {isSelected && (
+                            <FaCheck className="text-emerald-500" size={10} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: SUMMARY */}
+            {currentStep === 3 && (
+              <div className="h-full overflow-y-auto p-6 lg:p-8">
+                <div className="max-w-3xl mx-auto animate-in fade-in zoom-in duration-300">
+                  <section className="bg-white rounded-[32px] border border-slate-100 p-10 shadow-xl shadow-slate-200/30 relative overflow-hidden">
+                    <div className="relative z-10 space-y-10">
+                      <div className="border-b border-slate-50 pb-8">
+                        <span className="text-emerald-600 font-black uppercase text-[9px] tracking-[0.3em] block mb-3">
+                          Resumen Final
+                        </span>
+                        <h2 className="text-3xl font-black text-slate-800 uppercase tracking-tighter leading-none">
+                          {title}
+                        </h2>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        <div className="space-y-1">
+                          <h4 className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                            Cliente
+                          </h4>
+                          <p className="text-base font-black text-slate-800 uppercase truncate">
+                            {clients?.find(
+                              (c) => String(c.id) === String(selectedClientId),
+                            )?.name || "N/A"}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <h4 className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                            Puntos
+                          </h4>
+                          <p className="text-base font-black text-slate-800 uppercase">
+                            {addedLocations.length} Ubicaciones
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <h4 className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                            Personal
+                          </h4>
+                          <p className="text-base font-black text-slate-800 uppercase">
+                            {selectedGuards.length} Guardia(s)
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-emerald-50 p-6 rounded-[24px] flex items-center gap-4">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-500 shadow-sm shrink-0">
+                          <FaCheck size={14} />
+                        </div>
+                        <p className="text-[9px] font-black text-emerald-700 uppercase tracking-tight">
+                          Configuración validada exitosamente. <br />
+                          Listo para el despliegue.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      </main>
+
+        {/* STANDARDIZED FOOTER */}
+        <footer className="bg-white border-t border-slate-100 p-4 lg:px-8 flex justify-between items-center relative z-20 shadow-sm shrink-0">
+          <ITButton
+            onClick={() =>
+              currentStep === 0
+                ? navigate("/routes")
+                : setCurrentStep((prev) => prev - 1)
+            }
+            variant="filled"
+            color="secondary"
+            className="!rounded-lg !px-4 !h-9"
+          >
+            <div className="flex items-center gap-2">
+              <FaChevronLeft size={7} />
+              <span className="text-[9px] font-black uppercase tracking-widest">
+                {currentStep === 0 ? "Salir" : "Atrás"}
+              </span>
+            </div>
+          </ITButton>
+
+          <div className="flex gap-2">
+            {currentStep < steps.length - 1 ? (
+              <ITButton
+                onClick={() => setCurrentStep((prev) => prev + 1)}
+                disabled={!steps[currentStep].isValid}
+                color="primary"
+                className="!rounded-lg !px-6 !h-9 shadow-md shadow-emerald-100"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-black uppercase tracking-widest">
+                    Siguiente
+                  </span>
+                  <FaChevronRight size={7} />
+                </div>
+              </ITButton>
+            ) : (
+              <ITButton
+                onClick={handleSave}
+                color="primary"
+                className="!rounded-lg !px-8 !h-9 shadow-md shadow-emerald-200"
+              >
+                <div className="flex items-center gap-2">
+                  <FaClipboardCheck size={10} />
+                  <span className="text-[9px] font-black uppercase tracking-widest">
+                    {isEditing ? "Guardar" : "Activar"}
+                  </span>
+                </div>
+              </ITButton>
+            )}
+          </div>
+        </footer>
+      </div>
 
       <ITDialog
         isOpen={showUserModal}
         onClose={() => setShowUserModal(false)}
         title="Registro Rápido de Guardia"
       >
-        <div className="p-2">
-          <CreateUserWizard
-            onCancel={() => setShowUserModal(false)}
-            onSuccess={() => {
-              fetchInitialData();
-              setShowUserModal(false);
-            }}
-          />
-        </div>
+        <CreateUserWizard
+          onCancel={() => setShowUserModal(false)}
+          onSuccess={() => {
+            fetchInitialData();
+            setShowUserModal(false);
+          }}
+        />
       </ITDialog>
-
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
-        .dark-select .axzy-select-trigger { background: rgba(255,255,255,0.05) !important; border-color: rgba(255,255,255,0.1) !important; color: white !important; }
-        .line-clamp-1 {
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `,
-        }}
-      />
     </div>
   );
 };

@@ -53,6 +53,8 @@ function App() {
     setIsAppReady(true);
   }, [dispatch]);
 
+  const loading = useSelector((state: any) => state.loader.loading);
+
   if (!isAppReady) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
@@ -72,32 +74,51 @@ function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route element={<PrivateRoutes />}>
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/guards" element={<GuardsPage />} />
-        
-        <Route path="/locations" element={<LocationsPage />} />
-        <Route path="/clients" element={<ClientsPage />} />
-        <Route path="/clients/:id" element={<ClientDetailsPage />} />
-        <Route path="/routes" element={<RoutesPage />} />
-        <Route path="/routes/new" element={<CreateRoutePage />} />
-        <Route path="/routes/edit/:id" element={<CreateRoutePage />} />
+    <>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<PrivateRoutes />}>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/guards" element={<GuardsPage />} />
+          
+          <Route path="/locations" element={<LocationsPage />} />
+          <Route path="/clients" element={<ClientsPage />} />
+          <Route path="/clients/:id" element={<ClientDetailsPage />} />
+          <Route path="/routes" element={<RoutesPage />} />
+          <Route path="/routes/new" element={<CreateRoutePage />} />
+          <Route path="/routes/edit/:id" element={<CreateRoutePage />} />
 
-        <Route path="/users" element={<UsersPage />} />
-        <Route path="/incidents" element={<IncidentsPage />} />
-        <Route path="/maintenances" element={<MaintenancesPage />} />
-        <Route path="/kardex" element={<KardexPage />} />
-        <Route path="/schedules" element={<SchedulesPage />} />
-        
-        <Route path="/rounds" element={<RoundsPage />} />
-        <Route path="/rounds/:id" element={<RoundDetailPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/incidents" element={<IncidentsPage />} />
+          <Route path="/maintenances" element={<MaintenancesPage />} />
+          <Route path="/kardex" element={<KardexPage />} />
+          <Route path="/schedules" element={<SchedulesPage />} />
+          
+          <Route path="/rounds" element={<RoundsPage />} />
+          <Route path="/rounds/:id" element={<RoundDetailPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
 
-      </Route>
-      <Route path="*" element={<Navigate to="/home" />} />
-    </Routes>
+        </Route>
+        <Route path="*" element={<Navigate to="/home" />} />
+      </Routes>
+
+      {/* GLOBAL MODAL ACTION LOADER */}
+      {loading && (
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-slate-900/20 backdrop-blur-[2px] transition-all">
+          <div className="bg-white p-10 rounded-[32px] shadow-2xl border border-slate-100 flex flex-col items-center gap-6">
+            <ITLoader size="lg" />
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em]">
+                Procesando
+              </span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                Por favor espere...
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

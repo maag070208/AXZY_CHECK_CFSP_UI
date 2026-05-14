@@ -24,10 +24,7 @@ import {
   FaUser,
 } from "react-icons/fa";
 import { GoogleMapComponent } from "../../../core/components/GoogleMapComponent";
-import {
-  getPaginatedKardex,
-  KardexEntry,
-} from "../services/KardexService";
+import { getPaginatedKardex, KardexEntry } from "../services/KardexService";
 
 const KardexPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -70,19 +67,16 @@ const KardexPage = () => {
     () => [
       {
         key: "user",
-        label: "Responsable",
+        label: "RESPONSABLE / GUARDIA",
         render: (row: KardexEntry) => (
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-black border border-slate-100 uppercase text-[10px]">
-              {row.user?.name?.[0]}
-              {row.user?.lastName?.[0]}
-            </div>
-            <div>
-              <p className="font-black text-slate-800 uppercase text-[10px] tracking-tight line-clamp-1">
-                {row.user?.name} {row.user?.lastName}
-              </p>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                @{row.user?.username}
+          <div className="flex flex-col">
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+              {row.user?.name} {row.user?.lastName}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                @{row.user?.username || "S/U"}
               </span>
             </div>
           </div>
@@ -90,37 +84,41 @@ const KardexPage = () => {
       },
       {
         key: "location",
-        label: "Punto de Control",
+        label: "PUNTO DE CONTROL",
         render: (row: KardexEntry) => (
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 border border-indigo-100">
-              <FaMapMarkerAlt size={12} />
-            </div>
-            <div>
-              <p className="font-black text-slate-700 uppercase text-[10px] tracking-tight">
-                {row.location?.name}
-              </p>
+          <div className="flex flex-col">
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+              {row.location?.name || "UBICACIÓN DESCONOCIDA"}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                QR ESCANEADO
+              </span>
             </div>
           </div>
         ),
       },
       {
         key: "timestamp",
-        label: "Cronometría",
+        label: "CRONOMETRÍA",
         render: (row: KardexEntry) => (
           <div className="flex flex-col">
-            <span className="text-slate-700 font-black text-[10px] uppercase tracking-tight">
-              {dayjs(row.timestamp).format("HH:mm:ss [HRS]") || "00:00:00"}
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+              {dayjs(row.timestamp).format("HH:mm:ss [HRS]")}
             </span>
-            <span className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">
-              {dayjs(row.timestamp).format("DD MMM, YYYY")}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                {dayjs(row.timestamp).format("DD MMM, YYYY")}
+              </span>
+            </div>
           </div>
         ),
       },
       {
         key: "scanType",
-        label: "Clasificación",
+        label: "CLASIFICACIÓN",
         render: (row: KardexEntry) => (
           <ITBadget
             color={
@@ -130,8 +128,7 @@ const KardexPage = () => {
                   ? "warning"
                   : "primary"
             }
-            variant="outlined"
-            className="font-black text-[9px] tracking-widest !px-3"
+            size="small"
           >
             {translateScanType(row.scanType)}
           </ITBadget>
@@ -139,27 +136,26 @@ const KardexPage = () => {
       },
       {
         key: "multimedia",
-        label: "Evidencia",
+        label: "EVIDENCIA",
         render: (row: KardexEntry) => (
-          <div className="flex items-center gap-2">
-            {row.media && row.media.length > 0 ? (
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
-                <FaFileAlt size={10} />
-                <span className="text-[10px] font-black">
-                  {row.media.length}
-                </span>
-              </div>
-            ) : (
-              <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">
-                Sin Archivos
+          <div className="flex flex-col">
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+              {row.media?.length || 0} Archivos
+            </span>
+            <div className="flex items-center gap-1.5">
+              <div
+                className={`w-1.5 h-1.5 rounded-full ${row.media?.length ? "bg-emerald-400" : "bg-slate-200"}`}
+              />
+              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                {row.media?.length ? "CON MULTIMEDIA" : "SIN EVIDENCIA"}
               </span>
-            )}
+            </div>
           </div>
         ),
       },
       {
         key: "actions",
-        label: "Control",
+        label: "CONTROL",
         render: (row: KardexEntry) => (
           <ITButton
             onClick={() => setViewingEntry(row)}
@@ -182,65 +178,35 @@ const KardexPage = () => {
         title="Expediente Kardex"
         subtitle="Registro histórico de marcajes, evidencias y reportes de campo"
         icon={FaBook}
-        actions={
-          <div className="flex flex-wrap items-center gap-3 w-full sm:justify-end">
-            <div className="relative w-full sm:w-64">
-              <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-              <ITInput
-                placeholder="BUSCAR RESPONSABLE..."
-                name="search"
-                value={searchTerm}
-                onChange={(e: any) => setSearchTerm(e.target.value)}
-                onBlur={() => {}}
-                className="!h-[44px] !pl-10 !rounded-xl border-slate-100 bg-white !text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors"
-                >
-                  <FaTimes size={12} />
-                </button>
-              )}
-            </div>
-
-            <ITTripleFilter
-              value={scanTypeFilter}
-              onChange={(val) => {
-                setScanTypeFilter(val);
-                setRefreshKey((prev) => prev + 1);
-              }}
-              options={[
-                { label: "TODOS", value: "ALL" },
-                { label: "ASIGNACIÓN", value: "ASSIGNMENT" },
-                { label: "RECURRENTE", value: "RECURRING" },
-              ]}
-            />
-
-            <ITDatePicker
-              label=""
-              name="date"
-              value={selectedDate as any}
-              range
-              onChange={(e) => {
-                const val = e.target.value as any;
-                if (Array.isArray(val) && val[0] && val[1]) {
-                  setSelectedDate(val.map((d) => (d ? new Date(d) : null)));
-                  setRefreshKey((prev) => prev + 1);
-                }
-              }}
-              className="!h-[44px] !rounded-xl !w-full sm:!w-64"
-            />
-
-            <ITButton
-              onClick={() => setRefreshKey((prev) => prev + 1)}
-              variant="outline"
-              className="!h-[44px] !rounded-xl border-slate-200"
-            >
-              <FaSync className="text-slate-400" />
-            </ITButton>
-          </div>
+        search={{
+          value: searchTerm,
+          onChange: setSearchTerm,
+          placeholder: "BUSCAR RESPONSABLE...",
+          icon: FaUser,
+        }}
+        extraFilter={
+          <ITTripleFilter
+            value={scanTypeFilter}
+            onChange={(val) => {
+              setScanTypeFilter(val);
+              setRefreshKey((prev) => prev + 1);
+            }}
+            options={[
+              { label: "TODOS", value: "ALL" },
+              { label: "ASIGNACIÓN", value: "ASSIGNMENT" },
+              { label: "RECURRENTE", value: "RECURRING" },
+            ]}
+          />
         }
+        dateRange={{
+          value: selectedDate as [Date | null, Date | null],
+          onChange: (val) => {
+            setSelectedDate(val);
+            setRefreshKey((prev) => prev + 1);
+          },
+        }}
+        onRefresh={() => setRefreshKey((p) => p + 1)}
+        refreshKey={refreshKey}
       />
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mt-6">

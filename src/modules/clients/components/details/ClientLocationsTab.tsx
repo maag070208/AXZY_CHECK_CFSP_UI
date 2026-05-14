@@ -80,49 +80,52 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
   const columns = [
     {
       key: "name",
-      label: "Identificación de Ubicación",
+      label: "UBICACIÓN / IDENTIFICACIÓN",
       type: "string",
       render: (row: Location) => (
-        <div className="flex items-center gap-3 py-1">
-          <div className="p-2 bg-slate-50 rounded-lg text-slate-400 group-hover:text-emerald-500 transition-colors">
-            <FaMapMarkerAlt size={14} />
-          </div>
-          <div>
-            <div className="font-bold text-slate-700 tracking-tight">
-              {row.name}
-            </div>
-            {row.reference && (
-              <div className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-0.5">
-                Ref: {row.reference}
-              </div>
-            )}
+        <div className="flex flex-col">
+          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+            {row.name}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+              {row.reference ? `REF: ${row.reference}` : "SIN REFERENCIA"}
+            </span>
           </div>
         </div>
       ),
     },
     {
       key: "zone",
-      label: "Zona / Recurrente",
+      label: "ZONA / RECURRENTE",
       type: "string",
       render: (row: any) => (
-        <div className="px-3 py-1 bg-emerald-50/50 text-emerald-600 border border-emerald-100/50 rounded-full text-[10px] font-black uppercase tracking-widest inline-block">
-          {row.zone?.name || "Sin Zona"}
+        <div className="flex flex-col">
+          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+            {row.zone?.name || "SIN ZONA"}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+              PUNTO DE CONTROL
+            </span>
+          </div>
         </div>
       ),
     },
     {
       key: "actions",
-      label: "Acciones",
+      label: "CONTROL",
       type: "actions",
       actions: (row: Location) => (
-        <div className="flex gap-1 justify-end">
+        <div className="flex items-center gap-2">
           <ITButton
             onClick={() => {
               setIsBulkPrintOpen(true);
             }}
             size="small"
-            variant="ghost"
-            className="text-slate-400 hover:text-emerald-600 p-2"
+            variant="outlined"
             title="Asistente QR"
           >
             <FaQrcode size={14} />
@@ -130,8 +133,7 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
           <ITButton
             onClick={() => setEditingLocation(row)}
             size="small"
-            variant="ghost"
-            className="text-slate-400 hover:text-slate-600 p-2"
+            variant="outlined"
             title="Editar"
           >
             <FaEdit size={14} />
@@ -139,8 +141,8 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
           <ITButton
             onClick={() => handleDelete(row.id)}
             size="small"
-            variant="ghost"
-            className="text-red-200 hover:text-red-500 p-2"
+            variant="outlined"
+            color="error"
             title="Eliminar"
           >
             <FaTrash size={14} />

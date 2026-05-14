@@ -1,5 +1,6 @@
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
+  ITBadget,
   ITButton,
   ITDataTable,
   ITDialog,
@@ -69,85 +70,90 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
       }
     } catch (error) {
       const err = error as TResult<any>;
-      dispatch(showToast({ message: err.messages?.[0] || "Error de conexión", type: "error" }));
+      dispatch(
+        showToast({
+          message: err.messages?.[0] || "Error de conexión",
+          type: "error",
+        }),
+      );
     }
   };
 
   const columns = [
     {
       key: "user",
-      label: "Perfil del Operativo",
+      label: "PERFIL / USUARIO",
       type: "string",
       render: (row: User) => (
-        <div className="flex items-center gap-4 py-2">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 font-black text-sm shadow-sm">
-            {row.name.charAt(0)}
-            {row.lastName?.charAt(0) || ""}
-          </div>
-          <div>
-            <div className="font-black text-slate-800 text-sm uppercase tracking-tight">
-              {row.name} {row.lastName}
-            </div>
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+        <div className="flex flex-col">
+          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+            {row.name} {row.lastName}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
               @{row.username}
-            </div>
+            </span>
           </div>
         </div>
       ),
     },
     {
       key: "status",
-      label: "Estado Operativo",
+      label: "ESTADO OPERATIVO",
       type: "string",
       render: (row: User) => {
         const lastLog = row.assignmentLogs?.[0];
-        const status = lastLog 
-            ? (lastLog.type === "ASIGNADO" ? "ACTIVO" : "BAJA") 
-            : (row.clientId ? "ACTIVO" : "BAJA");
+        const status = lastLog
+          ? lastLog.type === "ASIGNADO"
+            ? "ACTIVO"
+            : "BAJA"
+          : row.clientId
+            ? "ACTIVO"
+            : "BAJA";
 
         return (
-          <div
-            className={`inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.1em] border ${
-              status === "ACTIVO" 
-                ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
-                : "bg-red-50 text-red-600 border-red-100"
-            }`}
+          <ITBadget
+            color={status === "ACTIVO" ? "success" : "error"}
+            size="small"
           >
             {status}
-          </div>
+          </ITBadget>
         );
       },
     },
     {
       key: "schedule",
-      label: "Jornada Asignada",
+      label: "JORNADA / HORARIO",
       type: "string",
-      render: (row: User) =>
-        row.schedule ? (
-          <div className="py-1">
-            <div className="flex items-center gap-2 font-black text-slate-700 text-[10px] uppercase tracking-widest">
-              <FaClock className="text-emerald-500" />
-              {row.schedule.name}
-            </div>
-            <div className="text-[10px] text-slate-400 font-bold mt-1 ml-5">
-              {row.schedule.startTime} - {row.schedule.endTime}
-            </div>
+      render: (row: User) => (
+        <div className="flex flex-col">
+          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+            {row.schedule?.name || "SIN HORARIO"}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`w-1.5 h-1.5 rounded-full ${row.schedule ? "bg-emerald-400" : "bg-slate-200"}`}
+            />
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+              {row.schedule
+                ? `${row.schedule.startTime} - ${row.schedule.endTime}`
+                : "PENDIENTE ASIGNACIÓN"}
+            </span>
           </div>
-        ) : (
-          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">Sin Horario</span>
-        ),
+        </div>
+      ),
     },
     {
       key: "actions",
-      label: "Acciones",
+      label: "CONTROL",
       type: "actions",
       actions: (row: User) => (
-        <div className="flex items-center gap-2 justify-end">
+        <div className="flex items-center gap-2">
           <ITButton
             onClick={() => setChangingScheduleUser(row)}
             size="small"
-            variant="ghost"
-            className="text-amber-500 hover:bg-amber-50 p-2 rounded-xl"
+            variant="outlined"
             title="Reasignar Horario"
           >
             <FaClock size={14} />
@@ -155,8 +161,8 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
           <ITButton
             onClick={() => setRemovingUser(row)}
             size="small"
-            variant="ghost"
-            className="text-red-200 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl"
+            variant="outlined"
+            color="error"
             title="Remover de Cliente"
           >
             <FaTimes size={14} />
@@ -241,7 +247,12 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
                 setRefreshKey((prev) => prev + 1);
                 setChangingScheduleUser(null);
               } else {
-                dispatch(showToast({ message: res.messages?.[0] || "Error al actualizar", type: "error" }));
+                dispatch(
+                  showToast({
+                    message: res.messages?.[0] || "Error al actualizar",
+                    type: "error",
+                  }),
+                );
               }
             }}
           />
@@ -273,7 +284,11 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
                 Remover Guardia
               </h3>
               <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2">
-                ¿Está seguro que desea desvincular a <span className="text-slate-800 font-black">{removingUser?.name} {removingUser?.lastName}</span> de este cliente?
+                ¿Está seguro que desea desvincular a{" "}
+                <span className="text-slate-800 font-black">
+                  {removingUser?.name} {removingUser?.lastName}
+                </span>{" "}
+                de este cliente?
               </p>
             </div>
           </div>
@@ -287,7 +302,9 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
               Cancelar
             </ITButton>
             <ITButton
-              onClick={() => removingUser && handleRemoveFromClient(removingUser)}
+              onClick={() =>
+                removingUser && handleRemoveFromClient(removingUser)
+              }
               className="bg-red-600 hover:bg-red-700 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl flex-1 h-12 shadow-lg shadow-red-500/10"
             >
               Confirmar Baja
@@ -298,4 +315,3 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
     </div>
   );
 };
-

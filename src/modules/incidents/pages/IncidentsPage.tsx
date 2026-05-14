@@ -152,19 +152,16 @@ const IncidentsPage = () => {
       },
       {
         key: "guardId",
-        label: "Reportado Por",
+        label: "REPORTADO POR",
         render: (row: Incident) => (
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-100">
-              {row.guard?.name?.[0]}
-              {row.guard?.lastName?.[0]}
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-700 uppercase truncate max-w-[120px]">
-                {row.guard?.name} {row.guard?.lastName}
-              </span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
-                @{row.guard?.username}
+          <div className="flex flex-col">
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+              {row.guard?.name} {row.guard?.lastName}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                @{row.guard?.username || "S/U"}
               </span>
             </div>
           </div>
@@ -172,27 +169,27 @@ const IncidentsPage = () => {
       },
       {
         key: "status",
-        label: "Estado",
+        label: "ESTADO",
         render: (row: Incident) => (
           <ITBadget
             color={row.status === "ATTENDED" ? "success" : "danger"}
-            label={row.status === "ATTENDED" ? "ATENDIDA" : "PENDIENTE"}
-          />
+            size="small"
+          >
+            {row.status === "ATTENDED" ? "ATENDIDA" : "PENDIENTE"}
+          </ITBadget>
         ),
       },
       {
         key: "actions",
-        label: "Control",
+        label: "CONTROL",
         render: (row: Incident) => (
           <div className="flex items-center gap-2">
             <ITButton
-              onClick={() => {
-                console.log(row);
-                setViewingIncident(row);
-              }}
+              onClick={() => setViewingIncident(row)}
               variant="outlined"
               size="small"
               color="secondary"
+              title="Ver detalle"
             >
               <FaEye size={14} />
             </ITButton>
@@ -202,10 +199,11 @@ const IncidentsPage = () => {
                 variant="outlined"
                 size="small"
                 color="success"
+                title="Resolver"
                 disabled={resolvingId === (row.id as any)}
               >
                 {resolvingId === (row.id as any) ? (
-                  <ITLoader />
+                  <ITLoader size="sm" />
                 ) : (
                   <FaCheck size={14} />
                 )}
@@ -217,16 +215,17 @@ const IncidentsPage = () => {
                 color="error"
                 variant="outlined"
                 size="small"
+                title="Eliminar"
                 disabled={deletingId === (row.id as any)}
               >
-                <FaTrash size={12} />
+                <FaTrash size={14} />
               </ITButton>
             )}
           </div>
         ),
       },
     ],
-    [isAdmin, resolvingId, deletingId],
+    [isAdmin, resolvingId, deletingId, isClient],
   );
 
   return (
@@ -235,52 +234,23 @@ const IncidentsPage = () => {
         title="Gestión de Incidencias"
         subtitle="Monitoreo y respuesta inmediata a reportes de seguridad"
         icon={FaExclamationTriangle}
-        actions={
-          <div className="flex flex-wrap items-center gap-3 w-full sm:justify-end">
-            <div className="relative w-full sm:w-64">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-              <ITInput
-                placeholder="BUSCAR REPORTE..."
-                name="search"
-                value={searchTerm}
-                onChange={(e: any) => setSearchTerm(e.target.value)}
-                onBlur={() => {}}
-                className="!h-[42px] !pl-10 !rounded-xl border-slate-100 bg-white !text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors"
-                >
-                  <FaTimes size={12} />
-                </button>
-              )}
-            </div>
-
-            <ITTripleFilter
-              value={statusFilter}
-              onChange={setStatusFilter}
-              options={[
-                { label: "TODOS", value: "ALL" },
-                { label: "PENDIENTES", value: "PENDING" },
-                { label: "ATENDIDAS", value: "ATTENDED" },
-              ]}
-            />
-
-            <ITButton
-              onClick={() => setRefreshKey((p) => p + 1)}
-              variant="outline"
-              className="!h-[42px] !rounded-xl !border-slate-100 !bg-white !text-slate-500 hover:!bg-slate-50"
-            >
-              <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase">
-                <FaSync
-                  size={10}
-                  className={loadingGuards ? "animate-spin" : ""}
-                />
-                Refrescar
-              </div>
-            </ITButton>
-          </div>
+        search={{
+          value: searchTerm,
+          onChange: setSearchTerm,
+          placeholder: "BUSCAR REPORTE...",
+        }}
+        onRefresh={() => setRefreshKey((p) => p + 1)}
+        refreshKey={refreshKey}
+        extraFilter={
+          <ITTripleFilter
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { label: "TODOS", value: "ALL" },
+              { label: "PENDIENTES", value: "PENDING" },
+              { label: "ATENDIDAS", value: "ATTENDED" },
+            ]}
+          />
         }
       />
 
@@ -512,7 +482,7 @@ const IncidentsPage = () => {
                         onClick={() => handleResolve(viewingIncident.id as any)}
                         variant="filled"
                         color="success"
-                        className="w-full !rounded-xl !h-[48px] shadow-lg shadow-emerald-200"
+                        className="w-full"
                       >
                         <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase">
                           <FaCheck size={12} /> Resolver Ahora
@@ -576,7 +546,7 @@ const IncidentsPage = () => {
             <ITButton
               variant="filled"
               color="success"
-              className="px-10 !rounded-xl !h-[48px] shadow-lg shadow-emerald-200"
+              className="px-10"
               onClick={confirmResolve}
             >
               <div className="font-black text-[10px] uppercase tracking-widest">
@@ -613,7 +583,7 @@ const IncidentsPage = () => {
             <ITButton
               variant="filled"
               color="danger"
-              className="px-10 !rounded-xl !h-[48px] shadow-lg shadow-rose-200"
+              className="px-10"
               onClick={confirmDelete}
             >
               <div className="font-black text-[10px] uppercase tracking-widest">

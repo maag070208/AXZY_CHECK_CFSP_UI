@@ -151,7 +151,7 @@ const GuardsPage = () => {
       },
       {
         key: "role",
-        label: "Categoría",
+        label: "ROL / CATEGORÍA",
         render: (row: User) => {
           const roleValue = row.role?.value || "S/R";
           const roleName = row.role?.name || "";
@@ -161,96 +161,90 @@ const GuardsPage = () => {
           if (roleName === "MAINT") color = "danger";
 
           return (
-            <ITBadget
-              label={roleValue}
-              color={color}
-              variant="outlined"
-              className="font-black text-[9px] tracking-widest"
-            />
+            <ITBadget color={color} size="small">
+              {roleValue}
+            </ITBadget>
           );
         },
       },
       {
         key: "client",
-        label: "Asignación",
+        label: "ASIGNACIÓN",
         render: (row: User) => (
           <div className="flex flex-col">
-            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-tight">
-              {row.client?.name || "Sin Asignar"}
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+              {row.client?.name || "SIN ASIGNAR"}
             </span>
-            {row.schedule && (
-              <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5 flex items-center gap-1">
-                <FaClock size={8} /> {row.schedule.name} (
-                {row.schedule.startTime}-{row.schedule.endTime})
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                {row.schedule
+                  ? `${row.schedule.name} (${row.schedule.startTime}-${row.schedule.endTime})`
+                  : "SIN HORARIO"}
               </span>
-            )}
+            </div>
           </div>
         ),
       },
       {
         key: "status",
-        label: "Estado",
+        label: "ESTADO",
         render: (row: User) => (
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-1.5 h-1.5 rounded-full ${row.active ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-red-300"}`}
-            />
-            <span
-              className={`text-[10px] font-black uppercase tracking-widest ${row.active ? "text-emerald-600" : "text-red-400"}`}
-            >
-              {row.active ? "ACTIVO" : "INACTIVO"}
-            </span>
-          </div>
+          <ITBadget color={row.active ? "success" : "error"} size="small">
+            {row.active ? "ACTIVO" : "INACTIVO"}
+          </ITBadget>
         ),
       },
       {
         key: "activity",
-        label: "Operatividad",
+        label: "OPERATIVIDAD",
         render: (row: User) => (
           <div className="flex flex-col">
-            <span className="text-[10px] font-black text-slate-700 uppercase tracking-tight">
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
               {row.assignmentLogs?.length || 0} Tareas
             </span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">
-              Control Diario
-            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                CONTROL DIARIO
+              </span>
+            </div>
           </div>
         ),
       },
       {
         key: "actions",
-        label: "Control",
+        label: "CONTROL",
         render: (row: User) => (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {!isClient && (
-              <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100 mr-2">
+              <>
                 <ITButton
                   onClick={() => setChangingScheduleUser(row)}
-                  variant="ghost"
-                  className="!p-2 !w-8 !h-8 !rounded-lg !text-amber-500 hover:!bg-amber-50"
+                  variant="outlined"
+                  size="small"
                   title="Horario"
                 >
-                  <FaClock size={12} />
+                  <FaClock size={14} />
                 </ITButton>
                 <ITButton
                   onClick={() => setChangingClientUser(row)}
-                  variant="ghost"
-                  className="!p-2 !w-8 !h-8 !rounded-lg !text-indigo-500 hover:!bg-indigo-50"
+                  variant="outlined"
+                  size="small"
                   title="Cliente"
                 >
-                  <FaUserShield size={12} />
+                  <FaUserShield size={14} />
                 </ITButton>
-              </div>
-            )}
-            {!isClient && (
-              <ITButton
-                onClick={() => setGuardToToggle(row)}
-                variant="outline"
-                className={`!p-2 !w-9 !h-9 !rounded-xl ${row.active ? "!border-rose-100 !bg-rose-50/30 !text-rose-500 hover:!bg-rose-50" : "!border-emerald-100 !text-emerald-500 hover:!bg-emerald-50"}`}
-                title={row.active ? "Desactivar" : "Activar"}
-              >
-                <FaPowerOff size={12} />
-              </ITButton>
+                <ITButton
+                  onClick={() => setGuardToToggle(row)}
+                  variant="outlined"
+                  color={row.active ? "error" : "success"}
+                  size="small"
+                  title={row.active ? "Desactivar" : "Activar"}
+                >
+                  <FaPowerOff size={14} />
+                </ITButton>
+              </>
             )}
             <ITButton
               onClick={() => handleViewAssignments(row)}
@@ -269,14 +263,14 @@ const GuardsPage = () => {
                 title="Asignar"
                 size="small"
               >
-                <FaClipboardList size={12} />
+                <FaClipboardList size={14} />
               </ITButton>
             )}
           </div>
         ),
       },
     ],
-    [],
+    [isClient],
   );
 
   return (
@@ -285,53 +279,23 @@ const GuardsPage = () => {
         title="Directorio de Guardias"
         subtitle="Gestión de personal operativo, asignaciones y controles de turno"
         icon={FaUserShield}
-        actions={
-          <div className="flex flex-wrap items-center gap-3 w-full sm:justify-end">
-            <div className="relative w-full sm:w-64">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-              <ITInput
-                placeholder="BUSCAR GUARDIA..."
-                name="search"
-                value={searchTerm}
-                onChange={(e: any) => setSearchTerm(e.target.value)}
-                onBlur={() => {}}
-                className="!h-[42px] !pl-10 !rounded-xl border-slate-100 bg-white !text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors"
-                >
-                  <FaTimes size={12} />
-                </button>
-              )}
-            </div>
-
-            <ITTripleFilter
-              value={activeFilter}
-              onChange={setActiveFilter}
-              options={[
-                { label: "TODOS", value: "all" },
-                { label: "ACTIVOS", value: "active" },
-                { label: "INACTIVOS", value: "inactive" },
-              ]}
-            />
-
-            <ITButton
-              onClick={refreshTable}
-              variant="outline"
-              color="secondary"
-              className="!h-[42px] !rounded-xl border-slate-200"
-            >
-              <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase text-slate-500">
-                <FaSync
-                  className={
-                    refreshKey % 2 !== 0 ? "rotate-180 transition-all" : ""
-                  }
-                />
-              </div>
-            </ITButton>
-          </div>
+        search={{
+          value: searchTerm,
+          onChange: setSearchTerm,
+          placeholder: "BUSCAR GUARDIA...",
+        }}
+        onRefresh={refreshTable}
+        refreshKey={refreshKey}
+        extraFilter={
+          <ITTripleFilter
+            value={activeFilter}
+            onChange={setActiveFilter}
+            options={[
+              { label: "TODOS", value: "all" },
+              { label: "ACTIVOS", value: "active" },
+              { label: "INACTIVOS", value: "inactive" },
+            ]}
+          />
         }
       />
 

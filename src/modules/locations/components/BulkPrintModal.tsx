@@ -102,31 +102,32 @@ export const BulkPrintModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Impresión Masiva de QRs"
-      className="!max-w-4xl !w-full"
+      className="!max-w-5xl !w-full"
     >
-      <div className="flex flex-col h-[80vh]">
-        <div className="flex px-6 border-b border-slate-100 bg-white sticky top-0 z-10">
+      <div className="flex flex-col bg-white overflow-hidden max-h-[85vh]">
+        {/* Tab Navigation */}
+        <div className="flex-none flex px-10 border-b border-slate-100 bg-white">
           <button
             onClick={() => setActiveTab("SEARCH")}
-            className={`px-6 py-3 text-[11px] font-bold tracking-widest transition-all border-b-2 ${
+            className={`px-8 py-5 text-[10px] font-black tracking-[0.2em] transition-all border-b-2 uppercase ${
               activeTab === "SEARCH"
                 ? "border-emerald-500 text-emerald-600"
                 : "border-transparent text-slate-400 hover:text-slate-600"
             }`}
           >
-            BUSCAR Y AGREGAR
+            Buscar y Agregar
           </button>
           <button
             onClick={() => setActiveTab("SELECTED")}
-            className={`px-6 py-3 text-[11px] font-bold tracking-widest transition-all border-b-2 flex items-center gap-2 ${
+            className={`px-8 py-5 text-[10px] font-black tracking-[0.2em] transition-all border-b-2 flex items-center gap-3 uppercase ${
               activeTab === "SELECTED"
                 ? "border-emerald-500 text-emerald-600"
                 : "border-transparent text-slate-400 hover:text-slate-600"
             }`}
           >
-            SELECCIONADOS
+            Seleccionados
             <span
-              className={`px-1.5 py-0.5 rounded-full text-[9px] transition-all duration-300 ${animateBadge ? "scale-150 rotate-12" : "scale-100"} ${
+              className={`px-2 py-0.5 rounded-full text-[9px] font-black transition-all duration-300 ${animateBadge ? "scale-125 bg-emerald-500 text-white" : ""} ${
                 selectedIds.length > 0
                   ? "bg-emerald-100 text-emerald-600"
                   : "bg-slate-100 text-slate-400"
@@ -137,13 +138,12 @@ export const BulkPrintModal = ({
           </button>
         </div>
 
+        {/* Filters Section (Only in SEARCH tab) */}
         {activeTab === "SEARCH" && (
-          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-slate-100 bg-slate-50/50">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <FaBuilding className="text-emerald-500" /> CLIENTE
-              </label>
+          <div className="flex-none p-10 bg-slate-50/30 border-b border-slate-100">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <ITSearchSelect
+                label="Cliente"
                 placeholder="Seleccionar cliente..."
                 options={(clients || []).map((c: any) => ({
                   label: c.name,
@@ -152,195 +152,202 @@ export const BulkPrintModal = ({
                 value={clientId}
                 onChange={(val) => {
                   setClientId(val as string);
-                  setBulkFilterZone(""); // Reset zone when client changes
+                  setBulkFilterZone("");
                 }}
               />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <FaFilter className="text-emerald-500" /> RECURRENTE (ZONA)
-              </label>
-              <select
-                value={bulkFilterZone}
-                onChange={(e) => setBulkFilterZone(e.target.value)}
-                className="w-full h-[42px] px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-50 disabled:cursor-not-allowed"
-                disabled={!clientId}
-              >
-                <option value="">Todas las zonas</option>
-                {allZones
-                  .filter((z) => !clientId || z.clientId === clientId)
-                  .map((z) => (
-                    <option key={z.id} value={z.id}>
-                      {z.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <FaSearch className="text-emerald-500" /> BUSCAR POR NOMBRE
-              </label>
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Zona / Recurrente
+                </label>
+                <select
+                  value={bulkFilterZone}
+                  onChange={(e) => setBulkFilterZone(e.target.value)}
+                  className="w-full h-[48px] px-5 rounded-2xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none transition-all focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 disabled:bg-slate-50 disabled:cursor-not-allowed"
+                  disabled={!clientId}
+                >
+                  <option value="">Todas las zonas</option>
+                  {allZones
+                    .filter((z) => !clientId || z.clientId === clientId)
+                    .map((z) => (
+                      <option key={z.id} value={z.id}>
+                        {z.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
               <ITInput
-                placeholder="Filtrar por nombre..."
+                label="Buscador"
+                placeholder="Ej. Punto de Control A..."
                 name="bulkSearch"
                 value={bulkFilterSearch}
                 onChange={(e) => setBulkFilterSearch(e.target.value)}
                 onBlur={() => {}}
-                className="!py-2 !h-[42px] !rounded-xl border-slate-200 bg-white"
               />
             </div>
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto p-6 bg-white">
-          {activeTab === "SEARCH" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {locationsToChoose.map((loc) => {
-                console.log(loc);
-                return (
-                  <label
-                    key={loc.id}
-                    className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
-                      selectedIds.includes(loc.id)
-                        ? "border-emerald-200 bg-emerald-50/40"
-                        : "border-slate-100 hover:bg-slate-50"
-                    }`}
+        {/* Content Body */}
+        <div className="flex-1 overflow-y-auto p-10 space-y-8 custom-scrollbar">
+          <section>
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                  {activeTab === "SEARCH" ? "Resultados de Búsqueda" : "Elementos a Imprimir"}
+                </h4>
+              </div>
+              
+              {activeTab === "SEARCH" && locationsToChoose.length > 0 && (
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => {
+                      const newLocations = locationsToChoose.filter(
+                        (l) => !selectedIds.includes(l.id),
+                      );
+                      setSelectedIds([...selectedIds, ...newLocations.map((l) => l.id)]);
+                      setSelectedLocations([...selectedLocations, ...newLocations]);
+                    }}
+                    className="text-[9px] font-black text-emerald-500 uppercase tracking-widest hover:text-emerald-600 transition-colors"
                   >
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(loc.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedIds([...selectedIds, loc.id]);
-                          setSelectedLocations([...selectedLocations, loc]);
-                        } else {
-                          setSelectedIds(
-                            selectedIds.filter((id) => id !== loc.id),
-                          );
-                          setSelectedLocations(
-                            selectedLocations.filter((l) => l.id !== loc.id),
-                          );
-                        }
-                      }}
-                      className="hidden"
-                    />
-                    <div
-                      className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${
+                    Agregar Todos
+                  </button>
+                  <div className="w-px h-3 bg-slate-200" />
+                  <button
+                    onClick={() => {
+                      setSelectedIds([]);
+                      setSelectedLocations([]);
+                    }}
+                    className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
+                  >
+                    Limpiar Selección
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {activeTab === "SEARCH" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {locationsToChoose.length > 0 ? (
+                  locationsToChoose.map((loc) => (
+                    <label
+                      key={loc.id}
+                      className={`group flex items-center gap-4 p-5 rounded-2xl border transition-all cursor-pointer ${
                         selectedIds.includes(loc.id)
-                          ? "bg-emerald-500 border-emerald-500 text-white"
-                          : "border-slate-300 bg-white"
+                          ? "border-emerald-500 bg-emerald-50/30 shadow-sm"
+                          : "border-slate-100 bg-white hover:border-slate-300 hover:shadow-md"
                       }`}
                     >
-                      {selectedIds.includes(loc.id) && (
-                        <FaPlus size={8} className="rotate-45" />
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(loc.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedIds([...selectedIds, loc.id]);
+                            setSelectedLocations([...selectedLocations, loc]);
+                          } else {
+                            setSelectedIds(selectedIds.filter((id) => id !== loc.id));
+                            setSelectedLocations(selectedLocations.filter((l) => l.id !== loc.id));
+                          }
+                        }}
+                        className="hidden"
+                      />
                       <div
-                        className={`p-2 rounded-lg ${selectedIds.includes(loc.id) ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-400"}`}
+                        className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
+                          selectedIds.includes(loc.id)
+                            ? "bg-emerald-500 border-emerald-500 text-white"
+                            : "border-slate-200 bg-white group-hover:border-slate-300"
+                        }`}
                       >
-                        <FaMapMarkerAlt size={14} />
+                        {selectedIds.includes(loc.id) && (
+                          <FaPlus size={8} className="rotate-45" />
+                        )}
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-slate-700">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-black text-slate-700 truncate uppercase tracking-tight">
                           {loc.name}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-                          Zona: {loc.zone?.name || "General"}
-                        </span>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <div className={`w-1 h-1 rounded-full ${selectedIds.includes(loc.id) ? "bg-emerald-400" : "bg-slate-300"}`} />
+                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest truncate">
+                            {loc.zone?.name || "General"}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {selectedLocations.map((loc) => (
-                  <div
-                    key={loc.id}
-                    className="flex items-center justify-between p-4 rounded-2xl border border-emerald-200 bg-emerald-50/40"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600">
-                        <FaMapMarkerAlt size={14} />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-slate-700">
-                          {loc.name}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-                          {loc.zone?.name || "General"}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setSelectedIds(
-                          selectedIds.filter((id) => id !== loc.id),
-                        );
-                        setSelectedLocations(
-                          selectedLocations.filter((l) => l.id !== loc.id),
-                        );
-                      }}
-                      className="text-red-400 hover:text-red-600 p-2"
-                    >
-                      <FaTimes size={14} />
-                    </button>
+                    </label>
+                  ))
+                ) : (
+                  <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-300 gap-4">
+                    <FaSearch size={40} className="opacity-20" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Sin resultados encontrados</span>
                   </div>
-                ))}
-            </div>
-          )}
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {selectedLocations.length > 0 ? (
+                  selectedLocations.map((loc) => (
+                    <div
+                      key={loc.id}
+                      className="flex items-center justify-between p-5 rounded-2xl border border-emerald-500 bg-emerald-50/30 shadow-sm"
+                    >
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-black text-slate-700 truncate uppercase tracking-tight">
+                          {loc.name}
+                        </span>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <div className="w-1 h-1 rounded-full bg-emerald-400" />
+                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest truncate">
+                            {loc.zone?.name || "General"}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedIds(selectedIds.filter((id) => id !== loc.id));
+                          setSelectedLocations(selectedLocations.filter((l) => l.id !== loc.id));
+                        }}
+                        className="w-8 h-8 flex items-center justify-center rounded-xl bg-white text-red-500 hover:bg-red-50 transition-colors shadow-sm"
+                      >
+                        <FaTimes size={12} />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-300 gap-4">
+                    <FaMapMarkerAlt size={40} className="opacity-20" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">No hay ubicaciones seleccionadas</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
         </div>
 
-        <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
-          <div className="flex gap-2">
-            <ITButton
-              size="small"
-              variant="ghost"
-              onClick={() => {
-                const newLocations = locationsToChoose.filter(
-                  (l) => !selectedIds.includes(l.id),
-                );
-                setSelectedIds([
-                  ...selectedIds,
-                  ...newLocations.map((l) => l.id),
-                ]);
-                setSelectedLocations([...selectedLocations, ...newLocations]);
-              }}
-              className="text-emerald-600 font-bold text-[11px] uppercase tracking-wider"
-            >
-              Agregar Resultados
-            </ITButton>
-            <ITButton
-              size="small"
-              variant="ghost"
-              onClick={() => {
-                setSelectedIds([]);
-                setSelectedLocations([]);
-              }}
-              className="text-slate-400 font-bold text-[11px] uppercase tracking-wider"
-            >
-              Limpiar
-            </ITButton>
-          </div>
-          <div className="flex gap-3">
-            <ITButton
-              variant="outlined"
-              color="secondary"
-              onClick={onClose}
-              className="!rounded-xl px-6"
-            >
+        {/* Standardized Footer */}
+        <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
+          <ITButton
+            type="button"
+            variant="filled"
+            onClick={onClose}
+            color="secondary"
+          >
+            <span className="uppercase tracking-widest text-[10px] font-black">
               Cancelar
-            </ITButton>
-            <ITButton
-              color="primary"
-              onClick={handleConfirm}
-              className="!rounded-xl px-8 shadow-lg shadow-emerald-100"
-            >
-              Confirmar Impresión ({selectedIds.length})
-            </ITButton>
-          </div>
+            </span>
+          </ITButton>
+
+          <ITButton
+            onClick={handleConfirm}
+            color="primary"
+            disabled={selectedIds.length === 0}
+          >
+            <div className="flex items-center gap-2">
+              <span className="uppercase tracking-widest text-[10px] font-black">
+                Confirmar Impresión ({selectedIds.length})
+              </span>
+            </div>
+          </ITButton>
         </div>
       </div>
     </ITDialog>

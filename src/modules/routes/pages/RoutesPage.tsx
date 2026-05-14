@@ -2,6 +2,7 @@ import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
+  ITBadget,
   ITButton,
   ITDataTable,
   ITDialog,
@@ -22,6 +23,7 @@ import {
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { deleteRoute, getPaginatedRoutes } from "../services/RoutesService";
+import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 
 const RoutesPage = () => {
   const dispatch = useDispatch();
@@ -60,13 +62,18 @@ const RoutesPage = () => {
 
   const confirmDelete = async () => {
     if (!routeToDeleteId) return;
-    const res = await deleteRoute(String(routeToDeleteId));
-    setRouteToDeleteId(null);
-    if (res.success) {
-      dispatch(showToast({ message: "Ruta eliminada", type: "success" }));
-      refreshTable();
-    } else {
-      dispatch(showToast({ message: "Error al eliminar", type: "error" }));
+    dispatch(showLoader());
+    try {
+      const res = await deleteRoute(String(routeToDeleteId));
+      setRouteToDeleteId(null);
+      if (res.success) {
+        dispatch(showToast({ message: "Ruta eliminada", type: "success" }));
+        refreshTable();
+      } else {
+        dispatch(showToast({ message: "Error al eliminar", type: "error" }));
+      }
+    } finally {
+      dispatch(hideLoader());
     }
   };
 
@@ -105,26 +112,22 @@ const RoutesPage = () => {
       label: "Ruta / Referencia",
       type: "string",
       render: (row: any) => (
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100/50">
-            <FaRoute size={14} />
-          </div>
-          <div>
-            <p className="font-black text-slate-800 uppercase text-[12px] tracking-tight leading-none mb-1.5">
-              {row.title}
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-black text-[8px] uppercase tracking-[0.1em]">
-                Servicio Operativo
-              </span>
-            </div>
+        <div className="flex flex-col">
+          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+            {row.title}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+              {row.client?.name || "SIN CLIENTE"}
+            </span>
           </div>
         </div>
       ),
     },
     {
       key: "locations",
-      label: "Puntos de Control",
+      label: "PUNTOS DE CONTROL",
       type: "string",
       render: (row: any) => (
         <div className="flex flex-col">
@@ -132,7 +135,7 @@ const RoutesPage = () => {
             {row.recurringLocations?.length || 0} Puntos QR
           </span>
           <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
             <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
               Ubicación:{" "}
               {row.recurringLocations?.[0]?.location?.name || "Multiple"}
@@ -143,23 +146,17 @@ const RoutesPage = () => {
     },
     {
       key: "active",
-      label: "Estado",
+      label: "ESTADO",
       type: "string",
       render: (row: any) => (
-        <span
-          className={`px-3 py-1 rounded-full text-[9px] font-black tracking-[0.1em] border shadow-sm ${
-            row.active
-              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-              : "bg-slate-50 text-slate-400 border-slate-100"
-          }`}
-        >
+        <ITBadget color={row.active ? "success" : "error"} size="small">
           {row.active ? "ACTIVO" : "INACTIVO"}
-        </span>
+        </ITBadget>
       ),
     },
     {
       key: "actions",
-      label: "Acciones",
+      label: "CONTROL",
       type: "actions",
       render: (row: any) => (
         <div className="flex items-center gap-2">
@@ -191,79 +188,37 @@ const RoutesPage = () => {
         title="Gestión de Rutas"
         subtitle="Configuración de recorridos y puntos de control para rondines"
         icon={FaRoute}
-        actions={
-          <div className="flex flex-wrap items-center justify-end gap-3 w-full">
-            <div className="w-full sm:w-64">
-              <ITSearchSelect
-                className="!z-20"
-                placeholder="Filtrar por Cliente..."
-                options={(clients || []).map((c: any) => ({
-                  label: c.name,
-                  value: c.id,
-                }))}
-                value={selectedClientId}
-                onChange={(val) => {
-                  setSelectedClientId(val);
-                  setRefreshKey((prev) => prev + 1);
-                }}
-              />
-            </div>
-            <div className="w-full sm:w-64 relative">
-              <ITInput
-                placeholder="Buscar ruta..."
-                name="search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onBlur={() => {}}
-                className="!py-2.5 !h-[44px] !rounded-2xl border-slate-200 !pr-10 bg-white"
-                iconLeft={<FaRoute className="text-slate-400" />}
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
-                >
-                  <FaTimes size={14} />
-                </button>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              {(searchTerm || selectedClientId) && (
-                <ITButton
-                  onClick={() => {
-                    setSearchTerm("");
-                    setSelectedClientId("");
-                    setRefreshKey((prev) => prev + 1);
-                  }}
-                  variant="ghost"
-                  className="h-[44px] px-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-100 border border-red-100/50 transition-all"
-                  title="Limpiar Filtros"
-                >
-                  <FaFilter size={12} />
-                </ITButton>
-              )}
-              <ITButton
-                onClick={refreshTable}
-                size="small"
-                variant="ghost"
-                className="h-10 w-10 p-0 flex justify-center items-center bg-slate-50 rounded-xl hover:bg-slate-100 transition-all border border-slate-100/50"
-              >
-                <FaSync
-                  className={`text-slate-400 ${refreshKey % 2 === 0 ? "" : "rotate-180"}`}
-                />
-              </ITButton>
-
-              <ITButton
-                onClick={handleCreate}
-                color="primary"
-                className="h-10 px-6 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02]"
-              >
-                <FaPlus size={12} />
-                Nueva Ruta
-              </ITButton>
-            </div>
-          </div>
+        filter={
+          <ITSearchSelect
+            className="!z-20"
+            placeholder="Filtrar por Cliente..."
+            options={(clients || []).map((c: any) => ({
+              label: c.name,
+              value: c.id,
+            }))}
+            value={selectedClientId}
+            onChange={(val) => {
+              setSelectedClientId(val);
+              setRefreshKey((prev) => prev + 1);
+            }}
+          />
         }
+        search={{
+          value: searchTerm,
+          onChange: setSearchTerm,
+          placeholder: "BUSCAR RUTA...",
+          icon: FaRoute,
+        }}
+        showClearFilters={!!(searchTerm || selectedClientId)}
+        onClearFilters={() => {
+          setSearchTerm("");
+          setSelectedClientId("");
+          setRefreshKey((prev) => prev + 1);
+        }}
+        onRefresh={refreshTable}
+        refreshKey={refreshKey}
+        onCreate={handleCreate}
+        createLabel="Nueva Ruta"
       />
 
       <div className="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
@@ -282,34 +237,37 @@ const RoutesPage = () => {
         title="Confirmar Eliminación"
       >
         <div className="p-8 text-center">
-          <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-100">
-            <FaTrash className="text-red-500 text-3xl" />
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
+            <FaTrash size={24} />
           </div>
-          <h3 className="text-xl font-black text-slate-800 mb-2 uppercase tracking-tight">
-            ¿Eliminar Ruta?
+          <h3 className="text-lg font-bold text-slate-800 mb-2 uppercase tracking-tight">
+            ¿Eliminar Ruta Operativa?
           </h3>
-          <p className="text-slate-500 text-sm mb-8 leading-relaxed">
-            Esta acción eliminará permanentemente la ruta y todos sus puntos de
-            control asociados.
+          <p className="text-slate-500 text-sm mb-10 leading-relaxed px-4">
+            Estás por borrar una ruta y sus puntos de control.
             <br />
-            <span className="font-bold text-red-500">
-              Esta acción no se puede deshacer.
+            <span className="font-bold text-red-500/80">
+              Esta acción es permanente y no se puede deshacer.
             </span>
           </p>
-          <div className="flex gap-3">
+          <div className="flex gap-4 justify-center">
             <ITButton
-              variant="ghost"
+              variant="outlined"
+              color="secondary"
               onClick={() => setRouteToDeleteId(null)}
-              className="flex-1 h-12 rounded-2xl bg-slate-100 text-slate-600 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all"
+              className="!rounded-xl px-10"
             >
-              Cancelar
+              <span className="uppercase tracking-widest text-[10px] font-black">
+                No, Mantener
+              </span>
             </ITButton>
             <ITButton
-              variant="primary"
               onClick={confirmDelete}
-              className="flex-1 h-12 rounded-2xl bg-red-600 text-white font-black text-[11px] uppercase tracking-widest shadow-lg shadow-red-200 hover:bg-red-700 transition-all"
+              className="bg-red-500 hover:bg-red-600 text-white !rounded-xl px-10 border-none shadow-lg shadow-red-100"
             >
-              Confirmar
+              <span className="uppercase tracking-widest text-[10px] font-black">
+                Sí, Eliminar
+              </span>
             </ITButton>
           </div>
         </div>

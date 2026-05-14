@@ -1,7 +1,7 @@
-import { TResult } from "@app/core/types/TResult";
-import { ITStepper } from "@app/core/components/ITStepper";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITButton, ITInput } from "@axzydev/axzy_ui_system";
+import { showLoader, hideLoader } from "@app/core/store/loader/loader.slice";
+import { TResult } from "@app/core/types/TResult";
+import { ITButton, ITInput, ITSlideToggle } from "@axzydev/axzy_ui_system";
 import { useFormik } from "formik";
 import React, { useState } from "react";
 import {
@@ -16,11 +16,11 @@ import {
 import { useDispatch } from "react-redux";
 import * as Yup from "yup";
 import {
-  createClient,
-  updateClient,
   Client,
   ClientCreate,
   ClientUpdate,
+  createClient,
+  updateClient,
 } from "../services/ClientsService";
 
 interface Props {
@@ -63,6 +63,7 @@ export const CreateClientWizard: React.FC<Props> = ({
       appPassword: Yup.string().min(6, "Mínimo 6 caracteres"),
     }),
     onSubmit: async (values) => {
+      dispatch(showLoader());
       try {
         const payload: ClientCreate & { active: boolean } = {
           ...values,
@@ -96,6 +97,8 @@ export const CreateClientWizard: React.FC<Props> = ({
             type: "error",
           }),
         );
+      } finally {
+        dispatch(hideLoader());
       }
     },
   });
@@ -243,30 +246,7 @@ export const CreateClientWizard: React.FC<Props> = ({
             </div>
           </div>
 
-          {isEditing && (
-            <div className="group p-1 bg-slate-100 rounded-[20px] transition-all hover:bg-slate-200/50">
-              <label className="flex items-center justify-between p-4 px-6 bg-white rounded-[18px] cursor-pointer shadow-sm border border-slate-100">
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-slate-800">
-                    Estado del Cliente
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-medium">
-                    Determina si el cliente puede operar en el sistema
-                  </span>
-                </div>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    name="active"
-                    checked={formik.values.active}
-                    onChange={formik.handleChange}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 peer-checked:border-emerald-600"></div>
-                </div>
-              </label>
-            </div>
-          )}
+          {isEditing && <></>}
         </div>
       ),
     },
@@ -359,50 +339,176 @@ export const CreateClientWizard: React.FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-col h-[750px] w-full max-w-2xl mx-auto overflow-hidden bg-white">
-      <div className="flex-none py-10 bg-white z-20 border-b border-slate-50">
-        <ITStepper
-          steps={steps.map((s) => ({ label: s.label, icon: s.icon }))}
-          currentStep={currentStep}
-        />
-      </div>
+    <div className="flex flex-col w-full bg-white max-h-[85vh]">
+      <form
+        onSubmit={formik.handleSubmit}
+        className="flex flex-col h-full overflow-hidden"
+      >
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-10 space-y-12 custom-scrollbar">
+          {/* SECTION 1: IDENTITY */}
+          <section>
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                Detalles del Cliente
+              </h4>
+            </div>
 
-      <div className="flex-1 overflow-y-auto px-12 py-8 bg-[#fcfdfe]">
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {steps[currentStep].content}
+            <div className="space-y-6">
+              <ITInput
+                label="Nombre del Cliente / Razón Social"
+                name="name"
+                value={formik.values.name}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.name}
+                touched={formik.touched.name}
+                placeholder="Ej. Corporativo AXZY S.A. de C.V."
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ITInput
+                  label="RFC (Opcional)"
+                  name="rfc"
+                  value={formik.values.rfc}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.errors.rfc}
+                  touched={formik.touched.rfc}
+                  placeholder="ABC123456XYZ"
+                />
+                <ITInput
+                  label="Dirección"
+                  name="address"
+                  value={formik.values.address}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.errors.address}
+                  touched={formik.touched.address}
+                  placeholder="Calle, Número, Col..."
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION 2: CONTACT */}
+          <section>
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                Contacto Principal
+              </h4>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ITInput
+                label="Nombre de Contacto"
+                name="contactName"
+                value={formik.values.contactName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.contactName}
+                touched={formik.touched.contactName}
+                placeholder="Juan Pérez"
+              />
+              <ITInput
+                label="Teléfono Móvil (10 dígitos)"
+                name="contactPhone"
+                value={formik.values.contactPhone}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "");
+                  formik.setFieldValue("contactPhone", val.slice(0, 10));
+                }}
+                onBlur={formik.handleBlur}
+                error={formik.errors.contactPhone}
+                touched={formik.touched.contactPhone}
+                placeholder="5500000000"
+                maxLength={10}
+              />
+            </div>
+          </section>
+
+          {/* SECTION 3: ACCESS */}
+          <section>
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                Seguridad y Acceso
+              </h4>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+              <ITInput
+                label="Usuario App"
+                name="appUsername"
+                value={formik.values.appUsername}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.appUsername}
+                touched={formik.touched.appUsername}
+                placeholder="cliente_admin"
+              />
+              <ITInput
+                label={
+                  isEditing
+                    ? "Cambiar Contraseña (Opcional)"
+                    : "Contraseña de Acceso"
+                }
+                name="appPassword"
+                type="password"
+                value={formik.values.appPassword}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.errors.appPassword}
+                touched={formik.touched.appPassword}
+                placeholder="••••••••"
+              />
+            </div>
+
+            {isEditing && (
+              <div className="mt-8 flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                <div>
+                  <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                    Estado del cliente
+                  </h5>
+                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                    Activar/desactivar operatividad en el sistema
+                  </p>
+                </div>
+                <ITSlideToggle
+                  isOn={formik.values.active}
+                  onToggle={(val) => formik.setFieldValue("active", val)}
+                />
+              </div>
+            )}
+          </section>
         </div>
-      </div>
 
-      <div className="flex-none flex justify-between items-center px-12 py-8 border-t border-slate-100 bg-white z-20">
-        <ITButton
-          type="button"
-          variant="ghost"
-          onClick={
-            currentStep === 0
-              ? onCancel
-              : () => setCurrentStep((prev) => prev - 1)
-          }
-        >
-          <span className="text-slate-400 font-bold">
-            {currentStep === 0 ? "Cancelar" : "Volver"}
-          </span>
-        </ITButton>
-        <ITButton
-          type="button"
-          onClick={handleNext}
-          disabled={formik.isSubmitting}
-        >
-          <div className="flex items-center gap-2 px-4">
-            {currentStep === steps.length - 1
-              ? formik.isSubmitting
-                ? "Guardando..."
-                : isEditing
-                  ? "Actualizar Cliente"
-                  : "Crear Cliente"
-              : "Siguiente paso"}
-          </div>
-        </ITButton>
-      </div>
+        {/* Footer actions matching the premium style */}
+        <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
+          <ITButton
+            type="button"
+            variant="filled"
+            onClick={onCancel}
+            color="secondary"
+          >
+            Cancelar
+          </ITButton>
+
+          <ITButton
+            type="submit"
+            disabled={formik.isSubmitting}
+            color="primary"
+          >
+            {formik.isSubmitting
+              ? "Procesando..."
+              : isEditing
+                ? "Actualizar Información"
+                : "Confirmar Registro"}
+          </ITButton>
+        </div>
+      </form>
     </div>
   );
 };
