@@ -1,26 +1,11 @@
-import { ITMediaGrid } from "@app/core/components/ITMediaGrid";
 import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { translateScanType } from "@app/core/utils/status.utils";
-import {
-  ITBadget,
-  ITButton,
-  ITDataTable,
-  ITDialog,
-} from "@axzydev/axzy_ui_system";
+import { ITBadget, ITButton, ITDataTable } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
-import {
-  FaBook,
-  FaCalendarAlt,
-  FaCheckCircle,
-  FaEye,
-  FaFileAlt,
-  FaMapMarkerAlt,
-  FaSync,
-  FaUser,
-} from "react-icons/fa";
-import { GoogleMapComponent } from "../../../core/components/GoogleMapComponent";
+import { FaBook, FaEye, FaUser } from "react-icons/fa";
+import KardexDetailDialog from "../components/KardexDetailDialog";
 import { getPaginatedKardex, KardexEntry } from "../services/KardexService";
 
 const KardexPage = () => {
@@ -214,213 +199,12 @@ const KardexPage = () => {
           externalFilters={externalFilters}
           defaultItemsPerPage={10}
         />
+        <KardexDetailDialog
+          isOpen={!!viewingEntry}
+          onClose={() => setViewingEntry(null)}
+          entry={viewingEntry}
+        />
       </div>
-
-      <ITDialog
-        isOpen={!!viewingEntry}
-        onClose={() => setViewingEntry(null)}
-        title="Detalle del Registro"
-        className="!max-w-5xl !max-h-[90vh] !overflow-y-auto"
-      >
-        {viewingEntry && (
-          <div className="p-8 space-y-10">
-            {/* Header Detail */}
-            <div className="flex flex-col lg:flex-row justify-between gap-8 pb-8 border-b border-slate-100">
-              <div className="flex items-start gap-5">
-                <div className="w-16 h-16 rounded-[24px] bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 shadow-sm text-xl font-black uppercase">
-                  {viewingEntry.user?.name?.[0]}
-                  {viewingEntry.user?.lastName?.[0]}
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
-                      {viewingEntry.user?.name} {viewingEntry.user?.lastName}
-                    </h2>
-                    <ITBadget
-                      color={
-                        viewingEntry.scanType === "ASSIGNMENT"
-                          ? "success"
-                          : "warning"
-                      }
-                      variant="outlined"
-                      className="font-black text-[9px] tracking-widest px-3"
-                    >
-                      {translateScanType(viewingEntry.scanType)}
-                    </ITBadget>
-                  </div>
-                  <div className="flex items-center gap-4 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                    <div className="flex items-center gap-1.5">
-                      <FaCalendarAlt className="text-indigo-400" />
-                      {dayjs(viewingEntry.timestamp).format("DD MMMM, YYYY")}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <FaSync className="text-emerald-400" />
-                      {dayjs(viewingEntry.timestamp).format("HH:mm:ss [HRS]")}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 h-fit self-end lg:self-center">
-                {/* <ITButton
-                  variant="outline"
-                  className="!h-11 !px-5 !rounded-xl border-slate-100 !text-slate-400 hover:!text-rose-500 hover:!bg-rose-50"
-                  onClick={handleDeleteEntry}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? <ITLoader size="sm" /> : <FaTrash />}
-                </ITButton> */}
-                <ITButton
-                  variant="filled"
-                  onClick={() => setViewingEntry(null)}
-                  className="!h-11 !px-8 !rounded-xl shadow-xl shadow-emerald-100"
-                >
-                  CERRAR EXPEDIENTE
-                </ITButton>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-              {/* Left Column: Evidence & Notes */}
-              <div className="lg:col-span-7 space-y-10">
-                <section className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                      Evidencia Fotográfica
-                    </h4>
-                  </div>
-                  {viewingEntry.media && viewingEntry.media.length > 0 ? (
-                    <ITMediaGrid media={viewingEntry.media} gridSize={240} />
-                  ) : (
-                    <div className="py-16 bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center">
-                      <FaFileAlt className="text-slate-200 text-4xl mb-4" />
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Sin material adjunto
-                      </p>
-                    </div>
-                  )}
-                </section>
-
-                <section className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                      Reporte y Observaciones
-                    </h4>
-                  </div>
-                  <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
-                    {viewingEntry.notes ? (
-                      <div className="space-y-4">
-                        {viewingEntry.notes.split("\n").map((line, i) => {
-                          const trimmed = line.trim();
-                          if (
-                            trimmed.startsWith("[ ]") ||
-                            trimmed.startsWith("[x]")
-                          ) {
-                            const isChecked = trimmed.startsWith("[x]");
-                            return (
-                              <div
-                                key={i}
-                                className="flex items-center gap-3 p-3 bg-slate-50/50 rounded-xl border border-slate-50 transition-all hover:bg-white hover:border-slate-100"
-                              >
-                                <div
-                                  className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] ${isChecked ? "bg-emerald-500 text-white shadow-lg shadow-emerald-100" : "bg-white text-slate-200 border border-slate-100"}`}
-                                >
-                                  <FaCheckCircle />
-                                </div>
-                                <span
-                                  className={`text-[11px] font-black uppercase tracking-tight ${isChecked ? "text-slate-300 line-through" : "text-slate-600"}`}
-                                >
-                                  {trimmed.replace(/\[.\]/, "").trim()}
-                                </span>
-                              </div>
-                            );
-                          }
-                          if (trimmed.startsWith("---"))
-                            return (
-                              <div
-                                key={i}
-                                className="border-t border-slate-50 my-6"
-                              />
-                            );
-                          if (!trimmed) return <div key={i} className="h-2" />;
-                          return (
-                            <p
-                              key={i}
-                              className="text-[12px] font-bold text-slate-600 leading-relaxed pl-4 border-l-2 border-indigo-100 italic"
-                            >
-                              "{trimmed}"
-                            </p>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="text-center py-6">
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                          No se registraron notas adicionales
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </section>
-              </div>
-
-              {/* Right Column: Context & Map */}
-              <div className="lg:col-span-5 space-y-8">
-                <section className="bg-slate-50/50 p-8 rounded-[32px] border border-slate-100 space-y-8">
-                  <div>
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">
-                      Ubicación del Evento
-                    </h4>
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-100 flex-shrink-0">
-                        <FaMapMarkerAlt size={18} />
-                      </div>
-                      <div>
-                        <p className="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">
-                          {viewingEntry.location?.name}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {viewingEntry.latitude && (
-                    <div className="rounded-[24px] overflow-hidden border-4 border-white shadow-xl shadow-slate-200/50">
-                      <GoogleMapComponent
-                        lat={Number(viewingEntry.latitude)}
-                        lng={Number(viewingEntry.longitude)}
-                        height="280px"
-                        zoom={17}
-                        gestureHandling="cooperative"
-                      />
-                    </div>
-                  )}
-
-                  <div className="pt-6 border-t border-slate-100 grid grid-cols-2 gap-4">
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                        Clasificación
-                      </p>
-                      <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight">
-                        {translateScanType(viewingEntry.scanType)}
-                      </p>
-                    </div>
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100">
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                        ID Transacción
-                      </p>
-                      <p className="text-[10px] font-black text-slate-700 uppercase tracking-tight truncate">
-                        #{viewingEntry.id.slice(0, 8)}
-                      </p>
-                    </div>
-                  </div>
-                </section>
-              </div>
-            </div>
-          </div>
-        )}
-      </ITDialog>
     </div>
   );
 };

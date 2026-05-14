@@ -57,10 +57,15 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") nextSlide();
       if (e.key === "ArrowLeft") prevSlide();
-      if (e.key === "Escape" && onClose) onClose();
+      if (e.key === "Escape" && onClose) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        onClose();
+      }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, [nextSlide, prevSlide, onClose]);
 
   const toggleFullscreen = () => {
@@ -83,32 +88,47 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
     <div
       ref={containerRef}
       className={`
-        flex flex-col w-full mx-auto overflow-hidden bg-slate-950 transition-all duration-500
-        ${isFullscreen ? "h-screen fixed inset-0 z-[9999]" : "h-auto max-h-[85vh] rounded-[2.5rem] shadow-2xl border border-white/5"}
+        flex flex-col w-full h-full mx-auto overflow-hidden bg-white transition-all duration-500
+        pointer-events-auto
+        fixed inset-0
+        ${isFullscreen ? "fixed inset-0 z-[99999]" : "relative"}
       `}
+      onClick={(e) => e.stopPropagation()}
     >
-      {/* Header con botón de cerrar */}
+      {/* Premium Glass Header */}
       <div
-        className="absolute top-0 inset-x-0 z-20 p-8 flex justify-between items-start pointer-events-none"
+        className="absolute top-0 inset-x-0 z-20 p-10 flex justify-between items-start pointer-events-none bg-gradient-to-b from-white/90 via-white/40 to-transparent"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="pointer-events-auto">
-          <h4 className="text-white text-lg font-black uppercase tracking-tight drop-shadow-lg">
-            {title}
-          </h4>
-          <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.2em] mt-1">
-            Evidencia {currentIndex + 1} de {media.length}
-          </p>
+        <div className="pointer-events-auto flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <div className="w-1.5 h-4 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)]" />
+            <h4 className="text-slate-800 text-xl font-black uppercase tracking-tight">
+              {title}
+            </h4>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+              Evidencia {currentIndex + 1} de {media.length}
+            </span>
+            {currentItem.type === "VIDEO" && (
+              <span className="text-rose-500 text-[10px] font-black uppercase tracking-[0.2em] bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100 animate-pulse">
+                Video Operativo
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex gap-3 pointer-events-auto">
+
+        <div className="flex gap-4 pointer-events-auto">
           <button
             onClick={(e) => {
               e.stopPropagation();
               toggleFullscreen();
             }}
-            className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 text-white flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 transition-all shadow-xl"
+            title={isFullscreen ? "Contraer" : "Expandir"}
+            className="w-14 h-14 rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 hover:text-white hover:shadow-[0_10px_20px_rgba(16,185,129,0.2)] transition-all active:scale-90 shadow-sm"
           >
-            {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
+            {isFullscreen ? <FaCompress size={18} /> : <FaExpand size={18} />}
           </button>
           {onClose && (
             <button
@@ -116,20 +136,27 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
                 e.stopPropagation();
                 onClose();
               }}
-              className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 text-white flex items-center justify-center hover:bg-rose-500 hover:border-rose-400 transition-all shadow-xl"
+              title="Cerrar Galería"
+              className="w-14 h-14 rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-rose-500 hover:border-rose-400 hover:text-white hover:shadow-[0_10px_20px_rgba(244,63,94,0.2)] transition-all active:scale-90 shadow-sm"
             >
-              <FaTimes size={16} />
+              <FaTimes size={18} />
             </button>
           )}
         </div>
       </div>
 
-      {/* Main Content - Click en la imagen/video para cerrar */}
+      {/* Main Viewport */}
       <div
-        className="flex-1 relative flex items-center justify-center p-12 overflow-hidden bg-black/40 cursor-pointer"
-        onClick={onClose}
+        className="flex-1 relative flex items-center justify-center p-10 lg:p-20 overflow-hidden bg-slate-50/50"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose?.();
+        }}
       >
-        <div onClick={(e) => e.stopPropagation()}>
+        <div
+          className="relative group/view w-full h-full flex items-center justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
           {currentItem.type === "VIDEO" ||
           currentItem.url.toLowerCase().match(/\.(mp4|webm|mov|ogg|m4v)$/i) ? (
             <video
@@ -137,52 +164,52 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
               src={currentItem.url}
               controls
               autoPlay
-              className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
+              className="max-w-full max-h-full object-contain rounded-3xl shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] border border-slate-200/50 animate-in fade-in zoom-in-95 duration-700 bg-black"
               onClick={(e) => e.stopPropagation()}
             />
           ) : (
             <img
               src={currentItem.url}
               alt={currentItem.title || `Media ${currentIndex}`}
-              className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl select-none"
+              className="max-w-full max-h-full object-contain rounded-3xl shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] border border-slate-200/50 select-none animate-in fade-in zoom-in-95 duration-700"
               onClick={(e) => e.stopPropagation()}
             />
           )}
-        </div>
 
-        {/* Nav Arrows */}
-        {media.length > 1 && (
-          <>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                prevSlide();
-              }}
-              className="absolute left-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[1.5rem] bg-white/5 backdrop-blur-md border border-white/10 text-white flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 transition-all z-10 group"
-            >
-              <FaChevronLeft
-                size={20}
-                className="group-hover:-translate-x-1 transition-transform"
-              />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                nextSlide();
-              }}
-              className="absolute right-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-[1.5rem] bg-white/5 backdrop-blur-md border border-white/10 text-white flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 transition-all z-10 group"
-            >
-              <FaChevronRight
-                size={20}
-                className="group-hover:translate-x-1 transition-transform"
-              />
-            </button>
-          </>
-        )}
+          {/* Premium Nav Controls */}
+          {media.length > 1 && (
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-10 pointer-events-none opacity-0 group-hover/view:opacity-100 transition-opacity duration-300">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevSlide();
+                }}
+                className="pointer-events-auto w-16 h-16 rounded-[2rem] bg-white shadow-xl border border-slate-100 text-slate-400 flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 hover:text-white hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all group/btn"
+              >
+                <FaChevronLeft
+                  size={20}
+                  className="group-hover/btn:-translate-x-1 transition-transform"
+                />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextSlide();
+                }}
+                className="pointer-events-auto w-16 h-16 rounded-[2rem] bg-white shadow-xl border border-slate-100 text-slate-400 flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 hover:text-white hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all group/btn"
+              >
+                <FaChevronRight
+                  size={20}
+                  className="group-hover/btn:translate-x-1 transition-transform"
+                />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Thumbs Bar */}
-      <div className="h-24 bg-black/60 backdrop-blur-2xl border-t border-white/5 p-4 flex items-center justify-center gap-4 shrink-0 overflow-x-auto no-scrollbar">
+      {/* Thumbnails Navigator */}
+      <div className="h-28 bg-white border-t border-slate-100 px-8 flex items-center justify-center gap-4 shrink-0 overflow-x-auto no-scrollbar shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
         {media.map((item, idx) => (
           <button
             key={idx}
@@ -191,17 +218,23 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
               setCurrentIndex(idx);
             }}
             className={`
-              relative w-14 h-14 rounded-xl overflow-hidden border-2 transition-all duration-300 shrink-0
+              relative w-16 h-16 rounded-[1.25rem] overflow-hidden border-2 transition-all duration-500 shrink-0
               ${
                 currentIndex === idx
-                  ? "border-emerald-500 scale-110 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
-                  : "border-white/10 opacity-30 hover:opacity-100 hover:scale-105"
+                  ? "border-emerald-500 scale-110 shadow-[0_10px_20px_rgba(16,185,129,0.2)] ring-4 ring-emerald-500/5"
+                  : "border-slate-100 opacity-50 hover:opacity-100 hover:border-slate-200 hover:scale-105"
               }
             `}
           >
             {item.type === "VIDEO" ? (
-              <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                <FaPlay size={10} className="text-white" />
+              <div className="w-full h-full bg-slate-900 flex items-center justify-center relative">
+                <video
+                  src={item.url}
+                  className="w-full h-full object-cover opacity-50"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <FaPlay size={12} className="text-white drop-shadow-md" />
+                </div>
               </div>
             ) : (
               <img
@@ -209,6 +242,10 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
                 className="w-full h-full object-cover"
                 alt=""
               />
+            )}
+
+            {currentIndex === idx && (
+              <div className="absolute inset-0 bg-emerald-500/5 pointer-events-none" />
             )}
           </button>
         ))}

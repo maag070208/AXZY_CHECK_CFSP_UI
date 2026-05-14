@@ -10,8 +10,6 @@ import {
   ITDialog,
   ITLoader,
 } from "@axzydev/axzy_ui_system";
-import { GoogleMapComponent } from "@core/components/GoogleMapComponent";
-import { ITMediaGrid } from "@core/components/ITMediaGrid";
 import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -19,10 +17,10 @@ import {
   FaCheckCircle,
   FaExclamationTriangle,
   FaEye,
-  FaFileAlt,
   FaTrash,
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
+import IncidentDetailDialog from "../components/IncidentDetailDialog";
 import {
   deleteIncident,
   getPaginatedIncidents,
@@ -261,260 +259,16 @@ const IncidentsPage = () => {
         />
       </div>
 
-      {/* DETAIL MODAL - Versión Optimizada */}
-      <ITDialog
+      {/* DETAIL MODAL - Versión Modularizada */}
+      <IncidentDetailDialog
         isOpen={!!viewingIncident}
         onClose={() => setViewingIncident(null)}
-        className="!max-w-[95vw] md:!max-w-[90vw] lg:!max-w-[85vw] xl:!max-w-[80vw] !w-full"
-      >
-        {viewingIncident && (
-          <div className="flex flex-col h-[90vh] w-full">
-            {/* Contenido con scroll solo cuando es necesario */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 custom-scrollbar">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-                {/* Columna Principal - Contenido */}
-                <div className="lg:col-span-8 space-y-6">
-                  {/* Tarjeta de Contenido */}
-                  <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
-                    {/* Header con badges */}
-                    <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <ITBadget
-                          color={
-                            viewingIncident.status === "ATTENDED"
-                              ? "success"
-                              : "danger"
-                          }
-                          label={
-                            viewingIncident.status === "ATTENDED"
-                              ? "ATENDIDA"
-                              : "PENDIENTE"
-                          }
-                        />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          #{viewingIncident.id?.slice(0, 8)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                          Cliente:
-                        </span>
-                        <span className="text-[10px] font-black text-slate-700 uppercase">
-                          {viewingIncident.client?.name}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Título */}
-                    <h3 className="text-xl md:text-2xl lg:text-3xl font-black text-slate-800 uppercase tracking-tight mb-4 break-words">
-                      {viewingIncident.title}
-                    </h3>
-
-                    {/* Categoría y Tipo */}
-                    <div className="flex flex-wrap gap-6 mb-6">
-                      <div className="flex flex-col">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                          Categoría
-                        </span>
-                        <span className="text-[11px] font-black text-slate-600 uppercase">
-                          {viewingIncident.category?.name}
-                        </span>
-                      </div>
-                      <div className="w-px h-8 bg-slate-100 hidden sm:block" />
-                      <div className="flex flex-col">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                          Tipo
-                        </span>
-                        <span className="text-[11px] font-black text-slate-600 uppercase">
-                          {viewingIncident.type?.name}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Descripción */}
-                    <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
-                      <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">
-                        {viewingIncident.description ||
-                          "Sin descripción detallada disponible."}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Multimedia */}
-                  <div>
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
-                      Evidencia Multimedia
-                    </h4>
-                    {viewingIncident.media &&
-                    viewingIncident.media.length > 0 ? (
-                      <ITMediaGrid
-                        media={viewingIncident.media}
-                        title={viewingIncident.title}
-                        gridSize={280}
-                      />
-                    ) : (
-                      <div className="py-12 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-300 bg-white">
-                        <FaFileAlt size={32} className="mb-3 opacity-10" />
-                        <p className="font-black text-[10px] uppercase tracking-widest">
-                          Sin archivos adjuntos
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Mapa */}
-                  {viewingIncident.latitude && viewingIncident.longitude && (
-                    <div>
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
-                        Localización del Reporte
-                      </h4>
-                      <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-md">
-                        <GoogleMapComponent
-                          lat={viewingIncident.latitude}
-                          lng={viewingIncident.longitude}
-                          height="300px"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Columna Lateral - Info y Acciones */}
-                <div className="lg:col-span-4 space-y-6">
-                  {/* Guardia que reporta */}
-                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-6">
-                      Reportado Por
-                    </h5>
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-base font-black border border-emerald-100 shrink-0">
-                        {viewingIncident.guard?.name?.[0]}
-                        {viewingIncident.guard?.lastName?.[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-black text-slate-800 uppercase truncate">
-                          {viewingIncident.guard?.name}{" "}
-                          {viewingIncident.guard?.lastName}
-                        </p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5 truncate">
-                          @{viewingIncident.guard?.username}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 pt-6 border-t border-slate-50 space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                          Fecha Reporte
-                        </span>
-                        <span className="text-[11px] font-black text-slate-700 uppercase">
-                          {dayjs(viewingIncident.createdAt).format(
-                            "DD MMM YYYY",
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                          Hora Reporte
-                        </span>
-                        <span className="text-[11px] font-black text-slate-700 uppercase">
-                          {dayjs(viewingIncident.createdAt).format("HH:mm")} HRS
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Información de Resolución */}
-                  {viewingIncident.status === "ATTENDED" &&
-                    viewingIncident.resolvedBy && (
-                      <div className="bg-emerald-600 p-6 rounded-2xl text-white shadow-xl">
-                        <h5 className="text-[9px] font-black text-emerald-200 uppercase tracking-widest mb-6">
-                          Resolución
-                        </h5>
-                        <div className="flex items-center gap-3 mb-6">
-                          <FaCheckCircle
-                            className="text-emerald-300"
-                            size={18}
-                          />
-                          <p className="text-xs font-black uppercase tracking-tight">
-                            Incidencia Atendida
-                          </p>
-                        </div>
-                        <div className="space-y-4 text-xs">
-                          <div>
-                            <p className="opacity-70 mb-1 uppercase tracking-widest text-[8px]">
-                              Atendido por:
-                            </p>
-                            <p className="font-black uppercase text-xs">
-                              {viewingIncident.resolvedBy.name}{" "}
-                              {viewingIncident.resolvedBy.lastName}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="opacity-70 mb-1 uppercase tracking-widest text-[8px]">
-                              Fecha resolución:
-                            </p>
-                            <p className="font-black uppercase text-xs">
-                              {dayjs(viewingIncident.resolvedAt).format(
-                                "DD MMM YYYY HH:mm",
-                              )}{" "}
-                              HRS
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                  {/* Acción Pendiente */}
-                  {viewingIncident.status === "PENDING" && !isClient && (
-                    <div className="bg-rose-50 p-6 rounded-2xl border border-rose-100">
-                      <h5 className="text-[9px] font-black text-rose-500 uppercase tracking-widest mb-3">
-                        Acción Requerida
-                      </h5>
-                      <p className="text-[10px] text-rose-700 font-bold leading-relaxed mb-6 uppercase tracking-tight">
-                        Este reporte requiere validación y resolución inmediata.
-                      </p>
-                      <ITButton
-                        onClick={() => handleResolve(viewingIncident.id as any)}
-                        variant="filled"
-                        color="success"
-                        className="w-full"
-                      >
-                        <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase">
-                          <FaCheck size={12} /> Resolver Ahora
-                        </div>
-                      </ITButton>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Footer - Siempre visible */}
-            <div className="p-4 md:p-6 bg-white border-t border-slate-100 flex flex-col-reverse sm:flex-row justify-end gap-3 shrink-0">
-              <ITButton
-                variant="ghost"
-                className="!text-slate-400 font-black text-[10px] uppercase tracking-widest px-6"
-                onClick={() => setViewingIncident(null)}
-              >
-                Cerrar
-              </ITButton>
-              {isAdmin && (
-                <ITButton
-                  variant="outline"
-                  color="danger"
-                  className="!rounded-xl !border-rose-100 !bg-rose-50/50 !text-rose-500 hover:!bg-rose-50 px-6"
-                  onClick={() => setIncidentToDelete(viewingIncident)}
-                >
-                  <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase">
-                    <FaTrash size={12} /> Eliminar
-                  </div>
-                </ITButton>
-              )}
-            </div>
-          </div>
-        )}
-      </ITDialog>
+        incident={viewingIncident}
+        onResolve={handleResolve}
+        onDelete={setIncidentToDelete}
+        isAdmin={isAdmin}
+        isClient={isClient}
+      />
       {/* Confirmation Dialogs */}
       <ITDialog
         isOpen={!!incidentToResolveId}
