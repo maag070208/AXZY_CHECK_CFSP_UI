@@ -9,8 +9,9 @@ import {
   ITDialog,
   ITSearchSelect,
 } from "@axzydev/axzy_ui_system";
+import { post } from "@app/core/axios/axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaBuilding, FaEdit, FaRoute, FaTrash } from "react-icons/fa";
+import { FaBuilding, FaEdit, FaPrint, FaRoute, FaTrash } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { deleteRoute, getPaginatedRoutes } from "../services/RoutesService";
@@ -69,6 +70,43 @@ const RoutesPage = () => {
 
   const handleEdit = (route: any) => {
     navigate(`/routes/edit/${route.id}`);
+  };
+
+  const handlePrintRouteQRs = async (row: any) => {
+    const ids = row.recurringLocations
+      ?.map((rl: any) => rl.locationId || rl.location?.id)
+      .filter(Boolean) || [];
+
+    if (ids.length === 0) {
+      dispatch(
+        showToast({
+          message: "Esta ruta no tiene puntos de control para imprimir",
+          type: "warning",
+        }),
+      );
+      return;
+    }
+
+    dispatch(showLoader());
+    try {
+      const res = await post<any>(
+        "/locations/print-qrs",
+        { ids },
+        { responseType: "blob" },
+      );
+      const blob = new Blob([res as any], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      dispatch(
+        showToast({ message: "PDF generado con éxito", type: "success" }),
+      );
+    } catch (e) {
+      dispatch(
+        showToast({ message: "Error al generar el PDF de QRs", type: "error" }),
+      );
+    } finally {
+      dispatch(hideLoader());
+    }
   };
 
   const handleCreate = () => {
@@ -150,6 +188,14 @@ const RoutesPage = () => {
       type: "actions",
       render: (row: any) => (
         <div className="flex items-center gap-2">
+          <ITButton
+            onClick={() => handlePrintRouteQRs(row)}
+            variant="outlined"
+            title="Imprimir QRs"
+            size="small"
+          >
+            <FaPrint size={14} />
+          </ITButton>
           <ITButton
             onClick={() => handleEdit(row)}
             variant="outlined"

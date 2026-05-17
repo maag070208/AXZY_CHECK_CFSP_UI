@@ -1,10 +1,6 @@
 import { IconType } from "react-icons";
 import { FaFilter, FaPlus, FaSync, FaTimes } from "react-icons/fa";
-import {
-  ITButton,
-  ITDatePicker,
-  ITInput,
-} from "@axzydev/axzy_ui_system";
+import { ITButton, ITDatePicker, ITInput } from "@axzydev/axzy_ui_system";
 
 interface ModuleHeaderProps {
   title: string;
@@ -55,17 +51,15 @@ export const ModuleHeader = ({
     <div className="flex flex-col gap-6 mb-8">
       {/* Contenedor Superior: Icono + Títulos */}
       <div className="flex items-center gap-4">
-        <div className="p-3.5 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 text-emerald-600 shrink-0">
+        <div className="p-3.5 bg-emerald-50/30 rounded-2xl shadow-sm border border-emerald-100 text-emerald-600 shrink-0">
           <Icon size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
+          <h1 className="text-2xl font-bold text-slate-800 racking-tight">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
-              {subtitle}
-            </p>
+            <p className="text-slate-500 text-sm mt-0.5">{subtitle}</p>
           )}
         </div>
       </div>
@@ -125,7 +119,9 @@ export const ModuleHeader = ({
             )}
 
             {/* 4. Triple Filtro (extraFilter) */}
-            {extraFilter && <div className="w-full md:w-auto">{extraFilter}</div>}
+            {extraFilter && (
+              <div className="w-full md:w-auto">{extraFilter}</div>
+            )}
 
             {/* 5. Refrescar */}
             {onRefresh && (

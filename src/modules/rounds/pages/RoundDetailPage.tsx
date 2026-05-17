@@ -18,7 +18,7 @@ import {
   FaStopwatch,
   FaUserShield,
 } from "react-icons/fa";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { GoogleMapComponent } from "../../../core/components/GoogleMapComponent";
 import { getRoutesList } from "../../routes/services/RoutesService";
@@ -30,6 +30,9 @@ const RoundDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const user = useSelector((state: any) => state.auth);
+  const isResident = user?.role === "RESDN";
 
   const [data, setData] = useState<IRoundDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -335,7 +338,7 @@ const RoundDetailPage = () => {
 
         {/* Dash Cards */}
         {metrics && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className={`grid grid-cols-1 ${isResident ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-6`}>
             <MetricCard
               icon={<FaClock />}
               color="indigo"
@@ -350,13 +353,15 @@ const RoundDetailPage = () => {
               value={`${metrics.totalScans} / ${metrics.expectedScans || metrics.totalRawScans}`}
               subValue="Progreso de la ruta"
             />
-            <MetricCard
-              icon={<FaStopwatch />}
-              color="amber"
-              label="Promedio por Punto"
-              value={metrics.avgTime}
-              subValue="Ritmo operativo detectado"
-            />
+            {!isResident && (
+              <MetricCard
+                icon={<FaStopwatch />}
+                color="amber"
+                label="Promedio por Punto"
+                value={metrics.avgTime}
+                subValue="Ritmo operativo detectado"
+              />
+            )}
           </div>
         )}
 
@@ -400,7 +405,7 @@ const RoundDetailPage = () => {
                             <div className="absolute inset-0 bg-emerald-500/20" />
                           )}
                         </div>
-                        {node.timeDiff && node.timeDiff !== "--" && (
+                        {!isResident && node.timeDiff && node.timeDiff !== "--" && (
                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2 bg-white px-2 py-0.5 rounded-lg border border-slate-100 shadow-sm">
                             {node.timeDiff}
                           </span>
