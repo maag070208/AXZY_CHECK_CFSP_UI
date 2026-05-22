@@ -10,6 +10,7 @@ import {
   ITInput,
   ITLoader,
   ITTimePicker,
+  ITSlideToggle,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useMemo, useState } from "react";
 import { FaClock, FaEdit, FaTrash, FaUser } from "react-icons/fa";
@@ -28,7 +29,7 @@ const SchedulesPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
-  const [scheduleToDeleteId, setScheduleToDeleteId] = useState<number | null>(
+  const [scheduleToDeleteId, setScheduleToDeleteId] = useState<string | null>(
     null,
   );
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,6 +43,7 @@ const SchedulesPage = () => {
   const [name, setName] = useState("");
   const [startTime, setStartTime] = useState("07:00");
   const [endTime, setEndTime] = useState("15:00");
+  const [active, setActive] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   const externalFilters = useMemo(() => {
@@ -65,11 +67,13 @@ const SchedulesPage = () => {
       setName(schedule.name);
       setStartTime(schedule.startTime);
       setEndTime(schedule.endTime);
+      setActive(schedule.active);
     } else {
       setEditingSchedule(null);
       setName("");
       setStartTime("07:00");
       setEndTime("15:00");
+      setActive(true);
     }
     setIsModalOpen(true);
   };
@@ -80,7 +84,7 @@ const SchedulesPage = () => {
     setIsSaving(true);
     dispatch(showLoader());
     try {
-      const data = { name, startTime, endTime };
+      const data = { name, startTime, endTime, active };
       const res: any = editingSchedule
         ? await updateSchedule(editingSchedule.id, data)
         : await createSchedule(data);
@@ -338,6 +342,23 @@ const SchedulesPage = () => {
                     onBlur={() => {}}
                   />
                 </div>
+
+                {editingSchedule && (
+                  <div className="mt-8 flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div>
+                      <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                        Estado del registro
+                      </h5>
+                      <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                        Activar/desactivar operatividad en el sistema
+                      </p>
+                    </div>
+                    <ITSlideToggle
+                      isOn={active}
+                      onToggle={(val) => setActive(val)}
+                    />
+                  </div>
+                )}
               </div>
             </section>
           </div>

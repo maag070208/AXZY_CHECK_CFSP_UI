@@ -199,38 +199,40 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
         title="Registrar Nueva Ubicación"
       >
         <div className="p-2">
-          <LocationForm
-            initialData={{
-              clientId: String(clientId),
-              aisle: "",
-              spot: "",
-              number: "",
-              name: "",
-            }}
-            onSubmit={async (data, keepOpen) => {
-              const res = await createLocation(data);
-              if (res.success) {
-                if (!keepOpen) {
-                  setIsCreateModalOpen(false);
+          {isCreateModalOpen && (
+            <LocationForm
+              initialData={{
+                clientId: String(clientId),
+                aisle: "",
+                spot: "",
+                number: "",
+                name: "",
+              }}
+              onSubmit={async (data, keepOpen) => {
+                const res = await createLocation(data);
+                if (res.success) {
+                  if (!keepOpen) {
+                    setIsCreateModalOpen(false);
+                  }
+                  setRefreshKey((prev) => prev + 1);
+                  dispatch(
+                    showToast({
+                      message: "Ubicación creada con éxito",
+                      type: "success",
+                    }),
+                  );
+                } else {
+                  dispatch(
+                    showToast({
+                      message: res.messages?.[0] || "Error al crear",
+                      type: "error",
+                    }),
+                  );
                 }
-                setRefreshKey((prev) => prev + 1);
-                dispatch(
-                  showToast({
-                    message: "Ubicación creada con éxito",
-                    type: "success",
-                  }),
-                );
-              } else {
-                dispatch(
-                  showToast({
-                    message: res.messages?.[0] || "Error al crear",
-                    type: "error",
-                  }),
-                );
-              }
-            }}
-            onCancel={() => setIsCreateModalOpen(false)}
-          />
+              }}
+              onCancel={() => setIsCreateModalOpen(false)}
+            />
+          )}
         </div>
       </ITDialog>
 

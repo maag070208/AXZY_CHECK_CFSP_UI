@@ -379,21 +379,23 @@ const LocationsPage = () => {
         onClose={() => setIsModalOpen(false)}
         title="Registro de Ubicación"
       >
-        <LocationForm
-          initialData={
-            selectedClientId
-              ? {
-                  clientId: selectedClientId as string,
-                  aisle: "",
-                  spot: "",
-                  number: "",
-                  name: "",
-                }
-              : undefined
-          }
-          onSubmit={handleCreate}
-          onCancel={() => setIsModalOpen(false)}
-        />
+        {isModalOpen && (
+          <LocationForm
+            initialData={
+              selectedClientId
+                ? {
+                    clientId: selectedClientId as string,
+                    aisle: "",
+                    spot: "",
+                    number: "",
+                    name: "",
+                  }
+                : undefined
+            }
+            onSubmit={handleCreate}
+            onCancel={() => setIsModalOpen(false)}
+          />
+        )}
       </ITDialog>
 
       <ITDialog

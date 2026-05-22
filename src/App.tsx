@@ -24,6 +24,7 @@ import GuardsPage from "./modules/guards/pages/GuardsPage";
 import RoutesPage from "./modules/routes/pages/RoutesPage";
 import CreateRoutePage from "./modules/routes/pages/CreateRoutePage";
 import SettingsPage from "@app/modules/settings/pages/SettingsPage";
+import ReportsPage from "./modules/reports/pages/ReportsPage";
 
 
 function App() {
@@ -97,6 +98,7 @@ function App() {
           <Route path="/rounds" element={<RoundsPage />} />
           <Route path="/rounds/:id" element={<RoundDetailPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
 
         </Route>
         <Route path="*" element={<Navigate to="/home" />} />

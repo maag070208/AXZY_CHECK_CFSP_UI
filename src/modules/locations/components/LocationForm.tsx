@@ -77,6 +77,15 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
   });
 
   useEffect(() => {
+    if (initialData?.clientId) {
+      formik.setFieldValue("clientId", initialData.clientId);
+    }
+    if (initialData?.zoneId) {
+      formik.setFieldValue("zoneId", initialData.zoneId);
+    }
+  }, [initialData?.clientId, initialData?.zoneId]);
+
+  useEffect(() => {
     if (formik.values.clientId) {
       setLoadingZones(true);
       getZonesByClient(String(formik.values.clientId))
@@ -102,6 +111,7 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <ITSearchSelect
+                  key={`${formik.values.clientId}-${clients.length}`}
                   label="Cliente Responsable"
                   placeholder={
                     loadingClients

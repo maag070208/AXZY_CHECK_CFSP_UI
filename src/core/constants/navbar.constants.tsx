@@ -12,7 +12,8 @@ import {
   FaRoute,
   FaSearchLocation,
   FaUserShield,
-  FaWrench
+  FaWrench,
+  FaChartBar
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -103,6 +104,13 @@ export const useNavigationItems = (): any[] => {
        action: () => navigate("/schedules"),
       isActive: isRouteActive("/schedules"),
       icon: <FaListAlt  />,
+    },
+    {
+      id: 'reports',
+      label: 'Reportes',
+       action: () => navigate("/reports"),
+      isActive: isRouteActive("/reports"),
+      icon: <FaChartBar  />,
     }
   ];
 
