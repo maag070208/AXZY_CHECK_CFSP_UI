@@ -27,7 +27,7 @@ const ReportsPage = () => {
 
   const [aperturaCierreOpen, setAperturaCierreOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClientId, setSelectedClientId] = useState("");
+  const [selectedClientId] = useState("");
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [configToEdit, setConfigToEdit] = useState<any>(null);
 
@@ -309,7 +309,7 @@ const ReportsPage = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200">
           <ITDataTable
             key={refreshKey}
-            columns={columns}
+            columns={columns as any}
             fetchData={fetchData}
           />
         </div>

@@ -3,15 +3,15 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package definition
-COPY package.json yarn.lock ./
+# Copy package definition & optional local tarballs
+COPY package.json yarn.lock axzy_ui_system-*.tg[z] ./
 
-# Copy local dependencies
-# Note: Ensure this version matches your package.json exactly
-COPY axzy_ui_system-v1.0.155.tgz ./
+# Configure yarn cache path
+RUN yarn config set cache-folder /root/.yarn-cache
 
-# Install dependencies
-RUN yarn install --frozen-lockfile
+# Install dependencies using BuildKit cache mount for faster builds
+RUN --mount=type=cache,target=/root/.yarn-cache \
+    yarn install --frozen-lockfile --prefer-offline
 
 # Copy source code
 COPY . .

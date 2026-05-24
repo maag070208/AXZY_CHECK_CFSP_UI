@@ -1,14 +1,13 @@
-import React from "react";
-import { render } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
-import { Provider } from "react-redux";
-import store from "../store/store";
 import { ITThemeProvider } from "@axzydev/axzy_ui_system";
-import { theme } from "@app/theme/theme";
+import { render } from "@testing-library/react";
+import React from "react";
+import { Provider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
+import store from "../store/store";
 
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   return (
-    <ITThemeProvider theme={theme}>
+    <ITThemeProvider>
       <Provider store={store}>
         <BrowserRouter>{children}</BrowserRouter>
       </Provider>

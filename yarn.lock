@@ -44,10 +44,10 @@
   resolved "https://registry.yarnpkg.com/@asamuzakjp/nwsapi/-/nwsapi-2.3.9.tgz#ad5549322dfe9d153d4b4dd6f7ff2ae234b06e24"
   integrity sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==
 
-"@axzydev/axzy_ui_system@1.0.167":
-  version "1.0.167"
-  resolved "https://registry.npmjs.org/@axzydev/axzy_ui_system/-/axzy_ui_system-1.0.167.tgz"
-  integrity sha512-KJahHGWqUObk5zDILuC8N+PUGWqhPK/p4JIamJ4fD8UBLEg7V6P3vKHtxdYoqEwdxi3BPqvbuUYuXTNsZ1ViiA==
+"@axzydev/axzy_ui_system@1.0.169":
+  version "1.0.169"
+  resolved "https://registry.yarnpkg.com/@axzydev/axzy_ui_system/-/axzy_ui_system-1.0.169.tgz#98e89ea7b169bcdbeb23bc6a8be515a4651f457f"
+  integrity sha512-TMyyzn2Y6NPS9nX5zvVhJRzyZyYjz3Q5NfYJDn8IXrPQDb+8nAk8SCCMdi/mErzTmI97dlQ/frysOBXXANWGbg==
   dependencies:
     autoprefixer "^10.4.20"
     clsx "^2.1.1"

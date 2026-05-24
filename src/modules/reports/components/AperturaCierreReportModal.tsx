@@ -59,7 +59,7 @@ export const AperturaCierreReportModal = ({
     getRecurringConfigurationsList()
       .then((res) => {
         if (res.success && res.data) {
-          setConfigurations(res.data);
+          setConfigurations(res.data as any);
         }
       })
       .finally(() => setLoadingConfig(false));
@@ -195,7 +195,6 @@ export const AperturaCierreReportModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Configurar Reporte: Apertura / Cierre"
-      size="lg"
     >
       <div className="flex flex-col bg-white overflow-hidden max-h-[85vh]">
         <div className="p-10 space-y-10 overflow-y-auto flex-1">
@@ -275,7 +274,7 @@ export const AperturaCierreReportModal = ({
                 }))}
                 value={selectedClientId}
                 onChange={(val) => {
-                  setSelectedClientId(val);
+                  setSelectedClientId(val as any);
                   setSelectedConfigIds([]); // Reset selection when client changes
                 }}
               />
