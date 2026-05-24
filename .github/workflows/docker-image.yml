@@ -44,6 +44,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Extract version from package.json
+        id: pkg_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -64,7 +70,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' && env.DOCKER_USERNAME != '' }}
-          tags: maag070208/checkapp_ui:latest,maag070208/checkapp_ui:${{ github.sha }}
+          tags: maag070208/checkapp_ui:latest,maag070208/checkapp_ui:${{ steps.pkg_version.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
         env:
