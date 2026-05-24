@@ -25,6 +25,8 @@ export default tseslint.config(
       ],
       // Configuración para permitir el uso de `any`
       '@typescript-eslint/no-explicit-any': 'off', // Desactiva la regla
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'warn',
     },
   },
 );
