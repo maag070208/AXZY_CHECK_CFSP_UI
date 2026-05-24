@@ -2,11 +2,11 @@ name: WEB CI/CD
 
 on:
   push:
-    branches: [main, master, dev]
+    branches: [main, master, develop]
     paths-ignore:
       - "README.md"
   pull_request:
-    branches: [main, master, dev]
+    branches: [main, master, develop]
     paths-ignore:
       - "README.md"
 
@@ -65,7 +65,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' && env.DOCKER_USERNAME != '' }}
-          tags: devmaag070208/checkapp_ui:latest,devmaag070208/checkapp_ui:${{ github.sha }}
+          tags: maag070208/checkapp_ui:latest,maag070208/checkapp_ui:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
         env:
