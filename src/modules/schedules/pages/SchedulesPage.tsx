@@ -1,4 +1,3 @@
-import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { showToast } from "@app/core/store/toast/toast.slice";
@@ -11,6 +10,7 @@ import {
   ITLoader,
   ITTimePicker,
   ITSlideToggle,
+  ITTripleFilter,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useMemo, useState } from "react";
 import { FaClock, FaEdit, FaTrash, FaUser } from "react-icons/fa";
@@ -261,7 +261,7 @@ const SchedulesPage = () => {
   );
 
   return (
-    <div className="p-6 bg-[#F8FAFC] min-h-screen font-sans">
+    <div className="p-6   min-h-screen font-sans">
       <ModuleHeader
         title="Directorio de Horarios"
         subtitle="Gestión de turnos operativos y controles de asistencia"

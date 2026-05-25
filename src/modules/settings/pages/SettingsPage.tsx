@@ -1,4 +1,3 @@
-import { ITTabs, ITab } from "@app/core/components/ITTabs";
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
@@ -8,6 +7,8 @@ import {
   ITDataTable,
   ITDialog,
   ITInput,
+  ITTabs,
+  ITTabItem
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useState } from "react";
 import { CirclePicker } from "react-color";
@@ -307,11 +308,11 @@ const SettingsPage = () => {
   }, [searchCat, searchType, searchConfig]);
 
   // Tab configuration
-  const tabs: ITab[] = [
+  const tabs: ITTabItem[] = [
     {
       id: "CATEGORIES",
       label: "Categorías",
-      icon: FaLayerGroup as any,
+      icon: <FaLayerGroup />,
       content: (
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
           <ITDataTable
@@ -388,7 +389,7 @@ const SettingsPage = () => {
     {
       id: "TYPES",
       label: "Tipos de Incidentes",
-      icon: FaTags as any,
+      icon: <FaTags />,
       content: (
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
           <ITDataTable
@@ -452,7 +453,7 @@ const SettingsPage = () => {
     {
       id: "SYSCONFIG",
       label: "Configuración Global",
-      icon: FaGlobe as any,
+      icon: <FaGlobe />,
       content: (
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
           <ITDataTable
@@ -557,9 +558,9 @@ const SettingsPage = () => {
 
       <div className="bg-white rounded-[40px] p-8 shadow-2xl shadow-slate-200/40 border border-white">
         <ITTabs
-          tabs={tabs}
-          activeTab={activeTab}
-          onChange={(id: any) => setActiveTab(id)}
+          items={tabs}
+          defaultActiveId={activeTab}
+          onChange={(id: string) => setActiveTab(id as any)}
         />
       </div>
 

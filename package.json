@@ -15,7 +15,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@axzydev/axzy_ui_system": "1.0.169",
+    "@axzydev/axzy_ui_system": "1.0.170",
     "@reduxjs/toolkit": "^2.5.1",
     "@testing-library/dom": "^10.4.1",
     "@types/qrcode": "^1.5.6",

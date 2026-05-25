@@ -1,7 +1,11 @@
-import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { translateScanType } from "@app/core/utils/status.utils";
-import { ITBadget, ITButton, ITDataTable } from "@axzydev/axzy_ui_system";
+import {
+  ITBadget,
+  ITButton,
+  ITDataTable,
+  ITTripleFilter,
+} from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
 import { FaBook, FaEye, FaUser } from "react-icons/fa";
@@ -155,7 +159,7 @@ const KardexPage = () => {
   );
 
   return (
-    <div className="p-6 bg-[#F8FAFC] min-h-screen font-sans">
+    <div className="p-6   min-h-screen font-sans">
       <ModuleHeader
         title="Expediente Kardex"
         subtitle="Registro histórico de marcajes, evidencias y reportes de campo"

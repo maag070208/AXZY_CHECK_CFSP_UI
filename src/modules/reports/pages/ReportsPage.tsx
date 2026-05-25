@@ -229,7 +229,7 @@ const ReportsPage = () => {
   ];
 
   return (
-    <div className="p-6 bg-[#F8FAFC] min-h-screen font-sans">
+    <div className="p-6   min-h-screen font-sans">
       <ModuleHeader
         title="Reportes Guardados"
         subtitle="Generación de documentos y matrices de rendimiento"

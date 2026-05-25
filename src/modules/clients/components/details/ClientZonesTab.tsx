@@ -263,7 +263,9 @@ export const ClientZonesTab = ({ clientId }: Props) => {
               <ITButton
                 onClick={handleUpdate}
                 disabled={updating}
-                className="bg-emerald-600 text-white px-8 rounded-2xl font-black shadow-lg shadow-emerald-500/10"
+                variant="filled"
+                color="success"
+                className="px-8 font-black shadow-lg shadow-emerald-500/10"
               >
                 {updating ? "Guardando..." : "Guardar Cambios"}
               </ITButton>

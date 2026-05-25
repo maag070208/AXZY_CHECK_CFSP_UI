@@ -38,7 +38,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center   relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-emerald-50/30 via-transparent to-transparent z-0" />
 

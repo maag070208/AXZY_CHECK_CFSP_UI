@@ -1,0 +1,1489 @@
+================================================================================
+AXZY UI SYSTEM - DOCUMENTACIÓN DETALLADA Y EJEMPLOS REALES
+================================================================================
+
+Este documento contiene la especificación completa, interfaces de props y ejemplos
+de uso reales (listos para producción con hooks de estado y lógica) de todos los
+componentes de AXZY UI System.
+
+Todos los componentes son compatibles con Modo Claro, Modo Oscuro y son personalizables
+mediante variables CSS a través de ITThemeProvider.
+
+--------------------------------------------------------------------------------
+ÍNDICE DE COMPONENTES
+--------------------------------------------------------------------------------
+1.  ITThemeProvider (Proveedor de Tema)
+2.  ITLayout (Estructura y Shell)
+3.  ITNavbar (Barra de Navegación Superior)
+4.  ITSidebar (Barra Lateral y Submenús)
+5.  ITTopBar (Cabecera Superior y Menú Usuario)
+6.  ITButton (Botón Atómico)
+7.  ITInput (Campo de Texto)
+8.  ITSelect (Selector Tradicional)
+9.  ITSearchSelect (Selector Autocompletable)
+10. ITDatePicker (Selector de Fecha y Rangos)
+11. ITTimePicker (Selector de Horas)
+12. ITCalendar (Calendario y Planificador de Eventos)
+13. ITSlideToggle (Interruptor de Estado / Switch)
+14. ITDropfile (Cargador de Archivos Drag & Drop)
+15. ITFormBuilder (Generador de Formularios Dinámicos)
+16. ITTable (Tabla de Datos Base)
+17. ITDataTable (Tabla de Datos con Paginación Asíncrona)
+18. ITTabs (Navegación por Pestañas)
+19. ITStepper (Asistente de Pasos)
+20. ITPagination (Paginador)
+21. ITTripleFilter (Filtro Segmentado de Tres Estados)
+22. ITDialog (Ventana Modal)
+23. ITToast (Notificaciones de Sistema)
+24. ITLoader (Animaciones de Carga)
+25. ITBadget (Etiquetas y Badges de Estatus)
+26. ITImage (Imagen con Fallback de Error)
+27. ITText (Tipografía Semántica)
+
+================================================================================
+1. ITThemeProvider
+================================================================================
+Inyecta dinámicamente variables CSS y clases de Tailwind CSS para soporte de Modo Claro y Oscuro.
+
+### Props (ITThemeProviderProps)
+```typescript
+export interface ITThemeConfig {
+  primaryColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  sidebar?: {
+    backgroundColor?: string;
+    borderColor?: string;
+    label?: { color?: string; size?: string; weight?: string };
+    icon?: { color?: string; size?: string };
+    active?: { backgroundColor?: string; color?: string; iconColor?: string };
+    hover?: { backgroundColor?: string };
+    badge?: { backgroundColor?: string; color?: string };
+  };
+  layout?: {
+    backgroundColor?: string;
+    contentPadding?: string;
+  };
+}
+
+export interface ITThemeProviderProps {
+  theme?: Partial<ITThemeConfig>;
+  children: React.ReactNode;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React from 'react';
+import { ITThemeProvider } from 'axzy-ui-system';
+
+const customTheme = {
+  primaryColor: '#6366f1', // Indigo-500
+  sidebar: {
+    backgroundColor: '#0f172a', // Slate-900 para sidebar oscuro siempre
+    borderColor: '#1e293b',
+    active: {
+      backgroundColor: '#1e1b4b',
+      iconColor: '#818cf8',
+      color: '#e0e7ff'
+    }
+  }
+};
+
+export default function AppProvider({ children }) {
+  return (
+    <ITThemeProvider theme={customTheme}>
+      {children}
+    </ITThemeProvider>
+  );
+}
+```
+
+================================================================================
+2. ITLayout
+================================================================================
+Contenedor principal con soporte para responsive drawer de la barra lateral en tablets y móviles.
+
+### Props (ITLayoutProps)
+```typescript
+export interface ITLayoutProps {
+  topBar: ITTopBarProps;
+  sidebar: ITSidebarProps;
+  children: React.ReactNode;
+  className?: string;
+  contentClassName?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITLayout } from 'axzy-ui-system';
+import { FaHome, FaUsers, FaCog } from 'react-icons/fa';
+
+export default function AppShell() {
+  const [activeTab, setActiveTab] = useState('home');
+
+  const sidebarProps = {
+    navigationItems: [
+      { id: 'home', label: 'Inicio', icon: <FaHome />, isActive: activeTab === 'home', action: () => setActiveTab('home') },
+      { id: 'users', label: 'Usuarios', icon: <FaUsers />, isActive: activeTab === 'users', action: () => setActiveTab('users') },
+      { id: 'settings', label: 'Configuración', icon: <FaCog />, isActive: activeTab === 'settings', action: () => setActiveTab('settings') }
+    ],
+    subitemConnector: 'lines' as const
+  };
+
+  const topBarProps = {
+    logoText: 'Administración AXZY',
+    userMenu: {
+      userName: 'Asael Amaro',
+      userEmail: 'asael@axzy.dev',
+      menuItems: [
+        { label: 'Mi Perfil', onClick: () => console.log('Perfil') },
+        { label: 'Cerrar Sesión', onClick: () => console.log('Salir') }
+      ]
+    }
+  };
+
+  return (
+    <ITLayout topBar={topBarProps} sidebar={sidebarProps}>
+      <div className="p-6">
+        <h1 className="text-2xl font-bold">Bienvenido al Panel</h1>
+        <p className="text-slate-500">Sección activa: {activeTab}</p>
+      </div>
+    </ITLayout>
+  );
+}
+```
+
+================================================================================
+3. ITNavbar
+================================================================================
+Barra de navegación horizontal superior recomendada para plataformas de usuario final o portales limpios.
+
+### Props (ITNavbarProps)
+```typescript
+export interface ITNavbarProps {
+  logoText?: string;
+  logoUrl?: string;
+  navigationItems?: ITNavigationItem[];
+  userMenu?: {
+    userName: string;
+    userEmail: string;
+    userImage?: string;
+    menuItems: Array<{ label: string; onClick: () => void }>;
+  };
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React from 'react';
+import { ITNavbar } from 'axzy-ui-system';
+
+export default function CustomerHeader() {
+  const navItems = [
+    { id: 'catalog', label: 'Catálogo', action: () => window.location.href = '/catalog' },
+    { id: 'orders', label: 'Mis Pedidos', action: () => window.location.href = '/orders' },
+  ];
+
+  const userMenu = {
+    userName: 'Cliente Preferente',
+    userEmail: 'cliente@axzy.com',
+    menuItems: [
+      { label: 'Direcciones', onClick: () => {} },
+      { label: 'Cerrar Sesión', onClick: () => {} }
+    ]
+  };
+
+  return (
+    <ITNavbar
+      logoText="AXZY Store"
+      navigationItems={navItems}
+      userMenu={userMenu}
+      className="shadow-sm"
+    />
+  );
+}
+```
+
+================================================================================
+4. ITSidebar
+================================================================================
+Barra lateral reactiva. Soporta colapso automático y varios estilos de líneas conectoras para subítems.
+
+### Props (ITSidebarProps)
+```typescript
+export interface ITNavigationSubItem {
+  id: string;
+  label: string;
+  action?: () => void;
+  isActive?: boolean;
+}
+
+export interface ITNavigationItem {
+  id: string;
+  label: string;
+  icon?: React.ReactNode;
+  action?: () => void;
+  isActive?: boolean;
+  subitems?: ITNavigationSubItem[];
+  badge?: string;
+}
+
+export interface ITSidebarProps {
+  navigationItems: ITNavigationItem[];
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+  visibleOnMobile?: boolean;
+  onItemClick?: (item: ITNavigationItem) => void;
+  onSubItemClick?: (subitem: ITNavigationSubItem) => void;
+  subitemConnector?: 'lines' | 'dots' | '|' | 'none';
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITSidebar } from 'axzy-ui-system';
+import { FaBox, FaCubes } from 'react-icons/fa';
+
+export default function CustomSidebar() {
+  const [collapsed, setCollapsed] = useState(false);
+  const [activeId, setActiveId] = useState('list');
+
+  const items = [
+    {
+      id: 'inv',
+      label: 'Inventarios',
+      icon: <FaBox />,
+      isActive: ['list', 'adjust'].includes(activeId),
+      subitems: [
+        { id: 'list', label: 'Lista Productos', isActive: activeId === 'list', action: () => setActiveId('list') },
+        { id: 'adjust', label: 'Ajuste Stock', isActive: activeId === 'adjust', action: () => setActiveId('adjust') }
+      ]
+    },
+    {
+      id: 'categories',
+      label: 'Categorías',
+      icon: <FaCubes />,
+      isActive: activeId === 'categories',
+      action: () => setActiveId('categories' )
+    }
+  ];
+
+  return (
+    <ITSidebar
+      navigationItems={items}
+      isCollapsed={collapsed}
+      onToggleCollapse={() => setCollapsed(!collapsed)}
+      subitemConnector="dots" // Prueba con 'lines', 'dots', '|', o 'none'
+      className="h-screen"
+    />
+  );
+}
+```
+
+================================================================================
+5. ITTopBar
+================================================================================
+Barra de menú horizontal administrativa superior con soporte para botón hamburguesa responsive y avatar.
+
+### Props (ITTopBarProps)
+```typescript
+export interface ITTopBarProps {
+  logoText?: string;
+  userMenu?: {
+    userName: string;
+    userEmail: string;
+    userImage?: string;
+    menuItems: Array<{ label: string; onClick: () => void }>;
+  };
+  navItems?: Array<{ id: string; label: string; action: () => void }>;
+  showMobileMenuButton?: boolean;
+  onToggleMobileMenu?: () => void;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React from 'react';
+import { ITTopBar } from 'axzy-ui-system';
+
+export default function SimpleHeader() {
+  return (
+    <ITTopBar
+      logoText="Portal de Soporte"
+      userMenu={{
+        userName: 'Soporte TI',
+        userEmail: 'ti@axzy.com',
+        menuItems: [
+          { label: 'Mis Tickets', onClick: () => {} },
+          { label: 'Configurar', onClick: () => {} }
+        ]
+      }}
+      showMobileMenuButton={true}
+      onToggleMobileMenu={() => console.log('Toggle Drawer')}
+    />
+  );
+}
+```
+
+================================================================================
+6. ITButton
+================================================================================
+Botón de acción con variedad de variantes estéticas y colores semánticos.
+
+### Props (ITButtonProps)
+```typescript
+export interface ITButtonProps {
+  label?: string;
+  children?: React.ReactNode;
+  onClick?: () => void;
+  color?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'purple' | 'error' | 'gray';
+  size?: 'small' | 'medium' | 'large';
+  variant?: 'filled' | 'outlined' | 'raised' | 'rounded' | 'text' | 'raised-text' | 'icon-only' | 'link';
+  disabled?: boolean;
+  className?: string;
+  type?: 'submit' | 'reset' | 'button';
+}
+```
+
+### Ejemplo Real
+```tsx
+import React from 'react';
+import { ITButton } from 'axzy-ui-system';
+import { FaTrash, FaSave } from 'react-icons/fa';
+
+export default function ActionsDemo() {
+  return (
+    <div className="flex gap-4">
+      <ITButton
+        label="Guardar"
+        color="success"
+        variant="raised"
+        onClick={() => alert('Guardado')}
+      >
+        <FaSave className="mr-2" />
+      </ITButton>
+
+      <ITButton
+        color="danger"
+        variant="icon-only"
+        onClick={() => alert('Eliminado')}
+        aria-label="Eliminar registro"
+      >
+        <FaTrash />
+      </ITButton>
+    </div>
+  );
+}
+```
+
+================================================================================
+7. ITInput
+================================================================================
+Campo de texto con soporte nativo para etiquetas de error dinámicas y validación automática `onBlur` en requeridos.
+
+### Props (ITInputProps)
+```typescript
+export interface ITInputProps {
+  name: string;
+  type?: 'text' | 'password' | 'number' | 'email' | 'textarea' | 'checkbox';
+  label?: string;
+  placeholder?: string;
+  value?: any;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info';
+  iconLeft?: React.ReactNode;
+  error?: string | boolean;
+  required?: boolean;
+  disabled?: boolean;
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITInput } from 'axzy-ui-system';
+import { FaEnvelope } from 'react-icons/fa';
+
+export default function EmailInput() {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState<string | boolean>('');
+
+  const validate = () => {
+    if (!email) {
+      setError('Este campo es requerido');
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      setError('Correo electrónico inválido');
+    } else {
+      setError('');
+    }
+  };
+
+  return (
+    <ITInput
+      name="email"
+      type="email"
+      label="Correo Electrónico"
+      placeholder="ejemplo@axzy.dev"
+      value={email}
+      iconLeft={<FaEnvelope />}
+      onChange={(e) => {
+        setEmail(e.target.value);
+        if (error) setError(''); // Limpia error al escribir
+      }}
+      onBlur={validate}
+      error={error}
+      required={true}
+    />
+  );
+}
+```
+
+================================================================================
+8. ITSelect
+================================================================================
+Selector desplegable nativo con soporte para validación, etiquetas y adaptabilidad a temas oscuros.
+
+### Props (ITSelectProps)
+```typescript
+export interface ITSelectOption {
+  label: string;
+  value: string | number;
+}
+
+export interface ITSelectProps {
+  name: string;
+  label?: string;
+  value?: string | number;
+  options: ITSelectOption[];
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLSelectElement>) => void;
+  error?: string | boolean;
+  required?: boolean;
+  disabled?: boolean;
+  placeholder?: string;
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITSelect } from 'axzy-ui-system';
+
+export default function CountrySelector() {
+  const [country, setCountry] = useState('');
+  const [error, setError] = useState<string | boolean>('');
+
+  const options = [
+    { label: 'México', value: 'MX' },
+    { label: 'Estados Unidos', value: 'US' },
+    { label: 'España', value: 'ES' }
+  ];
+
+  return (
+    <ITSelect
+      name="country"
+      label="País de Residencia"
+      placeholder="Selecciona un país"
+      options={options}
+      value={country}
+      required={true}
+      onChange={(e) => {
+        setCountry(e.target.value);
+        setError('');
+      }}
+      onBlur={() => {
+        if (!country) setError('Debe seleccionar un país');
+      }}
+      error={error}
+    />
+  );
+}
+```
+
+================================================================================
+9. ITSearchSelect
+================================================================================
+Componente combobox inteligente y searchable con filtrado y soporte para carga/búsqueda asíncrona.
+
+### Props (ITSearchSelectProps)
+```typescript
+export interface ITSearchSelectOption {
+  label: string;
+  value: string | number;
+}
+
+export interface ITSearchSelectProps {
+  name?: string;
+  label?: string;
+  placeholder?: string;
+  value?: string | number;
+  options?: ITSearchSelectOption[];
+  onSearch?: (query: string) => void;
+  isLoading?: boolean;
+  onChange?: (value: string | number, option?: ITSearchSelectOption) => void;
+  onBlur?: () => void;
+  error?: string | boolean;
+  required?: boolean;
+  disabled?: boolean;
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITSearchSelect, ITSearchSelectOption } from 'axzy-ui-system';
+
+export default function AsyncUserSelector() {
+  const [selectedVal, setSelectedVal] = useState<string | number>('');
+  const [loading, setLoading] = useState(false);
+  const [options, setOptions] = useState<ITSearchSelectOption[]>([
+    { label: 'Asael Amaro', value: 1 },
+    { label: 'Alex Dev', value: 2 },
+    { label: 'Sofía Ramos', value: 3 }
+  ]);
+
+  const handleSearch = async (query: string) => {
+    if (!query) return;
+    setLoading(true);
+    // Simulación de Fetch a API externa
+    setTimeout(() => {
+      setOptions([
+        { label: `Resultado ${query} 1`, value: 101 },
+        { label: `Resultado ${query} 2`, value: 102 }
+      ]);
+      setLoading(false);
+    }, 800);
+  };
+
+  return (
+    <ITSearchSelect
+      label="Buscar Colaborador"
+      placeholder="Escribe nombre para filtrar..."
+      options={options}
+      value={selectedVal}
+      isLoading={loading}
+      onSearch={handleSearch}
+      onChange={(val) => setSelectedVal(val)}
+      required={true}
+    />
+  );
+}
+```
+
+================================================================================
+10. ITDatePicker
+================================================================================
+Selector de fechas individual o en rangos (Date Range Picker) con input emergente.
+
+### Props (ITDatePickerProps)
+```typescript
+export interface ITDatePickerProps {
+  name: string;
+  value?: Date | [Date | null, Date | null];
+  onChange: (e: { target: { name: string; value: Date | [Date | null, Date | null] } }) => void;
+  onBlur?: () => void;
+  range?: boolean;
+  label?: string;
+  placeholder?: string;
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info';
+  required?: boolean;
+  error?: string | boolean;
+  disabled?: boolean;
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITDatePicker } from 'axzy-ui-system';
+
+export default function ReservationDate() {
+  const [dates, setDates] = useState<Date | [Date | null, Date | null]>(() => [new Date(), null]);
+
+  return (
+    <ITDatePicker
+      name="booking_range"
+      label="Rango de Estadía"
+      range={true}
+      value={dates}
+      onChange={(e) => {
+        setDates(e.target.value);
+      }}
+      placeholder="Fecha Entrada - Fecha Salida"
+    />
+  );
+}
+```
+
+================================================================================
+11. ITTimePicker
+================================================================================
+Campo de selección de hora en formato HH:mm con dropdown intuitivo.
+
+### Props (ITTimePickerProps)
+```typescript
+export interface ITTimePickerProps {
+  name: string;
+  value?: string; // Formato "HH:mm"
+  label?: string;
+  onChange: (e: { target: { name: string; value: string } }) => void;
+  onBlur?: () => void;
+  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'purple';
+  size?: 'small' | 'medium' | 'large';
+  required?: boolean;
+  error?: string | boolean;
+  disabled?: boolean;
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITTimePicker } from 'axzy-ui-system';
+
+export default function ShiftHour() {
+  const [time, setTime] = useState('09:00');
+
+  return (
+    <ITTimePicker
+      name="entry_time"
+      label="Hora de Entrada"
+      value={time}
+      onChange={(e) => setTime(e.target.value)}
+      required={true}
+    />
+  );
+}
+```
+
+================================================================================
+12. ITCalendar
+================================================================================
+Vista de calendario interactiva de alto rendimiento con scheduler de horas, vistas de Mes/Semana/Día.
+
+### Props (ITCalendarProps)
+```typescript
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  color?: string;
+  description?: string;
+}
+
+export interface ITCalendarProps {
+  events?: CalendarEvent[];
+  mode?: 'week' | 'day' | 'month';
+  selectionMode?: 'single' | 'range';
+  onSlotClick?: (date: Date) => void;
+  onEventClick?: (event: CalendarEvent) => void;
+  className?: string;
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'purple';
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITCalendar, CalendarEvent } from 'axzy-ui-system';
+
+export default function MeetingScheduler() {
+  const [events, setEvents] = useState<CalendarEvent[]>([
+    {
+      id: '1',
+      title: 'Daily Standup',
+      start: new Date(new Date().setHours(9, 0)),
+      end: new Date(new Date().setHours(9, 30)),
+      color: '#4f46e5'
+    },
+    {
+      id: '2',
+      title: 'Demo de Componentes',
+      start: new Date(new Date().setHours(11, 0)),
+      end: new Date(new Date().setHours(12, 30)),
+      color: '#10b981'
+    }
+  ]);
+
+  const handleSlotClick = (date: Date) => {
+    const title = prompt('Título del nuevo evento:');
+    if (title) {
+      setEvents(prev => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          title,
+          start: date,
+          end: new Date(date.getTime() + 60 * 60 * 1000), // 1 hora de duración
+          color: '#8b5cf6'
+        }
+      ]);
+    }
+  };
+
+  return (
+    <div className="h-[600px] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 bg-white dark:bg-slate-900">
+      <ITCalendar
+        events={events}
+        mode="week"
+        onSlotClick={handleSlotClick}
+        onEventClick={(evt) => alert(`Evento: ${evt.title}`)}
+        variant="purple"
+      />
+    </div>
+  );
+}
+```
+
+================================================================================
+13. ITSlideToggle
+================================================================================
+Switch elegante para activar/desactivar opciones.
+
+### Props (ITSlideToggleProps)
+```typescript
+export interface ITSlideToggleProps {
+  checked?: boolean;
+  defaultChecked?: boolean;
+  onChange?: (checked: boolean) => void;
+  label?: string;
+  disabled?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  color?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'purple';
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITSlideToggle } from 'axzy-ui-system';
+
+export default function SettingsToggle() {
+  const [notify, setNotify] = useState(true);
+
+  return (
+    <ITSlideToggle
+      label="Habilitar notificaciones push"
+      checked={notify}
+      onChange={(checked) => setNotify(checked)}
+      color="success"
+      size="md"
+    />
+  );
+}
+```
+
+================================================================================
+14. ITDropfile
+================================================================================
+Zona de arrastre de archivos con soporte para estados (Listo, Subiendo, Error, Exitoso) y barra de progreso.
+
+### Props (ITDropfileProps)
+```typescript
+export enum UploadStatus {
+  IDLE = 'idle',
+  UPLOADING = 'uploading',
+  SUCCESS = 'success',
+  ERROR = 'error'
+}
+
+export interface ITDropfileProps {
+  onFileSelect: (file: File) => void;
+  status?: 'idle' | 'uploading' | 'success' | 'error' | UploadStatus;
+  progress?: number; // 0 - 100
+  errorMessage?: string;
+  accept?: string; // Ejemplo: 'image/*', '.pdf'
+  maxSizeMB?: number;
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITDropfile, UploadStatus } from 'axzy-ui-system';
+
+export default function DocumentUploader() {
+  const [status, setStatus] = useState<UploadStatus>(UploadStatus.IDLE);
+  const [progress, setProgress] = useState(0);
+
+  const handleFile = (file: File) => {
+    setStatus(UploadStatus.UPLOADING);
+    setProgress(0);
+
+    const interval = setInterval(() => {
+      setProgress(p => {
+        if (p >= 100) {
+          clearInterval(interval);
+          setStatus(UploadStatus.SUCCESS);
+          return 100;
+        }
+        return p + 20;
+      });
+    }, 300);
+  };
+
+  return (
+    <ITDropfile
+      onFileSelect={handleFile}
+      status={status}
+      progress={progress}
+      accept=".pdf,.png,.jpg"
+      maxSizeMB={5}
+    />
+  );
+}
+```
+
+================================================================================
+15. ITFormBuilder
+================================================================================
+Genera dinámicamente formularios interactivos completos a partir de un arreglo JSON descriptivo de campos.
+
+### Props (ITFormBuilderProps)
+```typescript
+export interface FieldConfig {
+  name: string;
+  label: string;
+  type: 'text' | 'email' | 'password' | 'number' | 'select' | 'date' | 'checkbox';
+  required?: boolean;
+  placeholder?: string;
+  options?: { label: string; value: any }[];
+}
+
+export interface ITFormBuilderProps {
+  config: FieldConfig[];
+  values: any;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  errors?: Record<string, string>;
+  touched?: Record<string, boolean>;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITFormBuilder, ITButton } from 'axzy-ui-system';
+
+export default function UserCreationForm() {
+  const [formData, setFormData] = useState({
+    fullname: '',
+    role: 'user',
+    joined: ''
+  });
+
+  const config = [
+    { name: 'fullname', label: 'Nombre Completo', type: 'text' as const, required: true, placeholder: 'Escribe tu nombre' },
+    {
+      name: 'role',
+      label: 'Rol del Sistema',
+      type: 'select' as const,
+      options: [
+        { label: 'Administrador', value: 'admin' },
+        { label: 'Usuario', value: 'user' }
+      ]
+    },
+    { name: 'joined', label: 'Fecha Ingreso', type: 'date' as const, required: true }
+  ];
+
+  const onChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Enviado:', formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+      <ITFormBuilder
+        config={config}
+        values={formData}
+        handleChange={onChange}
+      />
+      <ITButton type="submit" label="Crear Cuenta" color="primary" className="w-full" />
+    </form>
+  );
+}
+```
+
+================================================================================
+16. ITTable
+================================================================================
+Componente base para desplegar información tabular estructurada con columnas renderizables personalizadas.
+
+### Props (ITTableProps)
+```typescript
+export interface Column<T = any> {
+  key: string;
+  label: string;
+  type: 'string' | 'number' | 'boolean' | 'date' | 'catalog' | 'actions';
+  sortable?: boolean;
+  filter?: boolean | 'catalog';
+  render?: (row: T) => React.ReactNode;
+}
+
+export interface ITTableProps<T> {
+  columns: Column<T>[];
+  data: T[];
+  variant?: 'default' | 'striped' | 'bordered' | 'clean';
+  size?: 'sm' | 'md' | 'lg';
+}
+```
+
+### Ejemplo Real
+```tsx
+import React from 'react';
+import { ITTable, ITBadget } from 'axzy-ui-system';
+
+interface Transaction {
+  id: string;
+  concept: string;
+  amount: number;
+  status: 'paid' | 'pending';
+}
+
+export default function BillingTable() {
+  const columns = [
+    { key: 'concept', label: 'Concepto', type: 'string' as const },
+    { 
+      key: 'amount', 
+      label: 'Monto', 
+      type: 'number' as const, 
+      render: (row: Transaction) => <span>${row.amount.toFixed(2)} USD</span> 
+    },
+    {
+      key: 'status',
+      label: 'Estado',
+      type: 'catalog' as const,
+      render: (row: Transaction) => (
+        <ITBadget
+          label={row.status === 'paid' ? 'Pagado' : 'Pendiente'}
+          color={row.status === 'paid' ? 'success' : 'warning'}
+        />
+      )
+    }
+  ];
+
+  const data: Transaction[] = [
+    { id: '1', concept: 'Licencia Premium', amount: 99.00, status: 'paid' },
+    { id: '2', concept: 'Soporte Dedicado', amount: 150.00, status: 'pending' }
+  ];
+
+  return (
+    <ITTable
+      columns={columns}
+      data={data}
+      variant="striped"
+      size="md"
+    />
+  );
+}
+```
+
+================================================================================
+17. ITDataTable
+================================================================================
+Tabla con integración inteligente para consumo remoto de APIs, ordenamiento, filtrados y paginación asíncrona.
+
+### Props (ITDataTableProps)
+```typescript
+export interface ITDataTableFetchParams {
+  pageIndex: number;
+  pageSize: number;
+  sortConfig?: { key: string; direction: 'asc' | 'desc' } | null;
+  filters?: Record<string, any>;
+  searchTerm?: string;
+}
+
+export interface ITDataTableResponse<T> {
+  data: T[];
+  totalCount: number;
+  totalPages: number;
+}
+
+export interface ITDataTableProps<T> {
+  columns: Column[];
+  fetchData: (params: ITDataTableFetchParams) => Promise<ITDataTableResponse<T>>;
+  externalFilters?: Record<string, any>;
+  defaultItemsPerPage?: number;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useRef } from 'react';
+import { ITDataTable } from 'axzy-ui-system';
+
+interface Member {
+  id: string;
+  name: string;
+  role: string;
+}
+
+export default function AsyncMembersTable() {
+  const columns = [
+    { key: 'name', label: 'Nombre Colaborador', type: 'string' as const, sortable: true },
+    { key: 'role', label: 'Rol de Sistema', type: 'string' as const, sortable: false }
+  ];
+
+  // Callback que simula el consumo asíncrono desde backend
+  const fetchBackendData = async (params: ITDataTableFetchParams) => {
+    console.log('Parámetros de consulta:', params);
+    
+    // Simular retraso de red
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    // Datos simulados paginados
+    return {
+      data: [
+        { id: '1', name: 'Asael Amaro', role: 'Administrador' },
+        { id: '2', name: 'Alex Dev', role: 'Diseñador UI' }
+      ],
+      totalCount: 2,
+      totalPages: 1
+    };
+  };
+
+  return (
+    <ITDataTable
+      columns={columns}
+      fetchData={fetchBackendData}
+      defaultItemsPerPage={5}
+    />
+  );
+}
+```
+
+================================================================================
+18. ITTabs
+================================================================================
+Controlador de navegación de pestañas con estilos 'line' o 'pill'.
+
+### Props (ITTabsProps)
+```typescript
+export interface ITTabItem {
+  id: string;
+  label: string;
+  content: React.ReactNode;
+  icon?: React.ReactNode;
+  disabled?: boolean;
+}
+
+export interface ITTabsProps {
+  items: ITTabItem[];
+  defaultActiveId?: string;
+  onChange?: (id: string) => void;
+  variant?: 'line' | 'pill';
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React from 'react';
+import { ITTabs } from 'axzy-ui-system';
+
+export default function ConfigTabs() {
+  const tabs = [
+    { id: 'gen', label: 'General', content: <div className="py-4">Configuración General del Portal</div> },
+    { id: 'sec', label: 'Seguridad', content: <div className="py-4">Configura contraseñas y accesos MFA</div> }
+  ];
+
+  return (
+    <ITTabs
+      items={tabs}
+      variant="pill"
+      onChange={(id) => console.log('Tab abierta:', id)}
+    />
+  );
+}
+```
+
+================================================================================
+19. ITStepper
+================================================================================
+Muestra el progreso secuencial de un formulario multi-pasos.
+
+### Props (ITStepperProps)
+```typescript
+export interface Step {
+  label: string;
+  content: React.ReactNode;
+  icon?: React.ReactNode;
+}
+
+export interface ITStepperProps {
+  steps: Step[];
+  currentStep: number;
+  onStepChange?: (step: number) => void;
+  color?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'purple';
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITStepper, ITButton } from 'axzy-ui-system';
+
+export default function WizardForm() {
+  const [step, setStep] = useState(0);
+
+  const steps = [
+    { label: 'Información Básica', content: <div>Paso 1: Completa tus datos generales</div> },
+    { label: 'Verificación', content: <div>Paso 2: Confirma tu número móvil</div> },
+    { label: 'Finalizado', content: <div>Paso 3: ¡Tu registro está listo!</div> }
+  ];
+
+  return (
+    <div className="space-y-6 bg-slate-50 dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+      <ITStepper
+        steps={steps}
+        currentStep={step}
+        onStepChange={(s) => setStep(s)}
+        color="indigo"
+      />
+      
+      <div className="mt-4 min-h-[100px]">
+        {steps[step].content}
+      </div>
+
+      <div className="flex justify-between mt-6">
+        <ITButton
+          label="Anterior"
+          disabled={step === 0}
+          onClick={() => setStep(s => s - 1)}
+        />
+        <ITButton
+          label={step === steps.length - 1 ? 'Terminar' : 'Siguiente'}
+          onClick={() => step < steps.length - 1 ? setStep(s => s + 1) : alert('Completado')}
+          color="primary"
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+================================================================================
+20. ITPagination
+================================================================================
+Control autónomo de paginación con selector dinámico de filas por página.
+
+### Props (ITPaginationProps)
+```typescript
+export interface ITPaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  totalItems?: number;
+  itemsPerPage?: number;
+  onItemsPerPageChange?: (value: number) => void;
+  itemsPerPageOptions?: number[];
+  color?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'purple';
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITPagination } from 'axzy-ui-system';
+
+export default function PaginationDemo() {
+  const [page, setPage] = useState(1);
+  const [rows, setRows] = useState(10);
+
+  return (
+    <ITPagination
+      currentPage={page}
+      totalPages={8}
+      onPageChange={setPage}
+      totalItems={80}
+      itemsPerPage={rows}
+      onItemsPerPageChange={setRows}
+      itemsPerPageOptions={[5, 10, 20]}
+      color="purple"
+    />
+  );
+}
+```
+
+================================================================================
+21. ITTripleFilter
+================================================================================
+Selector segmentado rápido para tres estados, ideal para filtros de estatus.
+
+### Props (ITTripleFilterProps)
+```typescript
+export interface ITTripleFilterOption<T> {
+  label: string;
+  value: T;
+}
+
+export interface ITTripleFilterProps<T> {
+  value: T;
+  onChange: (value: T) => void;
+  options: ITTripleFilterOption<T>[];
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITTripleFilter } from 'axzy-ui-system';
+
+export default function StatusFilter() {
+  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
+
+  const options = [
+    { label: 'Todos', value: 'all' as const },
+    { label: 'Activos', value: 'active' as const },
+    { label: 'Bajas', value: 'inactive' as const }
+  ];
+
+  return (
+    <ITTripleFilter
+      value={activeFilter}
+      onChange={(val) => setActiveFilter(val)}
+      options={options}
+    />
+  );
+}
+```
+
+================================================================================
+22. ITDialog
+================================================================================
+Ventana emergente (modal) Glassmorphic con soporte para cabecera de formulario AXZY.
+
+### Props (ITDialogProps)
+```typescript
+export interface ITDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  useFormHeader?: boolean;
+  children?: React.ReactNode;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITDialog, ITButton } from 'axzy-ui-system';
+
+export default function CustomModal() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div>
+      <ITButton label="Eliminar Item" color="danger" onClick={() => setOpen(true)} />
+
+      <ITDialog
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        title="Confirmación de Borrado"
+        useFormHeader={true}
+      >
+        <div className="space-y-4 py-2">
+          <p className="text-sm text-slate-500">¿Estás completamente seguro de borrar este registro? Esta acción es irreversible.</p>
+          <div className="flex justify-end gap-2">
+            <ITButton label="Cancelar" onClick={() => setOpen(false)} />
+            <ITButton label="Confirmar" color="danger" onClick={() => { alert('Borrado'); setOpen(false); }} />
+          </div>
+        </div>
+      </ITDialog>
+    </div>
+  );
+}
+```
+
+================================================================================
+23. ITToast
+================================================================================
+Notificaciones automáticas flotantes que desaparecen tras un temporizador.
+
+### Props (ITToastProps)
+```typescript
+export interface ITToastProps {
+  message: string;
+  type?: 'success' | 'error' | 'warning' | 'info';
+  duration?: number;
+  onClose?: () => void;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React, { useState } from 'react';
+import { ITToast, ITButton } from 'axzy-ui-system';
+
+export default function ToastNotifier() {
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  return (
+    <div>
+      <ITButton
+        label="Simular Éxito"
+        color="success"
+        onClick={() => setToast({ message: '¡Datos actualizados exitosamente!', type: 'success' })}
+      />
+
+      {toast && (
+        <ITToast
+          message={toast.message}
+          type={toast.type}
+          duration={3000}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+================================================================================
+24. ITLoader
+================================================================================
+Indicador visual animado de carga. Soporta variantes (Spinner, Puntos, Barra).
+
+### Props (ITLoaderProps)
+```typescript
+export interface ITLoaderProps {
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  variant?: 'spinner' | 'dots' | 'bar';
+  color?: string; // Nombre de color del tema, hex, o var css
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React from 'react';
+import { ITLoader } from 'axzy-ui-system';
+
+export default function LoadingDashboardSection() {
+  return (
+    <div className="flex flex-col items-center justify-center p-8 bg-slate-50 dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+      <ITLoader variant="dots" size="lg" color="#4f46e5" />
+      <span className="mt-2 text-xs text-slate-400">Sincronizando información...</span>
+    </div>
+  );
+}
+```
+
+================================================================================
+25. ITBadget
+================================================================================
+Etiquetas visuales de estatus e indicadores de conteo.
+
+### Props (ITBadgetProps)
+```typescript
+export interface ITBadgetProps {
+  label?: string;
+  color?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info';
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'error' | 'purple';
+  size?: 'small' | 'medium' | 'large';
+}
+```
+
+### Ejemplo Real
+```tsx
+import React from 'react';
+import { ITBadget } from 'axzy-ui-system';
+
+export default function OrderBadges() {
+  return (
+    <div className="flex gap-2">
+      <ITBadget label="Por Entregar" color="info" size="small" />
+      <ITBadget label="Retrasado" color="danger" size="medium" />
+      <ITBadget label="Completado" color="success" size="large" />
+    </div>
+  );
+}
+```
+
+================================================================================
+26. ITImage
+================================================================================
+Imagen con lógica y fallback inteligente si el enlace falla.
+
+### Props (ITImageProps)
+```typescript
+export interface ITImageProps {
+  src: string;
+  alt: string;
+  fallbackSrc?: string;
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React from 'react';
+import { ITImage } from 'axzy-ui-system';
+
+export default function UserAvatar() {
+  const brokenUrl = 'https://fake-cdn.com/asael.jpg';
+  const defaultPlaceholder = 'https://placehold.co/150x150/png?text=Sin+Foto';
+
+  return (
+    <ITImage
+      src={brokenUrl}
+      alt="Foto de Asael Amaro"
+      fallbackSrc={defaultPlaceholder}
+      className="w-16 h-16 rounded-full object-cover border-2 border-indigo-500 shadow-md"
+    />
+  );
+}
+```
+
+================================================================================
+27. ITText
+================================================================================
+Componente utilitario tipográfico para textos, cabeceras y párrafos consistentes.
+
+### Props (ITTextProps)
+```typescript
+export interface ITTextProps {
+  children: React.ReactNode;
+  className?: string;
+}
+```
+
+### Ejemplo Real
+```tsx
+import React from 'react';
+import { ITText } from 'axzy-ui-system';
+
+export default function TextShowcase() {
+  return (
+    <div className="space-y-2">
+      <ITText className="text-xl font-bold text-slate-800 dark:text-white">
+        Título Principal de Sección
+      </ITText>
+      <ITText className="text-sm text-slate-500 leading-relaxed">
+        Párrafo descriptivo del sistema. Utiliza estilos de color adaptativos de Tailwind 
+        para responder correctamente al cambio de tema global Claro/Oscuro de la app.
+      </ITText>
+    </div>
+  );
+}
+```

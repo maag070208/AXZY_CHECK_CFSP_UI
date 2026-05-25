@@ -50,7 +50,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center   relative overflow-hidden">
       {/* Background decoration - Subtle and professional */}
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-50/50 via-transparent to-transparent z-0" />
       <div className="absolute bottom-0 right-0 w-1/3 h-1/3 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-slate-100 via-transparent to-transparent z-0" />

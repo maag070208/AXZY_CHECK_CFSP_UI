@@ -116,12 +116,8 @@ export const ViewAssignmentsModal = ({
   };
 
   return (
-    <ITDialog
-      isOpen={isOpen}
-      onClose={onClose}
-      className="!max-w-6xl !w-full"
-    >
-      <div className="flex flex-col h-[85vh] bg-[#F8FAFC]">
+    <ITDialog isOpen={isOpen} onClose={onClose} className="!max-w-6xl !w-full">
+      <div className="flex flex-col h-[85vh]  ">
         {/* Profile Header */}
         <div className="flex-none p-8 bg-white border-b border-slate-100">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -186,18 +182,22 @@ export const ViewAssignmentsModal = ({
           {loading && !selectedAssignment && !assignments.length ? (
             <div className="h-full flex flex-col items-center justify-center space-y-4">
               <ITLoader />
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Cargando expediente...</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+                Cargando expediente...
+              </p>
             </div>
           ) : selectedAssignment ? (
             /* DETAIL VIEW - 8/4 Layout */
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex items-center gap-4 mb-8">
-                <button
+                <ITButton
                   onClick={() => setSelectedAssignment(null)}
+                  variant="icon-only"
+                  color="gray"
                   className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:border-emerald-100 transition-all shadow-sm"
                 >
                   <FaArrowLeft size={14} />
-                </button>
+                </ITButton>
                 <div>
                   <div className="flex items-center gap-3">
                     <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight">
@@ -212,7 +212,8 @@ export const ViewAssignmentsModal = ({
                     </ITBadget>
                   </div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                    ID #{selectedAssignment.id} • {selectedAssignment.location?.name}
+                    ID #{selectedAssignment.id} •{" "}
+                    {selectedAssignment.location?.name}
                   </p>
                 </div>
               </div>
@@ -224,11 +225,14 @@ export const ViewAssignmentsModal = ({
                   <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-6">
                     <div className="flex items-center justify-between">
                       <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Evidencia Multimedia
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />{" "}
+                        Evidencia Multimedia
                       </h5>
                     </div>
-                    
-                    {selectedAssignment.kardex?.flatMap((k: any) => k.media || []).length ? (
+
+                    {selectedAssignment.kardex?.flatMap(
+                      (k: any) => k.media || [],
+                    ).length ? (
                       <ITMediaGrid
                         media={selectedAssignment.kardex
                           .flatMap((k: any) => k.media || [])
@@ -243,7 +247,9 @@ export const ViewAssignmentsModal = ({
                     ) : (
                       <div className="py-20 bg-slate-50/50 rounded-[24px] border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center">
                         <FaFileAlt className="text-slate-200 text-4xl mb-4" />
-                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Sin registros visuales</p>
+                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                          Sin registros visuales
+                        </p>
                       </div>
                     )}
                   </div>
@@ -251,33 +257,44 @@ export const ViewAssignmentsModal = ({
                   {/* Checklist Card */}
                   <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-6">
                     <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Consignas Operativas
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{" "}
+                      Consignas Operativas
                     </h5>
-                    
+
                     <div className="grid grid-cols-1 gap-3">
                       {selectedAssignment.tasks.map((task) => (
                         <div
                           key={task.id}
                           className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${
-                            task.completed 
-                              ? "bg-emerald-50/30 border-emerald-100" 
+                            task.completed
+                              ? "bg-emerald-50/30 border-emerald-100"
                               : "bg-slate-50/30 border-slate-100"
                           }`}
                         >
                           <div className="flex items-center gap-4">
-                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs shadow-sm transition-all ${
-                              task.completed ? "bg-emerald-500 text-white" : "bg-white text-slate-200 border border-slate-100"
-                            }`}>
+                            <div
+                              className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs shadow-sm transition-all ${
+                                task.completed
+                                  ? "bg-emerald-500 text-white"
+                                  : "bg-white text-slate-200 border border-slate-100"
+                              }`}
+                            >
                               <FaCheckCircle />
                             </div>
-                            <span className={`text-[11px] font-black uppercase tracking-tight ${task.completed ? "text-emerald-700" : "text-slate-600"}`}>
+                            <span
+                              className={`text-[11px] font-black uppercase tracking-tight ${task.completed ? "text-emerald-700" : "text-slate-600"}`}
+                            >
                               {task.description}
                             </span>
                           </div>
                           {task.completed && (
                             <div className="text-right">
-                              <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Completada</p>
-                              <p className="text-[9px] font-bold text-slate-400">{dayjs(task.completedAt).format("HH:mm")} hrs</p>
+                              <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">
+                                Completada
+                              </p>
+                              <p className="text-[9px] font-bold text-slate-400">
+                                {dayjs(task.completedAt).format("HH:mm")} hrs
+                              </p>
                             </div>
                           )}
                         </div>
@@ -286,7 +303,9 @@ export const ViewAssignmentsModal = ({
 
                     {selectedAssignment.notes && (
                       <div className="mt-8 pt-8 border-t border-slate-50">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Observaciones del Guardia</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">
+                          Observaciones del Guardia
+                        </p>
                         <div className="bg-amber-50/50 p-6 rounded-2xl border border-amber-100/50">
                           <p className="text-xs text-slate-600 font-bold italic leading-relaxed">
                             "{selectedAssignment.notes}"
@@ -300,8 +319,10 @@ export const ViewAssignmentsModal = ({
                 {/* Right Column (4): Info and Status */}
                 <div className="lg:col-span-4 space-y-6">
                   <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm sticky top-8">
-                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8">Información General</h5>
-                    
+                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8">
+                      Información General
+                    </h5>
+
                     <div className="space-y-8">
                       <DetailItem
                         icon={<FaMapMarkerAlt className="text-emerald-500" />}
@@ -312,8 +333,12 @@ export const ViewAssignmentsModal = ({
                       <DetailItem
                         icon={<FaCalendarAlt className="text-indigo-500" />}
                         label="Fecha de Inicio"
-                        value={dayjs(selectedAssignment.createdAt).format("DD/MM/YYYY")}
-                        subValue={dayjs(selectedAssignment.createdAt).format("HH:mm [hrs]")}
+                        value={dayjs(selectedAssignment.createdAt).format(
+                          "DD/MM/YYYY",
+                        )}
+                        subValue={dayjs(selectedAssignment.createdAt).format(
+                          "HH:mm [hrs]",
+                        )}
                       />
                       <DetailItem
                         icon={<FaLayerGroup className="text-amber-500" />}
@@ -323,25 +348,27 @@ export const ViewAssignmentsModal = ({
                       />
                     </div>
 
-                    {selectedAssignment.status === AssignmentStatus.UNDER_REVIEW && !isClient && (
-                      <div className="mt-12">
-                        <ITButton
-                          onClick={() => handleApprove(selectedAssignment.id)}
-                          disabled={approvingId === selectedAssignment.id}
-                          className="w-full !h-14 !rounded-2xl shadow-xl shadow-emerald-100"
-                        >
-                          <div className="flex items-center gap-3 font-black text-[10px] uppercase tracking-widest">
-                            {approvingId === selectedAssignment.id ? (
-                              <ITLoader size="sm" />
-                            ) : (
-                              <>
-                                <FaCheckDouble size={16} /> Aprobar Reporte
-                              </>
-                            )}
-                          </div>
-                        </ITButton>
-                      </div>
-                    )}
+                    {selectedAssignment.status ===
+                      AssignmentStatus.UNDER_REVIEW &&
+                      !isClient && (
+                        <div className="mt-12">
+                          <ITButton
+                            onClick={() => handleApprove(selectedAssignment.id)}
+                            disabled={approvingId === selectedAssignment.id}
+                            className="w-full !h-14 !rounded-2xl shadow-xl shadow-emerald-100"
+                          >
+                            <div className="flex items-center gap-3 font-black text-[10px] uppercase tracking-widest">
+                              {approvingId === selectedAssignment.id ? (
+                                <ITLoader size="sm" />
+                              ) : (
+                                <>
+                                  <FaCheckDouble size={16} /> Aprobar Reporte
+                                </>
+                              )}
+                            </div>
+                          </ITButton>
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>
@@ -356,7 +383,7 @@ export const ViewAssignmentsModal = ({
                   className="group bg-white rounded-[32px] border border-slate-100 p-8 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all cursor-pointer relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50/30 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-700" />
-                  
+
                   <div className="relative space-y-6">
                     <div className="flex justify-between items-start">
                       <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-emerald-500 group-hover:text-white group-hover:border-emerald-400 transition-all duration-300">
@@ -384,7 +411,10 @@ export const ViewAssignmentsModal = ({
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-2">
                           {assignment.tasks.slice(0, 3).map((_, i) => (
-                            <div key={i} className="w-6 h-6 rounded-full bg-emerald-100 border-2 border-white flex items-center justify-center text-emerald-600">
+                            <div
+                              key={i}
+                              className="w-6 h-6 rounded-full bg-emerald-100 border-2 border-white flex items-center justify-center text-emerald-600"
+                            >
                               <FaCheckCircle size={10} />
                             </div>
                           ))}
@@ -393,7 +423,10 @@ export const ViewAssignmentsModal = ({
                           {assignment.tasks.length} Tareas
                         </span>
                       </div>
-                      <FaChevronRight size={12} className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+                      <FaChevronRight
+                        size={12}
+                        className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all"
+                      />
                     </div>
                   </div>
                 </div>
@@ -405,8 +438,13 @@ export const ViewAssignmentsModal = ({
                 <FaExclamationTriangle size={40} />
               </div>
               <div className="space-y-2">
-                <h5 className="text-xl font-black text-slate-800 uppercase tracking-tight">Sin Historial</h5>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] max-w-xs">No se han registrado asignaciones operativas para este guardia.</p>
+                <h5 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                  Sin Historial
+                </h5>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] max-w-xs">
+                  No se han registrado asignaciones operativas para este
+                  guardia.
+                </p>
               </div>
             </div>
           )}
@@ -433,9 +471,15 @@ const DetailItem = ({ icon, label, value, subValue }: any) => (
       {icon}
     </div>
     <div>
-      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
-      <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight">{value}</p>
-      {subValue && <p className="text-[9px] font-bold text-slate-400 mt-0.5">{subValue}</p>}
+      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">
+        {label}
+      </p>
+      <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight">
+        {value}
+      </p>
+      {subValue && (
+        <p className="text-[9px] font-bold text-slate-400 mt-0.5">{subValue}</p>
+      )}
     </div>
   </div>
 );

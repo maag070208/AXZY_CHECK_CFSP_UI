@@ -1,4 +1,3 @@
-import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { AppState } from "@app/core/store/store";
@@ -9,6 +8,7 @@ import {
   ITDataTable,
   ITDialog,
   ITLoader,
+  ITTripleFilter,
 } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
@@ -223,7 +223,7 @@ const IncidentsPage = () => {
   );
 
   return (
-    <div className="p-6 bg-[#F8FAFC] min-h-screen font-sans">
+    <div className="p-6   min-h-screen font-sans">
       <ModuleHeader
         title="Gestión de Incidencias"
         subtitle="Monitoreo y respuesta inmediata a reportes de seguridad"

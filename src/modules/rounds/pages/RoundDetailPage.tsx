@@ -38,7 +38,6 @@ const RoundDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [routeTitle, setRouteTitle] = useState("");
 
-
   const metrics = useMemo(() => {
     if (!data) return null;
 
@@ -225,7 +224,7 @@ const RoundDetailPage = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center space-y-4">
+      <div className="min-h-screen   flex flex-col items-center justify-center space-y-4">
         <ITLoader />
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
           Sincronizando ruta...
@@ -235,7 +234,7 @@ const RoundDetailPage = () => {
 
   if (!data)
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6">
+      <div className="min-h-screen   flex items-center justify-center p-6">
         <div className="text-center bg-white rounded-[32px] shadow-xl p-12 max-w-md border border-slate-100">
           <div className="w-20 h-20 bg-rose-50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-rose-100">
             <FaExclamationTriangle className="text-rose-500 text-3xl" />
@@ -262,7 +261,7 @@ const RoundDetailPage = () => {
     `Ronda #${data.round.id}`;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-20">
+    <div className="min-h-screen   pb-20">
       <div className="bg-white border-b border-slate-100 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <button
@@ -338,7 +337,9 @@ const RoundDetailPage = () => {
 
         {/* Dash Cards */}
         {metrics && (
-          <div className={`grid grid-cols-1 ${isResident ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-6`}>
+          <div
+            className={`grid grid-cols-1 ${isResident ? "md:grid-cols-2" : "md:grid-cols-3"} gap-6`}
+          >
             <MetricCard
               icon={<FaClock />}
               color="indigo"
@@ -405,11 +406,13 @@ const RoundDetailPage = () => {
                             <div className="absolute inset-0 bg-emerald-500/20" />
                           )}
                         </div>
-                        {!isResident && node.timeDiff && node.timeDiff !== "--" && (
-                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2 bg-white px-2 py-0.5 rounded-lg border border-slate-100 shadow-sm">
-                            {node.timeDiff}
-                          </span>
-                        )}
+                        {!isResident &&
+                          node.timeDiff &&
+                          node.timeDiff !== "--" && (
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2 bg-white px-2 py-0.5 rounded-lg border border-slate-100 shadow-sm">
+                              {node.timeDiff}
+                            </span>
+                          )}
                       </div>
                     )}
                     <div className="flex flex-col items-center w-32 group">

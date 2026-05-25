@@ -73,9 +73,10 @@ const RoutesPage = () => {
   };
 
   const handlePrintRouteQRs = async (row: any) => {
-    const ids = row.recurringLocations
-      ?.map((rl: any) => rl.locationId || rl.location?.id)
-      .filter(Boolean) || [];
+    const ids =
+      row.recurringLocations
+        ?.map((rl: any) => rl.locationId || rl.location?.id)
+        .filter(Boolean) || [];
 
     if (ids.length === 0) {
       dispatch(
@@ -219,7 +220,7 @@ const RoutesPage = () => {
   ];
 
   return (
-    <div className="p-4 md:p-8 bg-[#f8fafc] min-h-screen">
+    <div className="p-4 md:p-8   min-h-screen">
       <ModuleHeader
         title="Gestión de Rutas"
         subtitle="Configuración de recorridos y puntos de control para rondines"

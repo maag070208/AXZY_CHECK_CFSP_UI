@@ -1,4 +1,3 @@
-import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
@@ -9,6 +8,7 @@ import {
   ITDialog,
   ITLoader,
   ITSearchSelect,
+  ITTripleFilter,
 } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -262,7 +262,7 @@ const RoundsPage = () => {
   );
 
   return (
-    <div className="p-6 bg-[#F8FAFC] min-h-screen font-sans">
+    <div className="p-6   min-h-screen font-sans">
       <ModuleHeader
         title="Historial de Rondas"
         subtitle="Supervisión y cronología de recorridos operativos en tiempo real"

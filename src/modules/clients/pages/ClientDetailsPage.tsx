@@ -1,6 +1,5 @@
-import { ITTabs, ITab } from "@app/core/components/ITTabs";
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
-import { ITButton } from "@axzydev/axzy_ui_system";
+import { ITButton, ITTabs, ITTabItem } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useState } from "react";
 import {
   FaArrowLeft,
@@ -19,7 +18,6 @@ const ClientDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [client, setClient] = useState<Client | null>(null);
-  const [activeTab, setActiveTab] = useState("locations");
   const [loading, setLoading] = useState(true);
 
   const fetchClient = useCallback(async () => {
@@ -41,30 +39,30 @@ const ClientDetailsPage = () => {
     fetchClient();
   }, [fetchClient]);
 
-  const tabs: ITab[] = [
+  const tabs: ITTabItem[] = [
     {
       id: "locations",
       label: "Ubicaciones",
-      icon: FaSearchLocation,
+      icon: <FaSearchLocation />,
       content: <ClientLocationsTab clientId={id!} />,
     },
     {
       id: "zones",
       label: "Zonas / Recurrentes",
-      icon: FaMapMarkedAlt,
+      icon: <FaMapMarkedAlt />,
       content: <ClientZonesTab clientId={id!} />,
     },
     {
       id: "guards",
       label: "Guardias Asignados",
-      icon: FaUserShield,
+      icon: <FaUserShield />,
       content: <ClientGuardsTab clientId={id!} />,
     },
   ];
 
   if (loading) {
     return (
-      <div className="p-8 bg-[#f8fafc] min-h-screen">
+      <div className="p-8   min-h-screen">
         <div className="animate-pulse space-y-8">
           <div className="h-4 w-32 bg-slate-200 rounded-full" />
           <div className="flex justify-between items-end">
@@ -82,7 +80,7 @@ const ClientDetailsPage = () => {
 
   if (!client) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-8">
+      <div className="min-h-screen flex items-center justify-center   p-8">
         <div className="text-center space-y-6 max-w-sm">
           <div className="w-20 h-20 bg-red-50 text-red-500 rounded-[30px] flex items-center justify-center mx-auto shadow-inner">
             <FaBuilding size={32} />
@@ -108,7 +106,7 @@ const ClientDetailsPage = () => {
   }
 
   return (
-    <div className="p-8 bg-[#f8fafc] min-h-screen">
+    <div className="p-8   min-h-screen">
       <div className="mb-8">
         <ITButton variant="ghost" onClick={() => navigate("/clients")}>
           <div className="flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em]">
@@ -138,7 +136,7 @@ const ClientDetailsPage = () => {
       />
 
       <div className="bg-white rounded-[40px] shadow-sm border border-slate-100 overflow-hidden mt-8 min-h-[600px]">
-        <ITTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+        <ITTabs items={tabs} defaultActiveId="locations" />
       </div>
     </div>
   );

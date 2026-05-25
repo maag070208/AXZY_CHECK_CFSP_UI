@@ -1,4 +1,3 @@
-import { ITTripleFilter } from "@app/core/components/ITTripleFilter";
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { clearSpecificCatalogCache } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
@@ -9,6 +8,7 @@ import {
   ITDataTable,
   ITDataTableFetchParams,
   ITDialog,
+  ITTripleFilter,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaBuilding, FaEdit, FaSearchLocation, FaTrash } from "react-icons/fa";
@@ -99,7 +99,7 @@ const ClientsPage = () => {
   };
 
   return (
-    <div className="p-6 bg-[#f8fafc] min-h-screen">
+    <div className="p-6   min-h-screen">
       <ModuleHeader
         title="Directorio de Clientes"
         subtitle="Gestión de clientes y sus ubicaciones"
@@ -264,9 +264,8 @@ const ClientsPage = () => {
               Cancelar
             </ITButton>
             <ITButton
-              variant="outlined"
+              variant="filled"
               color="danger"
-              className="bg-red-600 text-white border-red-600"
               onClick={confirmDelete}
               disabled={isDeleting}
             >

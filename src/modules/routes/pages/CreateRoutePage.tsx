@@ -282,7 +282,7 @@ const CreateRoutePage = () => {
 
   if (fetchingData)
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-[#f8fafc]">
+      <div className="h-screen w-full flex flex-col items-center justify-center  ">
         <ITLoader size="lg" />
         <p className="mt-6 text-slate-400 font-black uppercase tracking-[0.2em] text-[10px]">
           Sincronizando configuración operativa...
@@ -291,7 +291,7 @@ const CreateRoutePage = () => {
     );
 
   return (
-    <div className="h-full bg-[#f8fafc] flex overflow-hidden">
+    <div className="h-full   flex overflow-hidden">
       {/* SIDEBAR STEPS */}
       <aside className="w-[280px] bg-white border-r border-slate-100 flex flex-col p-6 shrink-0 shadow-xl shadow-slate-200/40 relative z-20">
         <div className="mb-8">

@@ -305,7 +305,9 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
               onClick={() =>
                 removingUser && handleRemoveFromClient(removingUser)
               }
-              className="bg-red-600 hover:bg-red-700 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl flex-1 h-12 shadow-lg shadow-red-500/10"
+              variant="filled"
+              color="danger"
+              className="flex-1 h-12 shadow-lg shadow-red-500/10 font-black uppercase text-[10px] tracking-widest"
             >
               Confirmar Baja
             </ITButton>

@@ -242,6 +242,7 @@ const LocationsPage = () => {
               onClick={() => handlePrintQR(row)}
               size="small"
               variant="outlined"
+              color="success"
               title="Individual QR"
             >
               <FaQrcode size={14} />
@@ -275,7 +276,7 @@ const LocationsPage = () => {
   );
 
   return (
-    <div className="p-8 bg-[#f8fafc] min-h-screen">
+    <div className="p-8   min-h-screen">
       <ModuleHeader
         title="Directorio de Ubicaciones"
         subtitle="Gestión y control de puntos QR para rondines y asistencia"
@@ -443,7 +444,9 @@ const LocationsPage = () => {
             </ITButton>
             <ITButton
               onClick={confirmDelete}
-              className="bg-red-500 hover:bg-red-600 text-white !rounded-xl px-8 border-none"
+              variant="filled"
+              color="danger"
+              className="!rounded-xl px-8"
             >
               Sí, Eliminar
             </ITButton>
