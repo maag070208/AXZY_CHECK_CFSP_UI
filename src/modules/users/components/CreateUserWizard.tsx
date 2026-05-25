@@ -6,6 +6,7 @@ import {
   ITInput,
   ITSelect,
   ITSlideToggle,
+  ITText,
 } from "@axzydev/axzy_ui_system";
 import { useFormik } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
@@ -44,8 +45,8 @@ export const CreateUserWizard: React.FC<Props> = ({
   const roleOptions = useMemo(
     () =>
       roles
-        .filter((r) => r.name !== "RESDN")
-        .map((r) => ({ label: r.value, value: String(r.id) })),
+          .filter((r) => r.name !== "RESDN")
+          .map((r) => ({ label: r.value, value: String(r.id) })),
     [roles],
   );
 
@@ -58,20 +59,20 @@ export const CreateUserWizard: React.FC<Props> = ({
       password: "",
       confirmPassword: "",
       roleId: userToEdit?.roleId
-        ? String(userToEdit.roleId)
-        : userToEdit?.role?.id
-          ? String(userToEdit.role.id)
-          : "",
+              ? String(userToEdit.roleId)
+              : userToEdit?.role?.id
+                      ? String(userToEdit.role.id)
+                      : "",
       scheduleId: userToEdit?.scheduleId
-        ? String(userToEdit.scheduleId)
-        : userToEdit?.schedule?.id
-          ? String(userToEdit.schedule.id)
-          : "",
+              ? String(userToEdit.scheduleId)
+              : userToEdit?.schedule?.id
+                      ? String(userToEdit.schedule.id)
+                      : "",
       clientId: userToEdit?.clientId
-        ? String(userToEdit.clientId)
-        : userToEdit?.client?.id
-          ? String(userToEdit.client.id)
-          : "",
+              ? String(userToEdit.clientId)
+              : userToEdit?.client?.id
+                      ? String(userToEdit.client.id)
+                      : "",
       active: userToEdit ? userToEdit.active : true,
     },
     validationSchema: Yup.object({
@@ -79,14 +80,14 @@ export const CreateUserWizard: React.FC<Props> = ({
       lastName: Yup.string().required("Requerido"),
       username: Yup.string().required("Requerido"),
       password: isEditing
-        ? Yup.string().min(6, "Mínimo 6")
-        : Yup.string().min(6, "Mínimo 6").required("Requerido"),
+              ? Yup.string().min(6, "Mínimo 6")
+              : Yup.string().min(6, "Mínimo 6").required("Requerido"),
       confirmPassword: Yup.string()
-        .oneOf([Yup.ref("password")], "No coinciden")
-        .when("password", {
-          is: (val: string) => val && val.length > 0,
-          then: (schema) => schema.required("Requerido"),
-        }),
+              .oneOf([Yup.ref("password")], "No coinciden")
+              .when("password", {
+                is: (val: string) => val && val.length > 0,
+                then: (schema) => schema.required("Requerido"),
+              }),
       roleId: Yup.string().required("Selecciona un rol"),
       scheduleId: Yup.string().when("roleId", {
         is: (roleId: string) => {
@@ -114,29 +115,29 @@ export const CreateUserWizard: React.FC<Props> = ({
           clientId: data.clientId || undefined,
         };
         const res =
-          isEditing && userToEdit
-            ? await updateUser(userToEdit.id, payload)
-            : await createUser(payload);
+                isEditing && userToEdit
+                        ? await updateUser(userToEdit.id, payload)
+                        : await createUser(payload);
 
         if (res.success) {
           dispatch(
-            showToast({
-              message: `Usuario ${isEditing ? "editado" : "creado"} con éxito`,
-              type: "success",
-            }),
+                  showToast({
+                    message: `Usuario ${isEditing ? "editado" : "creado"} con éxito`,
+                    type: "success",
+                  }),
           );
           onSuccess();
         } else {
           dispatch(
-            showToast({ message: res.messages?.[0] || "Error", type: "error" }),
+                  showToast({ message: res.messages?.[0] || "Error", type: "error" }),
           );
         }
       } catch (error: any) {
         dispatch(
-          showToast({
-            message: error?.messages?.[0] || "Error inesperado",
-            type: "error",
-          }),
+                showToast({
+                  message: error?.messages?.[0] || "Error inesperado",
+                  type: "error",
+                }),
         );
       } finally {
         dispatch(hideLoader());
@@ -146,60 +147,60 @@ export const CreateUserWizard: React.FC<Props> = ({
 
   const isOperationalRole = useMemo(() => {
     const selectedRole = roles.find(
-      (r) => String(r.id) === String(formik.values.roleId),
+            (r) => String(r.id) === String(formik.values.roleId),
     );
     return ["GUARD", "SHIFT", "MAINT"].includes(selectedRole?.name || "");
   }, [roles, formik.values.roleId]);
 
   return (
-    <div className="flex flex-col w-full bg-white max-h-[85vh]">
-      <form
-        onSubmit={formik.handleSubmit}
-        className="flex flex-col h-full overflow-hidden"
-      >
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-10 space-y-12 custom-scrollbar">
-          {/* SECTION 1: IDENTITY */}
-          <section>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                Detalles del Perfil
-              </h4>
-            </div>
+          <div className="flex flex-col w-full bg-white max-h-[85vh]">
+            <form
+                    onSubmit={formik.handleSubmit}
+                    className="flex flex-col h-full overflow-hidden"
+            >
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto p-10 space-y-12 custom-scrollbar">
+                {/* SECTION 1: IDENTITY */}
+                <section>
+                  <div className="flex items-center gap-2 mb-6">
+                    <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                    <ITText className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">
+                      Detalles del Perfil
+                    </ITText>
+                  </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ITInput
-                label="Nombre(s)"
-                name="name"
-                value={formik.values.name}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.errors.name}
-                touched={formik.touched.name}
-                placeholder="Ej. Juan"
-              />
-              <ITInput
-                label="Apellido(s)"
-                name="lastName"
-                value={formik.values.lastName}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.errors.lastName}
-                touched={formik.touched.lastName}
-                placeholder="Ej. Pérez"
-              />
-            </div>
-          </section>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <ITInput
+                            label="Nombre(s)"
+                            name="name"
+                            value={formik.values.name}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={formik.errors.name}
+                            touched={formik.touched.name}
+                            placeholder="Ej. Juan"
+                    />
+                    <ITInput
+                            label="Apellido(s)"
+                            name="lastName"
+                            value={formik.values.lastName}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={formik.errors.lastName}
+                            touched={formik.touched.lastName}
+                            placeholder="Ej. Pérez"
+                    />
+                  </div>
+                </section>
 
-          {/* SECTION 2: ACCESS CREDENTIALS */}
-          <section>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                Credenciales de Acceso
-              </h4>
-            </div>
+                {/* SECTION 2: ACCESS CREDENTIALS */}
+                <section>
+                  <div className="flex items-center gap-2 mb-6">
+                    <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                    <ITText className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">
+                      Credenciales de Acceso
+                    </ITText>
+                  </div>
 
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -262,9 +263,9 @@ export const CreateUserWizard: React.FC<Props> = ({
             <section className="animate-in fade-in slide-in-from-top-4 duration-300">
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                <ITText className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">
                   Asignación Operativa
-                </h4>
+                </ITText>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -311,12 +312,12 @@ export const CreateUserWizard: React.FC<Props> = ({
             <section>
               <div className="mt-8 flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
                 <div>
-                  <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                  <ITText className="text-xs font-bold text-slate-700 uppercase tracking-wide block">
                     Estado del usuario
-                  </h5>
-                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                  </ITText>
+                  <ITText className="text-[10px] text-slate-400 font-medium mt-0.5 block">
                     Habilitar o restringir acceso al sistema
-                  </p>
+                  </ITText>
                 </div>
                 <ITSlideToggle
                   isOn={formik.values.active}

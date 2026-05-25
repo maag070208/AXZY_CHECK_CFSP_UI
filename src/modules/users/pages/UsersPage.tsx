@@ -9,6 +9,7 @@ import {
   ITDialog,
   ITLoader,
   ITSelect,
+  ITText,
   ITTripleFilter,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -136,14 +137,14 @@ const UsersPage = () => {
         label: "USUARIO / EXPEDIENTE",
         render: (row: User) => (
           <div className="flex flex-col">
-            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+            <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
               {row.name} {row.lastName}
-            </span>
+            </ITText>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+              <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
                 @{row.username}
-              </span>
+              </ITText>
             </div>
           </div>
         ),
@@ -176,23 +177,23 @@ const UsersPage = () => {
           const isOp = ["GUARD", "SHIFT", "MAINT"].includes(roleName);
           if (!isOp)
             return (
-              <span className="text-[10px] text-slate-300 font-black tracking-widest italic">
+              <ITText className="text-[10px] text-slate-300 font-black tracking-widest italic">
                 SISTEMA
-              </span>
+              </ITText>
             );
 
           return (
             <div className="flex flex-col">
-              <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+              <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
                 {row.client?.name || "SIN ASIGNAR"}
-              </span>
+              </ITText>
               <div className="flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
                   {row.schedule
                     ? `${row.schedule.name} (${row.schedule.startTime}-${row.schedule.endTime})`
                     : "SIN HORARIO"}
-                </span>
+                </ITText>
               </div>
             </div>
           );
@@ -350,9 +351,9 @@ const UsersPage = () => {
             <section>
               <div className="flex items-center gap-2 mb-8">
                 <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                <ITText className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                   Asignación Corporativa
-                </h4>
+                </ITText>
               </div>
 
               <div className="space-y-6">
@@ -361,12 +362,12 @@ const UsersPage = () => {
                     <FaUserShield size={20} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                    <ITText className="text-sm font-black text-slate-800 uppercase tracking-tight">
                       {changingClientUser?.name} {changingClientUser?.lastName}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                    </ITText>
+                    <ITText className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
                       ID: {changingClientUser?.id?.slice(0, 8)}
-                    </span>
+                    </ITText>
                   </div>
                 </div>
 
@@ -408,9 +409,9 @@ const UsersPage = () => {
             <section>
               <div className="flex items-center gap-2 mb-8">
                 <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                <ITText className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                   Control de Horario
-                </h4>
+                </ITText>
               </div>
 
               <div className="space-y-6">
@@ -419,14 +420,14 @@ const UsersPage = () => {
                     <FaClock size={20} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                    <ITText className="text-sm font-black text-slate-800 uppercase tracking-tight">
                       {changingScheduleUser?.name}{" "}
                       {changingScheduleUser?.lastName}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                    </ITText>
+                    <ITText className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
                       HORARIO ACTUAL:{" "}
                       {changingScheduleUser?.schedule?.name || "N/A"}
-                    </span>
+                    </ITText>
                   </div>
                 </div>
 
@@ -467,13 +468,13 @@ const UsersPage = () => {
           <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-rose-100 shadow-sm">
             <FaTrash size={32} />
           </div>
-          <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3">
+          <ITText className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3">
             ¿Inhabilitar Usuario?
-          </h4>
-          <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto">
+          </ITText>
+          <ITText className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto block">
             Esta acción es definitiva y revocaría todos los permisos de acceso
             de forma inmediata.
-          </p>
+          </ITText>
           <div className="flex gap-4 justify-center">
             <ITButton
               variant="ghost"

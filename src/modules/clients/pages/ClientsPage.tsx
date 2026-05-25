@@ -8,6 +8,7 @@ import {
   ITDataTable,
   ITDataTableFetchParams,
   ITDialog,
+  ITText,
   ITTripleFilter,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -141,17 +142,17 @@ const ClientsPage = () => {
               sortable: true,
               render: (row: Client) => (
                 <div className="flex flex-col">
-                  <span
+                  <ITText
                     onClick={() => navigate(`/clients/${row.id}`)}
-                    className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 hover:text-emerald-600 cursor-pointer transition-colors"
+                    className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 hover:text-emerald-600 cursor-pointer transition-colors block"
                   >
                     {row.name}
-                  </span>
+                  </ITText>
                   <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                    <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                    <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
                       ID: {row.id.substring(0, 8).toUpperCase()}
-                    </span>
+                    </ITText>
                   </div>
                 </div>
               ),
@@ -162,14 +163,14 @@ const ClientsPage = () => {
               type: "string",
               render: (row: Client) => (
                 <div className="flex flex-col">
-                  <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+                  <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
                     {row.contactName || "SIN CONTACTO"}
-                  </span>
+                  </ITText>
                   <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                    <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
                       TEL: {row.contactPhone || "N/A"}
-                    </span>
+                    </ITText>
                   </div>
                 </div>
               ),
@@ -252,10 +253,10 @@ const ClientsPage = () => {
         title="Confirmar Eliminación"
       >
         <div className="p-6">
-          <p className="text-slate-700 mb-6">
+          <ITText className="text-slate-700 mb-6 block">
             ¿Estás seguro de eliminar el cliente seleccionado? Esto no eliminará
             sus datos históricos, pero lo ocultará del sistema principal.
-          </p>
+          </ITText>
           <div className="flex justify-end gap-3">
             <ITButton
               variant="outlined"

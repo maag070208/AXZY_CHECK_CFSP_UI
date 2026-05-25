@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { HomeCardItem } from "../components/HomeCardItem";
 import { AnalyticsTab } from "../components/tabs/AnalyticsTab";
 import { OperationalDetailTab } from "../components/tabs/OperationalDetailTab";
+import { ITButton } from "@axzydev/axzy_ui_system";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -130,7 +131,7 @@ const HomePage = () => {
     <div className="  min-h-screen p-6">
       <div className="max-w-6xl mx-auto space-y-8 relative z-10">
         {canViewMetrics && (
-          <div className="flex items-center justify-center p-1 bg-white border border-slate-100 rounded-2xl shadow-sm w-fit mx-auto sticky top-4 z-50 backdrop-blur-md bg-white/80">
+          <div className="flex items-center justify-center gap-2 p-2 bg-white border border-slate-100 rounded-2xl shadow-sm w-fit mx-auto sticky top-4 z-50 backdrop-blur-md bg-white/80">
             <TabButton
               active={activeTab === "nav"}
               onClick={() => setActiveTab("nav")}
@@ -171,17 +172,14 @@ const HomePage = () => {
 };
 
 const TabButton = ({ active, onClick, icon, label }: any) => (
-  <button
+  <ITButton
     onClick={onClick}
-    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all duration-300 text-sm font-bold ${
-      active
-        ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-105"
-        : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
-    }`}
+    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all duration-300 text-sm font-bold`}
+    color={active ? "primary" : "secondary"}
   >
     {icon}
     <span className={active ? "block" : "hidden md:block"}>{label}</span>
-  </button>
+  </ITButton>
 );
 
 export default HomePage;

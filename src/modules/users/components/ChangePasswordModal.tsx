@@ -1,6 +1,6 @@
 import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITButton, ITInput, ITLoader } from "@axzydev/axzy_ui_system";
+import { ITButton, ITInput, ITLoader, ITText } from "@axzydev/axzy_ui_system";
 import { useFormik } from "formik";
 import React from "react";
 import { FaKey } from "react-icons/fa";
@@ -43,6 +43,7 @@ export const ChangePasswordModal: React.FC<Props> = ({
             showToast({
               message: "Contraseña actualizada con éxito",
               type: "success",
+              duration: 3000,
             }),
           );
           onSuccess();
@@ -68,9 +69,9 @@ export const ChangePasswordModal: React.FC<Props> = ({
         <section>
           <div className="flex items-center gap-2 mb-8">
             <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+            <ITText className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
               Seguridad de Cuenta
-            </h4>
+            </ITText>
           </div>
 
           <div className="space-y-8">
@@ -79,12 +80,12 @@ export const ChangePasswordModal: React.FC<Props> = ({
                 <FaKey size={20} />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                <ITText className="text-sm font-black text-slate-800 uppercase tracking-tight">
                   @{user.username}
-                </span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                </ITText>
+                <ITText className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
                   {user.name} {user.lastName}
-                </span>
+                </ITText>
               </div>
             </div>
 

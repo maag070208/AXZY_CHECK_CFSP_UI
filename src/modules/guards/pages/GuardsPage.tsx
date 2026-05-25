@@ -9,6 +9,7 @@ import {
   ITDialog,
   ITLoader,
   ITSelect,
+  ITText,
   ITTripleFilter,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -135,12 +136,12 @@ const GuardsPage = () => {
               {row.lastName?.[0]}
             </div>
             <div>
-              <p className="font-black text-slate-800 uppercase text-[11px] tracking-tight line-clamp-1">
+              <ITText className="font-black text-slate-800 uppercase text-[11px] tracking-tight line-clamp-1 block">
                 {row.name} {row.lastName}
-              </p>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+              </ITText>
+              <ITText className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">
                 @{row.username}
-              </span>
+              </ITText>
             </div>
           </div>
         ),
@@ -168,16 +169,16 @@ const GuardsPage = () => {
         label: "ASIGNACIÓN",
         render: (row: User) => (
           <div className="flex flex-col">
-            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+            <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block">
               {row.client?.name || "SIN ASIGNAR"}
-            </span>
+            </ITText>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+              <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest block">
                 {row.schedule
                   ? `${row.schedule.name} (${row.schedule.startTime}-${row.schedule.endTime})`
                   : "SIN HORARIO"}
-              </span>
+              </ITText>
             </div>
           </div>
         ),
@@ -196,14 +197,14 @@ const GuardsPage = () => {
         label: "OPERATIVIDAD",
         render: (row: User) => (
           <div className="flex flex-col">
-            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+            <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block">
               {row.assignmentLogs?.length || 0} Tareas
-            </span>
+            </ITText>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+              <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest block">
                 CONTROL DIARIO
-              </span>
+              </ITText>
             </div>
           </div>
         ),
@@ -318,12 +319,12 @@ const GuardsPage = () => {
               <FaUserShield size={40} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+              <ITText className="text-xl font-black text-slate-800 uppercase tracking-tight block">
                 Reasignar Cliente
-              </h3>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">
+              </ITText>
+              <ITText className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1 block">
                 {changingClientUser?.name} {changingClientUser?.lastName}
-              </p>
+              </ITText>
             </div>
           </div>
 
@@ -380,12 +381,12 @@ const GuardsPage = () => {
               <FaClock size={40} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+              <ITText className="text-xl font-black text-slate-800 uppercase tracking-tight block">
                 Cambiar Turno
-              </h3>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1">
+              </ITText>
+              <ITText className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1 block">
                 {changingScheduleUser?.name} {changingScheduleUser?.lastName}
-              </p>
+              </ITText>
             </div>
           </div>
 
@@ -443,16 +444,16 @@ const GuardsPage = () => {
           >
             <FaPowerOff size={32} />
           </div>
-          <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3">
+          <ITText className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3 block">
             {guardToToggle?.active
               ? "¿Desactivar Guardia?"
               : "¿Activar Guardia?"}
-          </h4>
-          <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto">
+          </ITText>
+          <ITText className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto block">
             {guardToToggle?.active
               ? "El guardia perderá el acceso a la aplicación móvil y sus turnos activos serán suspendidos."
               : "El guardia recuperará el acceso y podrá retomar sus tareas y turnos asignados."}
-          </p>
+          </ITText>
           <div className="flex gap-4 justify-center">
             <ITButton
               variant="ghost"

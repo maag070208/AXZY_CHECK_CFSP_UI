@@ -51,9 +51,9 @@ export const ModuleHeader = ({
     <div className="flex flex-col gap-6 mb-8">
       {/* Contenedor Superior: Icono + Títulos */}
       <div className="flex items-center gap-4">
-        <div className="p-3.5 bg-emerald-50/30 rounded-2xl shadow-sm border border-emerald-100 text-emerald-600 shrink-0">
+        <ITButton className="p-3.5 rounded-2xl shadow-sm border border-emerald-100 text-emerald-600 shrink-0 pointer-events-none">
           <Icon size={24} />
-        </div>
+        </ITButton>
         <div>
           <h1 className="text-2xl font-bold text-slate-800 racking-tight">
             {title}

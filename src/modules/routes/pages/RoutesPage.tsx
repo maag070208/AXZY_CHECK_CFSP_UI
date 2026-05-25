@@ -8,6 +8,7 @@ import {
   ITDataTable,
   ITDialog,
   ITSearchSelect,
+  ITText,
 } from "@axzydev/axzy_ui_system";
 import { post } from "@app/core/axios/axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -123,16 +124,16 @@ const RoutesPage = () => {
         <div className="flex flex-col">
           <div className="flex items-center gap-2 mb-1">
             <FaBuilding className="text-slate-400 text-[10px]" />
-            <span className="font-black text-slate-700 uppercase text-[10px] tracking-widest">
+            <ITText className="font-black text-slate-700 uppercase text-[10px] tracking-widest">
               {row.recurringLocations?.[0]?.location?.client?.name ||
                 "Sin Cliente"}
-            </span>
+            </ITText>
           </div>
-          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+          <ITText className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter block">
             ID:{" "}
             {row.recurringLocations?.[0]?.location?.client?.id?.slice(-8) ||
               "N/A"}
-          </span>
+          </ITText>
         </div>
       ),
     },
@@ -142,14 +143,14 @@ const RoutesPage = () => {
       type: "string",
       render: (row: any) => (
         <div className="flex flex-col">
-          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+          <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block">
             {row.title}
-          </span>
+          </ITText>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+            <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest block">
               {row.client?.name || "SIN CLIENTE"}
-            </span>
+            </ITText>
           </div>
         </div>
       ),
@@ -160,15 +161,15 @@ const RoutesPage = () => {
       type: "string",
       render: (row: any) => (
         <div className="flex flex-col">
-          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+          <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block">
             {row.recurringLocations?.length || 0} Puntos QR
-          </span>
+          </ITText>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+            <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest block">
               Ubicación:{" "}
               {row.recurringLocations?.[0]?.location?.name || "Multiple"}
-            </span>
+            </ITText>
           </div>
         </div>
       ),
@@ -277,16 +278,16 @@ const RoutesPage = () => {
           <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
             <FaTrash size={24} />
           </div>
-          <h3 className="text-lg font-bold text-slate-800 mb-2 uppercase tracking-tight">
+          <ITText className="text-lg font-bold text-slate-800 mb-2 uppercase tracking-tight block">
             ¿Eliminar Ruta Operativa?
-          </h3>
-          <p className="text-slate-500 text-sm mb-10 leading-relaxed px-4">
+          </ITText>
+          <ITText className="text-slate-500 text-sm mb-10 leading-relaxed px-4 block">
             Estás por borrar una ruta y sus puntos de control.
             <br />
-            <span className="font-bold text-red-500/80">
+            <ITText className="font-bold text-red-500/80 block">
               Esta acción es permanente y no se puede deshacer.
-            </span>
-          </p>
+            </ITText>
+          </ITText>
           <div className="flex gap-4 justify-center">
             <ITButton
               variant="outlined"
@@ -294,17 +295,17 @@ const RoutesPage = () => {
               onClick={() => setRouteToDeleteId(null)}
               className="!rounded-xl px-10"
             >
-              <span className="uppercase tracking-widest text-[10px] font-black">
+              <ITText className="uppercase tracking-widest text-[10px] font-black block">
                 No, Mantener
-              </span>
+              </ITText>
             </ITButton>
             <ITButton
               onClick={confirmDelete}
               className="bg-red-500 hover:bg-red-600 text-white !rounded-xl px-10 border-none shadow-lg shadow-red-100"
             >
-              <span className="uppercase tracking-widest text-[10px] font-black">
+              <ITText className="uppercase tracking-widest text-[10px] font-black block">
                 Sí, Eliminar
-              </span>
+              </ITText>
             </ITButton>
           </div>
         </div>

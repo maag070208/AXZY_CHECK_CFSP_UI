@@ -1,5 +1,5 @@
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
-import { ITButton, ITTabs, ITTabItem } from "@axzydev/axzy_ui_system";
+import { ITButton, ITTabs, ITTabItem, ITText } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useState } from "react";
 import {
   FaArrowLeft,
@@ -86,12 +86,12 @@ const ClientDetailsPage = () => {
             <FaBuilding size={32} />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+            <ITText className="text-2xl font-black text-slate-800 uppercase tracking-tight block">
               Cliente Extraviado
-            </h2>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2 leading-relaxed">
+            </ITText>
+            <ITText className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2 leading-relaxed block">
               El registro que buscas no existe o ha sido removido del sistema.
-            </p>
+            </ITText>
           </div>
           <ITButton
             onClick={() => navigate("/clients")}
@@ -109,10 +109,10 @@ const ClientDetailsPage = () => {
     <div className="p-8   min-h-screen">
       <div className="mb-8">
         <ITButton variant="ghost" onClick={() => navigate("/clients")}>
-          <div className="flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em]">
+          <ITText className="flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em]">
             <FaArrowLeft size={10} />
             Directorio Principal
-          </div>
+          </ITText>
         </ITButton>
       </div>
 

@@ -323,6 +323,7 @@ const LocationsPage = () => {
             <ITButton
               onClick={() => setIsBulkPrintModalOpen(true)}
               variant="filled"
+              color="secondary"
             >
               <div className="flex items-center gap-2">
                 <FaPrint size={12} />
