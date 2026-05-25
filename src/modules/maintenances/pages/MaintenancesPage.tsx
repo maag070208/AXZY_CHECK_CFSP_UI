@@ -168,7 +168,7 @@ const MaintenancesPage = () => {
         label: "ESTADO",
         render: (row: Maintenance) => (
           <ITBadget
-            color={row.status === "ATTENDED" ? "success" : "danger"}
+            color={row.status === "ATTENDED" ? "primary" : "danger"}
             size="small"
           >
             {row.status === "ATTENDED" ? "ATENDIDA" : "PENDIENTE"}

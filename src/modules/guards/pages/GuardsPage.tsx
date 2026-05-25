@@ -221,6 +221,7 @@ const GuardsPage = () => {
                   variant="outlined"
                   size="small"
                   title="Horario"
+                  color="warning"
                 >
                   <FaClock size={14} />
                 </ITButton>

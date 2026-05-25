@@ -1,4 +1,4 @@
-import { ITCard, ITText } from "@axzydev/axzy_ui_system";
+import { ITButton, ITCard, ITText } from "@axzydev/axzy_ui_system";
 
 export const HomeCardItem = ({ item, index }: any) => {
   return (
@@ -10,9 +10,13 @@ export const HomeCardItem = ({ item, index }: any) => {
     >
       <div className="flex items-center justify-between w-full">
         {/* Primary Color container for icon */}
-        <div className="w-12 h-12 rounded-2xl bg-emerald-600 flex items-center justify-center text-white group-hover:bg-emerald-700 transition-all duration-300 shadow-md shadow-emerald-600/10">
-          {item.icon && <div className="text-xl flex items-center justify-center">{item.icon}</div>}
-        </div>
+        <ITButton color="primary" variant="rounded" className="h-14 w-14">
+          {item.icon && (
+            <div className="text-xl flex items-center justify-center">
+              {item.icon}
+            </div>
+          )}
+        </ITButton>
         <div className="w-2 h-2 rounded-full bg-slate-200 group-hover:bg-emerald-400 transition-colors duration-300" />
       </div>
 

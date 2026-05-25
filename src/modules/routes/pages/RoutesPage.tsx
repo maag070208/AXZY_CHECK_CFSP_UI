@@ -195,6 +195,7 @@ const RoutesPage = () => {
             variant="outlined"
             title="Imprimir QRs"
             size="small"
+            color="secondary"
           >
             <FaPrint size={14} />
           </ITButton>
@@ -203,6 +204,7 @@ const RoutesPage = () => {
             variant="outlined"
             title="Editar Ruta"
             size="small"
+            color="info"
           >
             <FaEdit size={14} />
           </ITButton>

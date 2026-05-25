@@ -142,10 +142,7 @@ const ClientsPage = () => {
               sortable: true,
               render: (row: Client) => (
                 <div className="flex flex-col">
-                  <ITText
-                    onClick={() => navigate(`/clients/${row.id}`)}
-                    className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 hover:text-emerald-600 cursor-pointer transition-colors block"
-                  >
+                  <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 hover:text-emerald-600 cursor-pointer transition-colors block">
                     {row.name}
                   </ITText>
                   <div className="flex items-center gap-1.5">
@@ -180,7 +177,7 @@ const ClientsPage = () => {
               label: "ESTADO",
               type: "string",
               render: (row: Client) => (
-                <ITBadget color={row.active ? "success" : "error"} size="small">
+                <ITBadget color={row.active ? "primary" : "error"} size="small">
                   {row.active ? "ACTIVO" : "INACTIVO"}
                 </ITBadget>
               ),
@@ -203,6 +200,7 @@ const ClientsPage = () => {
                     onClick={() => setEditingClient(row)}
                     size="small"
                     variant="outlined"
+                    color="info"
                     title="Editar"
                   >
                     <FaEdit size={14} />
