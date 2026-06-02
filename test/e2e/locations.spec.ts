@@ -293,9 +293,17 @@ test.describe("Módulo de Ubicaciones - Gestión de Ubicaciones", () => {
     await page.goto("/#/locations");
   });
 
-  const uniqueLocNameInput = "OFICINA E2E";
-  const uniqueLocNameExpected = "Plaza 2000-ALTA-OFICINA E2E";
-  const modifiedLocNameInput = "Plaza 2000-ALTA-OFICINA E2E MODIFICADA";
+  const uniqueLocId = Date.now().toString().slice(-6);
+  const uniqueLocNameInput = `OFICINA E2E ${uniqueLocId}`;
+  // Mock uses compound "Client-Zone-Name" format; real API stores raw name only
+  const uniqueLocNameExpected = process.env.USE_REAL_API
+    ? uniqueLocNameInput
+    : `Plaza 2000-ALTA-OFICINA E2E ${uniqueLocId}`;
+  // Modified name input: in real API just the raw name (no prefix)
+  const modifiedLocRawName = `OFICINA E2E ${uniqueLocId} MODIFICADA`;
+  const modifiedLocNameInput = process.env.USE_REAL_API
+    ? modifiedLocRawName
+    : `Plaza 2000-ALTA-OFICINA E2E ${uniqueLocId} MODIFICADA`;
 
   test("debería permitir agregar una nueva ubicación exitosamente", async ({ page }) => {
     // 1. Verificar título
@@ -337,8 +345,8 @@ test.describe("Módulo de Ubicaciones - Gestión de Ubicaciones", () => {
     // 2. Verificar modal abierto
     await expect(page.getByRole("heading", { name: "Actualizar Ubicación", exact: true })).toBeVisible();
 
-    // 3. Modificar nombre
-    await page.fill('input[name="name"]', modifiedLocNameInput);
+    // 3. Modificar nombre (use raw name; real API stores it directly)
+    await page.fill('input[name="name"]', modifiedLocRawName);
 
     // 4. Registrar Punto (guardar cambios)
     await page.click('button:has-text("Registrar Punto")');
@@ -351,10 +359,10 @@ test.describe("Módulo de Ubicaciones - Gestión de Ubicaciones", () => {
   });
 
   test("debería permitir buscar y filtrar la ubicación", async ({ page }) => {
-    const otherRow = page.locator("tr").filter({ hasNotText: modifiedLocNameInput }).filter({ hasText: /CLIENTE:/i }).first();
+    const otherRow = page.locator("tr").filter({ hasNotText: modifiedLocRawName }).filter({ hasText: /CLIENTE:/i }).first();
 
-    // 1. Buscar
-    await page.fill('input[placeholder="BUSCAR UBICACIÓN..."]', "OFICINA E2E MODIFICADA");
+    // 1. Buscar por el nombre modificado (incluye ID único para evitar falsos positivos)
+    await page.fill('input[placeholder="BUSCAR UBICACIÓN..."]', modifiedLocRawName);
     await page.waitForTimeout(600); // debounce
 
     // 2. Verificar filtrado

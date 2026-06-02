@@ -5,43 +5,43 @@ export interface Guard extends User {
 }
 
 export enum AssignmentStatus {
-    PENDING = "PENDING",
-    CHECKING = "CHECKING",
-    UNDER_REVIEW = "UNDER_REVIEW",
-    REVIEWED = "REVIEWED",
-    COMPLETED = "COMPLETED",
-    ANOMALY = "ANOMALY",
-    CANCELLED = "CANCELLED",
-    ACTIVE = "ACTIVE"
+  PENDING = "PENDING",
+  CHECKING = "CHECKING",
+  UNDER_REVIEW = "UNDER_REVIEW",
+  REVIEWED = "REVIEWED",
+  COMPLETED = "COMPLETED",
+  ANOMALY = "ANOMALY",
+  CANCELLED = "CANCELLED",
+  ACTIVE = "ACTIVE",
 }
 
 export interface AssignmentTask {
-    id?: number;
-    description: string;
-    reqPhoto: boolean;
-    completed: boolean;
-    completedAt?: string | null;
+  id?: number;
+  description: string;
+  reqPhoto: boolean;
+  completed: boolean;
+  completedAt?: string | null;
 }
 
 export interface Assignment {
-    id: number;
-    guardId: string | number;
-    locationId: number;
-    assignedBy: string | number;
-    notes?: string;
-    status: AssignmentStatus;
-    createdAt: string;
-    updatedAt: string;
-    location: any;
-    guard: Partial<User>;
-    tasks: AssignmentTask[];
-    kardex?: any[];
+  id: number;
+  guardId: string | number;
+  locationId: number;
+  assignedBy: string | number;
+  notes?: string;
+  status: AssignmentStatus;
+  createdAt: string;
+  updatedAt: string;
+  location: any;
+  guard: Partial<User>;
+  tasks: AssignmentTask[];
+  kardex?: any[];
 }
 
 export interface CreateAssignmentDTO {
-    guardId: string | number;
-    locationId: number;
-    assignedBy: string | number;
-    notes?: string;
-    tasks?: { description: string; reqPhoto: boolean }[];
+  guardId: string | number;
+  locationId: string;
+  assignedBy: string | number;
+  notes?: string;
+  tasks?: { description: string; reqPhoto: boolean }[];
 }

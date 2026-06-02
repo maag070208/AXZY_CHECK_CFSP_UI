@@ -8,10 +8,7 @@ import {
   ITSearchSelect,
 } from "@axzydev/axzy_ui_system";
 import { useEffect, useState } from "react";
-import {
-  FaPlus,
-  FaTrash,
-} from "react-icons/fa";
+import { FaPlus, FaTrash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getLocations,
@@ -36,14 +33,14 @@ export const AssignmentModal = ({
 }: Props) => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState<
-    string | number | undefined
+    string | undefined
   >(undefined);
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const [tasks, setTasks] = useState<{ description: string; reqPhoto: boolean }[]>(
-    [],
-  );
+  const [tasks, setTasks] = useState<
+    { description: string; reqPhoto: boolean }[]
+  >([]);
   const [tempTaskDesc, setTempTaskDesc] = useState("");
 
   const dispatch = useDispatch();
@@ -88,7 +85,7 @@ export const AssignmentModal = ({
     try {
       const res = await createAssignment({
         guardId,
-        locationId: Number(selectedLocationId),
+        locationId: selectedLocationId,
         assignedBy: currentUser.id || 1,
         notes,
         tasks: tasks.length > 0 ? tasks : undefined,
@@ -111,7 +108,8 @@ export const AssignmentModal = ({
         );
       }
     } catch (error: unknown) {
-      const errMsg = error instanceof Error ? error.message : "Error al crear asignación";
+      const errMsg =
+        error instanceof Error ? error.message : "Error al crear asignación";
       dispatch(
         showToast({
           message: errMsg,
@@ -124,8 +122,14 @@ export const AssignmentModal = ({
   };
 
   const locationOptions = locations.map((loc) => {
-    const cleanAisle = loc.aisle && loc.aisle !== "null" && loc.aisle !== "undefined" ? loc.aisle : null;
-    const cleanNumber = loc.number && loc.number !== "null" && loc.number !== "undefined" ? loc.number : null;
+    const cleanAisle =
+      loc.aisle && loc.aisle !== "null" && loc.aisle !== "undefined"
+        ? loc.aisle
+        : null;
+    const cleanNumber =
+      loc.number && loc.number !== "null" && loc.number !== "undefined"
+        ? loc.number
+        : null;
 
     const details = [
       cleanAisle ? `Pasillo ${cleanAisle}` : null,
@@ -153,7 +157,10 @@ export const AssignmentModal = ({
           {/* Header Guard Card */}
           <div className="flex items-center gap-4 p-6 bg-slate-50/50 rounded-3xl border border-slate-100">
             <div className="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-lg font-black uppercase">
-              {guardName.split(" ").map((n) => n[0]).join("")}
+              {guardName
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
             </div>
             <div>
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
@@ -178,7 +185,9 @@ export const AssignmentModal = ({
               placeholder="BUSCAR UBICACIÓN..."
               options={locationOptions}
               value={selectedLocationId}
-              onChange={(val) => setSelectedLocationId(val)}
+              onChange={(val: any) => {
+                setSelectedLocationId(val);
+              }}
               className="!h-14 !rounded-2xl !bg-slate-50/50"
             />
           </section>

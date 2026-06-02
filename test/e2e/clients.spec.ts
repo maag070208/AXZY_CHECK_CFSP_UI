@@ -124,6 +124,23 @@ test.describe("Módulo de Clientes - Gestión de Clientes", () => {
         // Caso 2: Crear cliente (POST a /clients)
         else if (url.endsWith("/clients") && method === "POST") {
           const postData = JSON.parse(route.request().postData() || "{}");
+
+          // Simular rechazo por username duplicado
+          const dupUsername = mockClients.find((c: any) => c.appUsername && c.appUsername === postData.appUsername);
+          if (dupUsername) {
+            await route.fulfill({
+              status: 400,
+              contentType: "application/json",
+              headers: { "Access-Control-Allow-Origin": "*" },
+              body: JSON.stringify({
+                success: false,
+                data: null,
+                messages: ["El nombre de usuario de la app ya está en uso"],
+              }),
+            });
+            return;
+          }
+
           const newClient = {
             id: `client-${Date.now()}`,
             name: postData.name || "CLIENTE NUEVO",
@@ -131,6 +148,7 @@ test.describe("Módulo de Clientes - Gestión de Clientes", () => {
             rfc: postData.rfc || "",
             contactName: postData.contactName || "",
             contactPhone: postData.contactPhone || "",
+            appUsername: postData.appUsername || "",
             active: true,
             softDelete: false,
           };
@@ -140,9 +158,7 @@ test.describe("Módulo de Clientes - Gestión de Clientes", () => {
           await route.fulfill({
             status: 200,
             contentType: "application/json",
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-            },
+            headers: { "Access-Control-Allow-Origin": "*" },
             body: JSON.stringify({
               success: true,
               data: [newClient],
@@ -223,8 +239,10 @@ test.describe("Módulo de Clientes - Gestión de Clientes", () => {
     await page.goto("/#/clients");
   });
 
-  const uniqueClientName = "CLIENTE GENERADO E2E";
-  const modifiedClientName = "CLIENTE GENERADO E2E MODIFICADO";
+  const uniqueClientId = Date.now().toString().slice(-6);
+  const uniqueClientName = `CLIENTE GENERADO E2E ${uniqueClientId}`;
+  const modifiedClientName = `CLIENTE GENERADO E2E ${uniqueClientId} MODIFICADO`;
+  const uniqueAppUsername = `user_e2e_test_${uniqueClientId}`;
 
   test("debería permitir agregar un nuevo cliente exitosamente con nombre único", async ({ page }) => {
     // 0. Limpieza preventiva: buscar y forzar leftovers a la primera página para eliminarlos
@@ -259,7 +277,7 @@ test.describe("Módulo de Clientes - Gestión de Clientes", () => {
     await page.fill('input[name="address"]', "Avenida E2E 123");
     await page.fill('input[name="contactName"]', "Administrador E2E");
     await page.fill('input[name="contactPhone"]', "5512345678");
-    await page.fill('input[name="appUsername"]', "user_e2e_test");
+    await page.fill('input[name="appUsername"]', uniqueAppUsername);
     await page.fill('input[name="appPassword"]', "password123");
 
     // 5. Enviar formulario
@@ -296,8 +314,8 @@ test.describe("Módulo de Clientes - Gestión de Clientes", () => {
   });
 
   test("debería filtrar el cliente modificado por búsqueda de texto y por estado", async ({ page }) => {
-    // 0. Identificar otra fila de cliente en la tabla
-    const otherClientRow = page.locator("tr").filter({ hasNotText: modifiedClientName }).filter({ hasText: /ID:/i }).first();
+    // 0. Identificar otra fila de cliente en la tabla (no-E2E, ej. Plaza 2000)
+    const otherClientRow = page.locator("tr").filter({ hasNotText: "GENERADO E2E" }).filter({ hasText: /ID:/i }).first();
 
     // 1. Buscar "GENERADO E2E"
     await page.fill('input[placeholder="BUSCAR CLIENTE..."]', "GENERADO E2E");
@@ -340,5 +358,31 @@ test.describe("Módulo de Clientes - Gestión de Clientes", () => {
 
     // 5. Comprobar que desapareció de la tabla
     await expect(page.getByText(modifiedClientName)).toBeHidden();
+  });
+  test("debería rechazar la creación de un cliente con username de app ya registrado", async ({ page }) => {
+    // 1. Abrir modal nuevo cliente
+    await page.click('button:has-text("Nuevo Cliente")');
+    await expect(page.getByRole("heading", { name: "Nuevo Cliente", exact: true })).toBeVisible();
+
+    // 2. Llenar con username ya existente (admin es siempre válido en real API, uniqueAppUsername en mock)
+    const duplicateUsername = process.env.USE_REAL_API ? "admin" : uniqueAppUsername;
+    await page.fill('input[name="name"]', "CLIENTE DUPLICADO E2E");
+    await page.fill('input[name="rfc"]', `DUP${Date.now().toString().slice(-9)}`);
+    await page.fill('input[name="address"]', "Calle Duplicada 1");
+    await page.fill('input[name="contactName"]', "Contacto Dup");
+    await page.fill('input[name="contactPhone"]', "5500000000");
+    await page.fill('input[name="appUsername"]', duplicateUsername);
+    await page.fill('input[name="appPassword"]', "password123");
+
+    // 3. Enviar
+    await page.click('button:has-text("Confirmar Registro")');
+
+    // 4. No debe aparecer el toast de éxito
+    await expect(page.getByText("Cliente creado con éxito")).toBeHidden();
+
+    // 5. Debe mostrarse mensaje de error (toast o inline)
+    await expect(
+      page.getByText(/usuario.*ya.*uso|username.*already|ya está en uso/i)
+    ).toBeVisible();
   });
 });

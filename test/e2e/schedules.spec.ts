@@ -253,12 +253,30 @@ test.describe("Módulo de Horarios - Gestión de Horarios", () => {
     await page.goto("/#/schedules");
   });
 
+  const uniqueSchedId = Date.now().toString().slice(-4);
+  const newScheduleName = `NUEVO TURNO E2E ${uniqueSchedId}`;
+  const modifiedScheduleName = `NUEVO TURNO E2E ${uniqueSchedId} MODIFICADO`;
+
   test("debería mostrar el Directorio de Horarios", async ({ page }) => {
     await expect(page.locator("h1")).toContainText("Directorio de Horarios");
-    await expect(page.getByText("ADMINISTRACION")).toBeVisible();
-    await expect(page.getByText("NOCTURNO")).toBeVisible();
-    await expect(page.getByText("VESPERTINO")).toBeVisible();
-    await expect(page.getByText("MATUTINO")).toBeVisible();
+
+    if (process.env.USE_REAL_API) {
+      // Real DB may have 11+ schedules paginated at 10/page.
+      // Use search to guarantee each seed schedule is visible.
+      for (const term of ["Administracion", "Nocturno", "Vespertino", "Matutino"]) {
+        await page.fill('input[placeholder="BUSCAR HORARIO..."]', term);
+        await page.waitForTimeout(600); // debounce
+        await expect(page.getByText(new RegExp(term, "i"))).toBeVisible();
+      }
+      // Clear search
+      await page.fill('input[placeholder="BUSCAR HORARIO..."]', "");
+      await page.waitForTimeout(400);
+    } else {
+      await expect(page.getByText(/administracion/i)).toBeVisible();
+      await expect(page.getByText(/nocturno/i)).toBeVisible();
+      await expect(page.getByText(/vespertino/i)).toBeVisible();
+      await expect(page.getByText(/matutino/i)).toBeVisible();
+    }
   });
 
   test("debería permitir registrar un nuevo horario exitosamente", async ({ page }) => {
@@ -267,50 +285,52 @@ test.describe("Módulo de Horarios - Gestión de Horarios", () => {
     await expect(page.getByRole("heading", { name: "Gestión de Horarios", exact: true })).toBeVisible();
 
     // Rellenar formulario
-    await page.fill('input[name="name"]', "NUEVO TURNO 12X12");
+    await page.fill('input[name="name"]', newScheduleName);
     await page.fill('input[name="startTime"]', "08:00");
     await page.fill('input[name="endTime"]', "20:00");
 
     await page.click('button:has-text("Guardar Turno")');
 
     await expect(page.getByText("Horario creado")).toBeVisible();
-    await expect(page.getByText("NUEVO TURNO 12X12")).toBeVisible();
+    await expect(page.getByText(newScheduleName)).toBeVisible();
   });
 
   test("debería permitir editar el horario recién creado y ver el cambio en la tabla", async ({ page }) => {
-    // Ubicar fila de VESPERTINO
-    const row = page.locator("tr", { hasText: "VESPERTINO" });
+    // Ubicar fila recién creada
+    const row = page.locator("tr", { hasText: newScheduleName });
     await row.getByRole("button", { name: "Editar" }).click();
 
     await expect(page.getByRole("heading", { name: "Gestión de Horarios", exact: true })).toBeVisible();
 
     // Editar nombre
-    await page.fill('input[name="name"]', "VESPERTINO MODIFICADO");
+    await page.fill('input[name="name"]', modifiedScheduleName);
     await page.click('button:has-text("Guardar Turno")');
 
     await expect(page.getByText("Horario actualizado")).toBeVisible();
-    await expect(page.getByText("VESPERTINO MODIFICADO")).toBeVisible();
+    await expect(page.getByText(modifiedScheduleName)).toBeVisible();
   });
 
   test("debería permitir ver el personal asignado al horario", async ({ page }) => {
-    // Ubicar fila de VESPERTINO MODIFICADO
-    const row = page.locator("tr", { hasText: "VESPERTINO MODIFICADO" });
-    
-    // Hacer clic en "2 Asignados"
-    await row.getByText("2 Asignados").click();
+    // Vespertino: real seed → Marco Guardia + Ricardo Shift; mock → mario + ricardo
+    const row = page.locator("tr", { hasText: /vespertino/i });
+    await row.getByText(/asignado/i).click();
 
-    // Validar visualización de modal con usuarios
     await expect(page.getByRole("heading", { name: "Personal Asignado", exact: true })).toBeVisible();
-    await expect(page.getByText("MARIO MANTENIMIENTO")).toBeVisible();
-    await expect(page.getByText("RICARDO SHIFT")).toBeVisible();
 
-    // Cerrar modal
+    if (process.env.USE_REAL_API) {
+      await expect(page.getByText(/marco guardia/i)).toBeVisible();
+      await expect(page.getByText(/ricardo shift/i)).toBeVisible();
+    } else {
+      await expect(page.getByText(/mario mantenimiento/i)).toBeVisible();
+      await expect(page.getByText(/ricardo shift/i)).toBeVisible();
+    }
+
     await page.getByRole("button", { name: "Cerrar", exact: true }).click();
   });
 
   test("debería permitir eliminar el horario tras confirmar en el modal", async ({ page }) => {
-    // Ubicar fila de VESPERTINO MODIFICADO
-    const row = page.locator("tr", { hasText: "VESPERTINO MODIFICADO" });
+    // Ubicar fila modificada
+    const row = page.locator("tr", { hasText: modifiedScheduleName });
     await row.getByRole("button", { name: "Eliminar" }).click();
 
     await expect(page.getByRole("heading", { name: "¿Eliminar Horario?", exact: true })).toBeVisible();
@@ -318,6 +338,6 @@ test.describe("Módulo de Horarios - Gestión de Horarios", () => {
     await page.click('button:has-text("ELIMINAR AHORA")');
 
     await expect(page.getByText("Horario eliminado con éxito")).toBeVisible();
-    await expect(page.getByText("VESPERTINO MODIFICADO")).not.toBeVisible();
+    await expect(page.getByText(modifiedScheduleName)).not.toBeVisible();
   });
 });

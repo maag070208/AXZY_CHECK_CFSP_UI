@@ -5,20 +5,20 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./test/e2e",
-  /* Run tests in files in parallel */
-  fullyParallel: true,
+  /* Run tests in files in parallel or sequentially depending on API mode */
+  fullyParallel: !process.env.USE_REAL_API,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Opt out of parallel tests on CI or when using real API. */
+  workers: process.env.USE_REAL_API ? 1 : (process.env.CI ? 1 : undefined),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: "http://localhost:5002",
+    baseURL: "http://127.0.0.1:5002",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
@@ -51,7 +51,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: "pnpm dev",
-    url: "http://localhost:5002",
+    url: "http://127.0.0.1:5002",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
