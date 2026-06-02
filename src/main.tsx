@@ -28,7 +28,7 @@ const customTheme = {
     navbarText: "#1B1B1F",
   },
   table: {
-    headerBg: "#f6fbf4",
+    headerBg: "#ffffff",
     headerText: "#1B1B1F",
     rowBg: "#ffffff",
     rowText: "#1B1B1F",
@@ -38,7 +38,7 @@ const customTheme = {
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Provider store={store}>
-      <ITThemeProvider theme={customTheme}>
+      <ITThemeProvider theme={customTheme} showFab={false}>
         <ToastProvider>
           <HashRouter>
             <App />

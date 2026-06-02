@@ -135,9 +135,7 @@ const ClientDetailsPage = () => {
         }
       />
 
-      <div className="bg-white rounded-[40px] shadow-sm border border-slate-100 overflow-hidden mt-8 min-h-[600px]">
-        <ITTabs items={tabs} defaultActiveId="locations" />
-      </div>
+      <ITTabs items={tabs} variant="line" defaultActiveId="locations" />
     </div>
   );
 };

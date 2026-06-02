@@ -15,11 +15,11 @@ export const createAssignment = async (data: CreateAssignmentDTO) => {
     return await post<Assignment>("/assignments", data);
 };
 
-export const getActiveAssignments = async (guardId: number) => {
+export const getActiveAssignments = async (guardId: string | number) => {
     return await get<Assignment[]>(`/assignments?guardId=${guardId}`);
 };
 
-export const getAllAssignmentsByGuard = async (guardId: number) => {
+export const getAllAssignmentsByGuard = async (guardId: string | number) => {
     return await get<Assignment[]>(`/assignments/all?guardId=${guardId}`);
 };
 

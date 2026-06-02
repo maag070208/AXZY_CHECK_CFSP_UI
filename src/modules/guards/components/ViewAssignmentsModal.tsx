@@ -26,16 +26,30 @@ import {
 import { Assignment, AssignmentStatus } from "../types/guards.types";
 import dayjs from "dayjs";
 import { ITMediaGrid } from "@app/core/components/ITMediaGrid";
+import { User } from "../../users/services/UserService";
 
 // Fallback for API Base URL if constant is missing
 const API_BASE_URL = "http://localhost:4444";
 
+interface MediaItem {
+  id: string | number;
+  url: string;
+  type?: "IMAGE" | "VIDEO";
+  [key: string]: unknown;
+}
+
+interface KardexEntry {
+  id: string | number;
+  media?: MediaItem[];
+  [key: string]: unknown;
+}
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  guardId: any;
+  guardId: string | number;
   guardName: string;
-  guard: any;
+  guard: User;
   onReassignClient: () => void;
   onReassignSchedule: () => void;
   isClient?: boolean;
@@ -116,7 +130,12 @@ export const ViewAssignmentsModal = ({
   };
 
   return (
-    <ITDialog isOpen={isOpen} onClose={onClose} className="!max-w-6xl !w-full">
+    <ITDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Expediente de Asignaciones"
+      className="!max-w-6xl !w-full"
+    >
       <div className="flex flex-col h-[85vh]  ">
         {/* Profile Header */}
         <div className="flex-none p-8 bg-white border-b border-slate-100">
@@ -231,13 +250,13 @@ export const ViewAssignmentsModal = ({
                     </div>
 
                     {selectedAssignment.kardex?.flatMap(
-                      (k: any) => k.media || [],
+                      (k: KardexEntry) => k.media || [],
                     ).length ? (
                       <ITMediaGrid
-                        media={selectedAssignment.kardex
-                          .flatMap((k: any) => k.media || [])
-                          .map((m: any) => ({
-                            ...m,
+                        media={(selectedAssignment.kardex as KardexEntry[])
+                          .flatMap((k) => k.media || [])
+                          .map((m) => ({
+                            type: m.type || "IMAGE",
                             url: m.url.startsWith("http")
                               ? m.url
                               : `${API_BASE_URL}${m.url.replace("/api/v1", "")}`,
@@ -450,12 +469,13 @@ export const ViewAssignmentsModal = ({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex-none px-8 py-6 bg-white border-t border-slate-100 flex justify-end">
+        {/* Standardized Footer */}
+        <div className="flex-none flex justify-end items-center px-10 py-6 border-t border-slate-100 bg-slate-50/50 gap-4">
           <ITButton
-            variant="ghost"
+            variant="filled"
+            color="secondary"
+            className="px-8 font-black text-[10px] uppercase tracking-widest"
             onClick={onClose}
-            className="px-10 font-black text-[10px] uppercase tracking-widest text-slate-400"
           >
             Cerrar Expediente
           </ITButton>
@@ -465,7 +485,14 @@ export const ViewAssignmentsModal = ({
   );
 };
 
-const DetailItem = ({ icon, label, value, subValue }: any) => (
+interface DetailItemProps {
+  icon: React.ReactNode;
+  label: string;
+  value?: string | number | null;
+  subValue?: string | number | null;
+}
+
+const DetailItem = ({ icon, label, value, subValue }: DetailItemProps) => (
   <div className="flex items-start gap-4">
     <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
       {icon}

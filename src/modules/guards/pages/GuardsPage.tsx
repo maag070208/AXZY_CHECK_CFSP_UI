@@ -481,7 +481,7 @@ const GuardsPage = () => {
           <AssignmentModal
             isOpen={isAssignmentModalOpen}
             onClose={() => setIsAssignmentModalOpen(false)}
-            guardId={selectedGuard.id as any}
+            guardId={selectedGuard.id}
             guardName={`${selectedGuard.name} ${selectedGuard.lastName}`}
             onSuccess={handleSuccess}
           />

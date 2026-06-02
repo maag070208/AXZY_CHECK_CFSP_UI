@@ -19,4 +19,4 @@ const customRender = (ui: React.ReactElement, options?: any) =>
   render(ui, { wrapper: AllTheProviders, ...options });
 
 export * from "@testing-library/react";
-export { customRender as render };
+export { customRender as render, store };
