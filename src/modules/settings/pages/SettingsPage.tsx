@@ -7,11 +7,11 @@ import {
   ITDataTable,
   ITDialog,
   ITInput,
-  ITLoader,
-  ITTabs,
-  ITTabItem
+  ITSelect,
+  ITTabItem,
+  ITTabs
 } from "@axzydev/axzy_ui_system";
-import { useCallback, useEffect, useState } from "react";
+import { cloneElement, useCallback, useEffect, useState } from "react";
 import { CirclePicker } from "react-color";
 import {
   FaCog,
@@ -27,35 +27,62 @@ import {
 } from "react-icons/fa";
 import {
   MdAccessTime,
+  MdAcUnit,
+  MdAlarm,
+  MdAssignment,
   MdBuild,
+  MdBusiness,
+  MdCalendarMonth,
   MdCameraAlt,
+  MdChat,
+  MdCheckCircle,
   MdCleaningServices,
   MdComment,
   MdDescription,
   MdDirectionsCar,
+  MdDoorFront,
+  MdEmail,
   MdError,
+  MdFingerprint,
   MdFlashOn,
+  MdHome,
+  MdLocalFireDepartment,
+  MdLocalGasStation,
+  MdLocalParking,
+  MdLocalPolice,
+  MdLock,
+  MdLockOpen,
   MdMedicalServices,
+  MdNotifications,
   MdPeople,
   MdPerson,
+  MdPets,
+  MdPhone,
   MdPlace,
+  MdQrCode,
+  MdReceiptLong,
+  MdSchedule,
+  MdSecurity,
   MdShield,
   MdVideocam,
+  MdWarningAmber,
   MdWaterDrop,
   MdWhatshot,
+  MdWindow,
 } from "react-icons/md";
 import { useDispatch } from "react-redux";
 import * as SettingsService from "../services/SettingsService";
-import * as DisciplineService from "../../guard-discipline/services/GuardDisciplineService";
 
 const COMMON_ICONS = [
   { name: "shield-alert", icon: <MdShield /> },
   { name: "account-group", icon: <MdPeople /> },
   { name: "alert-circle", icon: <MdError /> },
-  { name: "shield-check", icon: <MdShield /> },
+  { name: "shield-check", icon: <MdCheckCircle /> },
   { name: "fire", icon: <MdWhatshot /> },
+  { name: "fire-department", icon: <MdLocalFireDepartment /> },
   { name: "water", icon: <MdWaterDrop /> },
   { name: "flash", icon: <MdFlashOn /> },
+  { name: "lightning-bolt", icon: <MdFlashOn /> },
   { name: "account-alert", icon: <MdPerson /> },
   { name: "cctv", icon: <MdVideocam /> },
   { name: "car-emergency", icon: <MdDirectionsCar /> },
@@ -67,23 +94,44 @@ const COMMON_ICONS = [
   { name: "camera", icon: <MdCameraAlt /> },
   { name: "file-document", icon: <MdDescription /> },
   { name: "comment-text", icon: <MdComment /> },
+  { name: "security", icon: <MdSecurity /> },
+  { name: "lock", icon: <MdLock /> },
+  { name: "lock-open-variant", icon: <MdLockOpen /> },
+  { name: "fingerprint", icon: <MdFingerprint /> },
+  { name: "home", icon: <MdHome /> },
+  { name: "office-building", icon: <MdBusiness /> },
+  { name: "parking", icon: <MdLocalParking /> },
+  { name: "gas-station", icon: <MdLocalGasStation /> },
+  { name: "police-badge", icon: <MdLocalPolice /> },
+  { name: "door-open", icon: <MdDoorFront /> },
+  { name: "window-open", icon: <MdWindow /> },
+  { name: "water-pipe", icon: <MdWaterDrop /> },
+  { name: "air-conditioner", icon: <MdAcUnit /> },
+  { name: "paw", icon: <MdPets /> },
+  { name: "bell", icon: <MdNotifications /> },
+  { name: "alert", icon: <MdWarningAmber /> },
+  { name: "clipboard-text", icon: <MdAssignment /> },
+  { name: "qr-code", icon: <MdQrCode /> },
+  { name: "file-report", icon: <MdReceiptLong /> },
+  { name: "calendar", icon: <MdCalendarMonth /> },
+  { name: "calendar-clock", icon: <MdSchedule /> },
+  { name: "alarm", icon: <MdAlarm /> },
+  { name: "phone", icon: <MdPhone /> },
+  { name: "email", icon: <MdEmail /> },
+  { name: "chat", icon: <MdChat /> },
 ];
 
 const SettingsPage = () => {
   const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState<
-    "CATEGORIES" | "TYPES" | "SYSCONFIG" | "DISCIPLINE_CATEGORIES" | "DISCIPLINE_TYPES"
+    "CATEGORIES" | "TYPES" | "SYSCONFIG"
   >("CATEGORIES");
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Search Filters
   const [searchCat, setSearchCat] = useState("");
   const [searchType, setSearchType] = useState("");
-  const [searchDiscCat, setSearchDiscCat] = useState("");
-  const [searchDiscType, setSearchDiscType] = useState("");
   const [searchConfig, setSearchConfig] = useState("");
-
-  // Modals
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [categoryTypes, setCategoryTypes] = useState<any[]>([]);
@@ -92,17 +140,6 @@ const SettingsPage = () => {
 
   const [isTypeModalOpen, setIsTypeModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<any>(null);
-
-  // Discipline modals
-  const [isDiscCatModalOpen, setIsDiscCatModalOpen] = useState(false);
-  const [editingDiscCat, setEditingDiscCat] = useState<any>(null);
-  const [discCatForm, setDiscCatForm] = useState({ name: "", value: "" });
-  const [isDiscTypeModalOpen, setIsDiscTypeModalOpen] = useState(false);
-  const [editingDiscType, setEditingDiscType] = useState<any>(null);
-  const [discTypeForm, setDiscTypeForm] = useState({ name: "", value: "", disciplineCategoryId: "" });
-  const [discCatsCatalog, setDiscCatsCatalog] = useState<any[]>([]);
-  const [discTypesModalLoading, setDiscTypesModalLoading] = useState(false);
-  const [discCatModalLoading, setDiscCatModalLoading] = useState(false);
 
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<any>(null);
@@ -126,13 +163,15 @@ const SettingsPage = () => {
   const openCategoryModal = (cat: any = null) => {
     setEditingCategory(cat);
     setCategoryForm(
-      cat || {
-        name: "",
-        value: "",
-        type: "INCIDENT",
-        color: "",
-        icon: "alert-circle",
-      },
+      cat
+        ? { ...cat, color: cat.color || "#EF4444" }
+        : {
+            name: "",
+            value: "",
+            type: "INCIDENT",
+            color: "#EF4444",
+            icon: "alert-circle",
+          },
     );
     setIsCategoryModalOpen(true);
     setIsAddingSubtype(false);
@@ -154,70 +193,6 @@ const SettingsPage = () => {
     setEditingConfig(config);
     setConfigForm(config || { key: "", value: "" });
     setIsConfigModalOpen(true);
-  };
-
-  const openDiscCatModal = async (cat: any = null) => {
-    setEditingDiscCat(cat);
-    setDiscCatForm(cat || { name: "", value: "" });
-    setIsDiscCatModalOpen(true);
-  };
-
-  const openDiscTypeModal = async (type: any = null) => {
-    setEditingDiscType(type);
-    setDiscTypeForm(
-      type || { name: "", value: "", disciplineCategoryId: discCatsCatalog?.[0]?.id || "" },
-    );
-    setIsDiscTypeModalOpen(true);
-  };
-
-  const loadDiscCatsCatalog = async () => {
-    const res = await DisciplineService.getPaginatedCategories({ page: 1, limit: 100 });
-    setDiscCatsCatalog(res.data || []);
-  };
-
-  useEffect(() => {
-    loadDiscCatsCatalog();
-  }, []);
-
-  const handleSaveDiscCat = async (e: any) => {
-    e.preventDefault();
-    setDiscCatModalLoading(true);
-    try {
-      if (editingDiscCat) {
-        await DisciplineService.updateCategory(editingDiscCat.id, discCatForm);
-        dispatch(showToast({ message: "Categoría actualizada", type: "success" }));
-      } else {
-        await DisciplineService.createCategory(discCatForm);
-        dispatch(showToast({ message: "Categoría creada", type: "success" }));
-      }
-      setIsDiscCatModalOpen(false);
-      refresh();
-    } catch (err: any) {
-      dispatch(showToast({ message: err?.message || "Error", type: "error" }));
-    } finally {
-      setDiscCatModalLoading(false);
-    }
-  };
-
-  const handleSaveDiscType = async (e: any) => {
-    e.preventDefault();
-    setDiscTypesModalLoading(true);
-    try {
-      const data = { ...discTypeForm, disciplineCategoryId: Number(discTypeForm.disciplineCategoryId) };
-      if (editingDiscType) {
-        await DisciplineService.updateType(editingDiscType.id, data);
-        dispatch(showToast({ message: "Tipo actualizado", type: "success" }));
-      } else {
-        await DisciplineService.createType(data);
-        dispatch(showToast({ message: "Tipo creado", type: "success" }));
-      }
-      setIsDiscTypeModalOpen(false);
-      refresh();
-    } catch (err: any) {
-      dispatch(showToast({ message: err?.message || "Error", type: "error" }));
-    } finally {
-      setDiscTypesModalLoading(false);
-    }
   };
 
   const { data: categoriesCatalog, refresh: refreshCatalog } =
@@ -266,7 +241,7 @@ const SettingsPage = () => {
     }
   };
 
-  const handleDeleteSubtype = async (id: number) => {
+  const handleDeleteSubtype = async (id: string) => {
     if (!confirm("¿Eliminar este sub-tipo?")) return;
     try {
       await SettingsService.deleteIncidentType(id);
@@ -329,34 +304,10 @@ const SettingsPage = () => {
     [searchType],
   );
 
-  // DISCIPLINE CATEGORIES
-  const fetchDiscCat = useCallback(
-    (params: any) => {
-      const p = {
-        ...params,
-        filters: { ...params.filters, search: searchDiscCat },
-      };
-      return DisciplineService.getPaginatedCategories(p);
-    },
-    [searchDiscCat],
-  );
-
-  // DISCIPLINE TYPES
-  const fetchDiscType = useCallback(
-    (params: any) => {
-      const p = {
-        ...params,
-        filters: { ...params.filters, search: searchDiscType },
-      };
-      return DisciplineService.getPaginatedTypes(p);
-    },
-    [searchDiscType],
-  );
-
   const handleSaveType = async (e: any) => {
     e.preventDefault();
     try {
-      const data = { ...typeForm, categoryId: Number(typeForm.categoryId) };
+      const data = { ...typeForm, categoryId: typeForm.categoryId };
       if (editingType) {
         await SettingsService.updateIncidentType(editingType.id, data);
         dispatch(showToast({ message: "Tipo actualizado", type: "success" }));
@@ -431,19 +382,33 @@ const SettingsPage = () => {
                 key: "name",
                 label: "IDENTIFICACIÓN / VALOR",
                 type: "string",
-                render: (row: any) => (
-                  <div className="flex flex-col">
-                    <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
-                      {row.name}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
-                        VALOR: {row.value}
-                      </span>
+                render: (row: any) => {
+                  const matchedIcon = COMMON_ICONS.find((i) => i.name === row.icon);
+                  return (
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
+                        style={{ backgroundColor: row.color || "#64748b", color: "#ffffff" }}
+                      >
+                        {matchedIcon ? cloneElement(matchedIcon.icon, { color: "#ffffff" } as any) : <FaLayerGroup color="#ffffff" />}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+                          {row.name}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <div
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{ backgroundColor: row.color || "#64748b" }}
+                          />
+                          <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                            VALOR: {row.value}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ),
+                  );
+                },
               },
               {
                 key: "type",
@@ -451,10 +416,10 @@ const SettingsPage = () => {
                 type: "string",
                 render: (row: any) => (
                   <ITBadget
-                    color={row.type === "INCIDENT" ? "warning" : "info"}
+                    color={row.type === "INCIDENT" ? "warning" : row.type === "MAINTENANCE" ? "info" : "error"}
                     size="small"
                   >
-                    {row.type === "INCIDENT" ? "INCIDENTE" : "MANTENIMIENTO"}
+                    {row.type === "INCIDENT" ? "INCIDENTE" : row.type === "MAINTENANCE" ? "MANTENIMIENTO" : "DISCIPLINA"}
                   </ITBadget>
                 ),
               },
@@ -636,148 +601,6 @@ const SettingsPage = () => {
         </div>
       ),
     },
-    {
-      id: "DISCIPLINE_CATEGORIES",
-      label: "Categorías de Incidencias",
-      icon: <FaLayerGroup />,
-      content: (
-        <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
-          <ITDataTable
-            key={`disc-cat-${refreshKey}`}
-            title=""
-            defaultItemsPerPage={10}
-            fetchData={fetchDiscCat as any}
-            columns={[
-              {
-                key: "name",
-                label: "IDENTIFICACIÓN / VALOR",
-                type: "string",
-                render: (row: any) => (
-                  <div className="flex flex-col">
-                    <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
-                      {row.name}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
-                        VALOR: {row.value}
-                      </span>
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                key: "actions",
-                label: "CONTROL",
-                type: "actions",
-                actions: (row: any) => (
-                  <div className="flex items-center gap-2">
-                    <ITButton
-                      size="small"
-                      variant="outlined"
-                      onClick={() => openDiscCatModal(row)}
-                      title="Editar"
-                    >
-                      <FaEdit size={14} />
-                    </ITButton>
-                    <ITButton
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                      onClick={async () => {
-                        if (confirm("¿Eliminar?")) {
-                          await DisciplineService.deleteCategory(row.id);
-                          refresh();
-                        }
-                      }}
-                      title="Eliminar"
-                    >
-                      <FaTrash size={14} />
-                    </ITButton>
-                  </div>
-                ),
-              },
-            ]}
-          />
-        </div>
-      ),
-    },
-    {
-      id: "DISCIPLINE_TYPES",
-      label: "Tipos de Incidencias",
-      icon: <FaTags />,
-      content: (
-        <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
-          <ITDataTable
-            key={`disc-type-${refreshKey}`}
-            title=""
-            defaultItemsPerPage={10}
-            fetchData={fetchDiscType as any}
-            columns={[
-              {
-                key: "name",
-                label: "IDENTIFICACIÓN / VALOR",
-                type: "string",
-                render: (row: any) => (
-                  <div className="flex flex-col">
-                    <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
-                      {row.name}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
-                        VALOR: {row.value}
-                      </span>
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                key: "category",
-                label: "CATEGORÍA",
-                type: "string",
-                render: (row: any) => (
-                  <span className="text-slate-600 text-[11px] font-bold uppercase tracking-tight">
-                    {row.disciplineCategory?.name || row.disciplineCategoryId || "—"}
-                  </span>
-                ),
-              },
-              {
-                key: "actions",
-                label: "CONTROL",
-                type: "actions",
-                actions: (row: any) => (
-                  <div className="flex items-center gap-2">
-                    <ITButton
-                      size="small"
-                      variant="outlined"
-                      onClick={() => openDiscTypeModal(row)}
-                      title="Editar"
-                    >
-                      <FaEdit size={14} />
-                    </ITButton>
-                    <ITButton
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                      onClick={async () => {
-                        if (confirm("¿Eliminar?")) {
-                          await DisciplineService.deleteType(row.id);
-                          refresh();
-                        }
-                      }}
-                      title="Eliminar"
-                    >
-                      <FaTrash size={14} />
-                    </ITButton>
-                  </div>
-                ),
-              },
-            ]}
-          />
-        </div>
-      ),
-    },
   ];
 
   return (
@@ -792,16 +615,10 @@ const SettingsPage = () => {
               ? searchCat
               : activeTab === "TYPES"
                 ? searchType
-                : activeTab === "DISCIPLINE_CATEGORIES"
-                  ? searchDiscCat
-                  : activeTab === "DISCIPLINE_TYPES"
-                    ? searchDiscType
-                    : searchConfig,
+                : searchConfig,
           onChange: (val) => {
             if (activeTab === "CATEGORIES") setSearchCat(val);
             else if (activeTab === "TYPES") setSearchType(val);
-            else if (activeTab === "DISCIPLINE_CATEGORIES") setSearchDiscCat(val);
-            else if (activeTab === "DISCIPLINE_TYPES") setSearchDiscType(val);
             else setSearchConfig(val);
           },
           placeholder: "BUSCAR...",
@@ -811,8 +628,6 @@ const SettingsPage = () => {
         onCreate={() => {
           if (activeTab === "CATEGORIES") openCategoryModal();
           else if (activeTab === "TYPES") openTypeModal();
-          else if (activeTab === "DISCIPLINE_CATEGORIES") openDiscCatModal();
-          else if (activeTab === "DISCIPLINE_TYPES") openDiscTypeModal();
           else openConfigModal();
         }}
         createLabel="Agregar"
@@ -872,17 +687,20 @@ const SettingsPage = () => {
               <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">
                 Tipo de Aplicación
               </label>
-              <select
-                name="type"
+              <ITSelect
+                name=""
                 className="p-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-sky-500 transition-all text-sm font-bold text-slate-700"
                 value={categoryForm.type}
                 onChange={(e: any) =>
                   setCategoryForm({ ...categoryForm, type: e.target.value })
                 }
-              >
-                <option value="INCIDENT">Incidente</option>
-                <option value="MAINTENANCE">Mantenimiento</option>
-              </select>
+                options={[
+                  { label: "Incidente", value: "INCIDENT" },
+                  { label: "Mantenimiento", value: "MAINTENANCE" },
+                  { label: "Disciplina", value: "DISCIPLINE" },
+                ]}
+              />
+               
             </div>
             <div className="flex flex-col gap-3">
               <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">
@@ -1208,159 +1026,6 @@ const SettingsPage = () => {
                 className="px-5 whitespace-nowrap shadow shadow-sky-100"
               >
                 Guardar Parámetro
-              </ITButton>
-            </div>
-          </form>
-        </div>
-      </ITDialog>
-
-      {/* Discipline Category Modal */}
-      <ITDialog
-        isOpen={isDiscCatModalOpen}
-        onClose={() => setIsDiscCatModalOpen(false)}
-        title=""
-        className="!max-w-md !w-full"
-      >
-        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
-          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
-                <FaTag size={18} />
-              </div>
-              <div>
-                <h3 className="text-base font-medium text-slate-800">{editingDiscCat ? "Editar Categoría" : "Nueva Categoría"}</h3>
-                <p className="text-xs text-slate-400 font-light">Configuración del sistema</p>
-              </div>
-            </div>
-          </div>
-          <form onSubmit={handleSaveDiscCat}>
-            <div className="px-8 py-6 space-y-4">
-              <ITInput
-                label="Nombre Interno (Mayúsculas)"
-                name="name"
-                value={discCatForm.name}
-                onChange={(e: any) =>
-                  setDiscCatForm({ ...discCatForm, name: e.target.value.toUpperCase() })
-                }
-                onBlur={() => {}}
-                required
-              />
-              <ITInput
-                label="Valor Descriptivo"
-                name="value"
-                value={discCatForm.value}
-                onChange={(e: any) =>
-                  setDiscCatForm({ ...discCatForm, value: e.target.value })
-                }
-                onBlur={() => {}}
-                required
-              />
-            </div>
-            <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
-              <ITButton
-                variant="ghost"
-                onClick={() => setIsDiscCatModalOpen(false)}
-                size="small"
-                className="px-5 whitespace-nowrap shadow shadow-slate-100"
-              >
-                Cancelar
-              </ITButton>
-              <ITButton
-                variant="filled"
-                color="primary"
-                type="submit"
-                disabled={discCatModalLoading}
-                size="small"
-                className="px-5 whitespace-nowrap shadow shadow-sky-100"
-              >
-                {discCatModalLoading ? <ITLoader size="sm" color="white" /> : (editingDiscCat ? "Guardar Cambios" : "Crear Categoría")}
-              </ITButton>
-            </div>
-          </form>
-        </div>
-      </ITDialog>
-
-      {/* Discipline Type Modal */}
-      <ITDialog
-        isOpen={isDiscTypeModalOpen}
-        onClose={() => setIsDiscTypeModalOpen(false)}
-        title=""
-        className="!max-w-md !w-full"
-      >
-        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
-          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
-                <FaList size={18} />
-              </div>
-              <div>
-                <h3 className="text-base font-medium text-slate-800">{editingDiscType ? "Editar Tipo" : "Nuevo Tipo"}</h3>
-                <p className="text-xs text-slate-400 font-light">Configuración del sistema</p>
-              </div>
-            </div>
-          </div>
-          <form onSubmit={handleSaveDiscType}>
-            <div className="px-8 py-6 space-y-4">
-              <ITInput
-                label="Nombre Interno (Mayúsculas)"
-                name="name"
-                value={discTypeForm.name}
-                onChange={(e: any) =>
-                  setDiscTypeForm({ ...discTypeForm, name: e.target.value.toUpperCase() })
-                }
-                onBlur={() => {}}
-                required
-              />
-              <ITInput
-                label="Valor Descriptivo"
-                name="value"
-                value={discTypeForm.value}
-                onChange={(e: any) =>
-                  setDiscTypeForm({ ...discTypeForm, value: e.target.value })
-                }
-                onBlur={() => {}}
-                required
-              />
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                  Categoría Padre
-                </label>
-                <select
-                  name="disciplineCategoryId"
-                  className="p-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-sky-500 transition-all text-sm font-bold text-slate-700"
-                  value={discTypeForm.disciplineCategoryId}
-                  onChange={(e: any) =>
-                    setDiscTypeForm({ ...discTypeForm, disciplineCategoryId: e.target.value })
-                  }
-                  required
-                >
-                  <option value="">Selecciona categoría</option>
-                  {(discCatsCatalog || []).map((c: any) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
-              <ITButton
-                variant="ghost"
-                onClick={() => setIsDiscTypeModalOpen(false)}
-                size="small"
-                className="px-5 whitespace-nowrap shadow shadow-slate-100"
-              >
-                Cancelar
-              </ITButton>
-              <ITButton
-                variant="filled"
-                color="primary"
-                type="submit"
-                disabled={discTypesModalLoading}
-                size="small"
-                className="px-5 whitespace-nowrap shadow shadow-sky-100"
-              >
-                {discTypesModalLoading ? <ITLoader size="sm" color="white" /> : (editingDiscType ? "Guardar Cambios" : "Crear Tipo")}
               </ITButton>
             </div>
           </form>

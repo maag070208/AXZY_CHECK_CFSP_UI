@@ -21,7 +21,7 @@ if (!localStorage.getItem("it-theme-dark-mode")) {
 }
 
 const customTheme = {
-  primary: "#0ea5e9",
+  primary: "#10b981",
   secondary: "#54634d",
   danger: "#BA1A1A",
   info: "#512bbb",
@@ -43,7 +43,7 @@ const customTheme = {
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Provider store={store}>
-      <ITThemeProvider theme={customTheme} showFab={false}>
+      <ITThemeProvider theme={customTheme} showFab={true}>
         <ToastProvider>
           <HashRouter>
             <App />

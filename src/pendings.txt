@@ -13,3 +13,4 @@ OK       Reporte de incidencia de colaborador
 OK       Administrador generar incidencias o metto
 OK       Asistencia por medio del sistema reporte para prenómina
 OK       Apertura de locales QR
+m

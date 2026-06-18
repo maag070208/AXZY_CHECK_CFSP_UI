@@ -598,13 +598,13 @@ const RoundDetailPage = () => {
                         <p className="text-sm text-slate-600 leading-relaxed">
                           {event.data?.description}
                         </p>
-                        {event.data?.media?.length > 0 && (
+                        {event.data?.media?.length > 0 && Array.isArray(event.data.media) && (
                           <ITMediaGrid
                             media={event.data.media.map((m: any) => ({
                               ...m,
-                              url: m.url.startsWith("http")
+                              url: m?.url?.startsWith("http")
                                 ? m.url
-                                : `${API_BASE_URL}${m.url.replace("/api/v1", "")}`,
+                                : `${API_BASE_URL}${(m?.url || "").replace("/api/v1", "")}`,
                             }))}
                             gridSize={240}
                           />

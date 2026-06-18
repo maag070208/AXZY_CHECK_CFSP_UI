@@ -63,7 +63,7 @@ export const updateIncidentType = async (id: number, data: Partial<IncidentType>
     return put(`${BASE_URL}/types/${id}`, data);
 };
 
-export const deleteIncidentType = async (id: number) => {
+export const deleteIncidentType = async (id: string) => {
     return remove(`${BASE_URL}/types/${id}`);
 };
 
