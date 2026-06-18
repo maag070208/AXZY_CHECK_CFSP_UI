@@ -168,7 +168,7 @@ const IncidentDetailDialog = ({
               {incident.latitude && incident.longitude && (
                 <div className="bg-white p-2 rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                   <div className="p-4 flex items-center gap-2">
-                    <div className="w-1 h-3 bg-blue-500 rounded-full" />
+                    <div className="w-1 h-3 bg-sky-500 rounded-full" />
                     <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                       Ubicación del Reporte
                     </h5>
@@ -234,8 +234,9 @@ const IncidentDetailDialog = ({
                     color="success"
                     className="w-full !rounded-xl !h-12 shadow-md shadow-emerald-500/10"
                   >
-                    <div className="flex items-center justify-center gap-2 font-black text-[9px] tracking-widest uppercase">
-                      <FaCheck size={12} /> Finalizar Atención
+                    <div className="flex items-center justify-center gap-1">
+                      <FaCheck size={14} />
+                      <span className="text-[10px]">Finalizar Atención</span>
                     </div>
                   </ITButton>
                 </div>
@@ -259,11 +260,13 @@ const IncidentDetailDialog = ({
             <ITButton
               variant="outlined"
               color="error"
-              className="px-6 !border-rose-100 !bg-white !text-rose-500 hover:!bg-rose-50"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={() => onDelete(incident)}
             >
-              <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase">
-                <FaTrash size={12} /> Eliminar Reporte
+              <div className="flex items-center gap-1">
+                <FaTrash size={14} />
+                <span className="text-[10px]">Eliminar Reporte</span>
               </div>
             </ITButton>
           )}

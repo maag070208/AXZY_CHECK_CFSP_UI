@@ -4,7 +4,9 @@ export type CatalogOptionsType =
     | 'location'
     | 'guard'
     | 'incident_category'
-    | 'incident_type';
+    | 'incident_type'
+    | 'discipline_category'
+    | 'discipline_type';
 
 export interface ICatalogItem {
     id: number | string;

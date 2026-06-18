@@ -21,6 +21,10 @@ export const getLocations = async () => {
   return await get<Location[]>("/locations");
 };
 
+export const getLocationsByGuard = async (guardId: string) => {
+  return await get<Location[]>(`/locations/by-guard/${guardId}`);
+};
+
 export const getLocationsByClient = async (clientId: string) => {
   return await get<Location[]>(`/locations?clientId=${clientId}`);
 };

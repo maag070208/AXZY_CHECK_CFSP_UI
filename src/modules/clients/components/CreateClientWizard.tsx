@@ -13,6 +13,7 @@ import {
   createClient,
   updateClient,
 } from "../services/ClientsService";
+import { FaBuilding, FaEdit } from "react-icons/fa";
 
 interface Props {
   clientToEdit?: Client;
@@ -94,23 +95,33 @@ export const CreateClientWizard: React.FC<Props> = ({
   });
 
   return (
-    <div className="flex flex-col w-full bg-white max-h-[85vh]">
-      <form
-        onSubmit={formik.handleSubmit}
-        className="flex flex-col h-full overflow-hidden"
-      >
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-10 space-y-12 custom-scrollbar">
+    <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+      {/* Custom Header */}
+      <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+        <div className="flex items-center gap-3">
+          <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${isEditing ? "bg-amber-50 text-amber-500" : "bg-sky-50 text-sky-500"}`}>
+            {isEditing ? <FaEdit size={18} /> : <FaBuilding size={18} />}
+          </div>
+          <div>
+            <h3 className="text-base font-medium text-slate-800">
+              {isEditing ? "Editar Cliente" : "Nuevo Cliente"}
+            </h3>
+            <p className="text-xs text-slate-400 font-light">
+              {isEditing ? clientToEdit?.name : "Registro de nuevo cliente"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={formik.handleSubmit}>
+        <div className="px-8 py-5 space-y-5 max-h-[60vh] overflow-y-auto">
           {/* SECTION 1: IDENTITY */}
           <section>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                Detalles del Cliente
-              </h4>
-            </div>
+            <h4 className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-3">
+              Detalles del Cliente
+            </h4>
 
-            <div className="space-y-6">
+            <div className="space-y-3">
               <ITInput
                 label="Nombre del Cliente / Razón Social"
                 name="name"
@@ -122,7 +133,7 @@ export const CreateClientWizard: React.FC<Props> = ({
                 placeholder="Ej. Corporativo AXZY S.A. de C.V."
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <ITInput
                   label="RFC (Opcional)"
                   name="rfc"
@@ -149,14 +160,11 @@ export const CreateClientWizard: React.FC<Props> = ({
 
           {/* SECTION 2: CONTACT */}
           <section>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                Contacto Principal
-              </h4>
-            </div>
+            <h4 className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-3">
+              Contacto Principal
+            </h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <ITInput
                 label="Nombre de Contacto"
                 name="contactName"
@@ -186,14 +194,11 @@ export const CreateClientWizard: React.FC<Props> = ({
 
           {/* SECTION 3: ACCESS */}
           <section>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                Seguridad y Acceso
-              </h4>
-            </div>
+            <h4 className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-3">
+              Seguridad y Acceso
+            </h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
               <ITInput
                 label="Usuario App"
                 name="appUsername"
@@ -222,12 +227,12 @@ export const CreateClientWizard: React.FC<Props> = ({
             </div>
 
             {isEditing && (
-              <div className="mt-8 flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+              <div className="mt-4 flex items-center justify-between p-3 bg-slate-50/30 rounded-xl border border-slate-100">
                 <div>
-                  <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                  <h5 className="text-xs font-medium text-slate-700 uppercase tracking-wide">
                     Estado del cliente
                   </h5>
-                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                  <p className="text-[10px] text-slate-400 font-light mt-0.5">
                     Activar/desactivar operatividad en el sistema
                   </p>
                 </div>
@@ -240,27 +245,29 @@ export const CreateClientWizard: React.FC<Props> = ({
           </section>
         </div>
 
-        {/* Footer actions matching the premium style */}
-        <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
+        {/* Footer */}
+        <div className="flex-none flex justify-end items-center px-8 py-4 border-t border-slate-100 bg-slate-50/30 gap-3">
           <ITButton
-            type="button"
-            variant="filled"
+            variant="ghost"
             onClick={onCancel}
-            color="secondary"
+            size="small"
+            className="px-5 whitespace-nowrap shadow shadow-slate-100"
           >
             Cancelar
           </ITButton>
-
           <ITButton
+            variant="filled"
+            color="primary"
             type="submit"
             disabled={formik.isSubmitting}
-            color="primary"
+            size="small"
+            className="px-5 whitespace-nowrap shadow shadow-sky-100"
           >
             {formik.isSubmitting
               ? "Procesando..."
               : isEditing
-                ? "Actualizar Información"
-                : "Confirmar Registro"}
+                ? "Guardar Cambios"
+                : "Crear Cliente"}
           </ITButton>
         </div>
       </form>

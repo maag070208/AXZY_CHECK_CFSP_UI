@@ -1,12 +1,13 @@
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
-import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { showToast } from "@app/core/store/toast/toast.slice";
+import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import {
   ITBadget,
   ITButton,
   ITDataTable,
   ITDialog,
+  ITLoader,
   ITSearchSelect,
   ITText,
 } from "@axzydev/axzy_ui_system";
@@ -22,6 +23,7 @@ const RoutesPage = () => {
   const navigate = useNavigate();
   const [refreshKey, setRefreshKey] = useState(0);
   const [routeToDeleteId, setRouteToDeleteId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClientId, setSelectedClientId] = useState<string | number>("");
 
@@ -53,19 +55,16 @@ const RoutesPage = () => {
   };
 
   const confirmDelete = async () => {
-    if (!routeToDeleteId) return;
-    dispatch(showLoader());
-    try {
-      const res = await deleteRoute(String(routeToDeleteId));
-      setRouteToDeleteId(null);
-      if (res.success) {
-        dispatch(showToast({ message: "Ruta eliminada", type: "success" }));
-        refreshTable();
-      } else {
-        dispatch(showToast({ message: "Error al eliminar", type: "error" }));
-      }
-    } finally {
-      dispatch(hideLoader());
+    if (!routeToDeleteId || isDeleting) return;
+    setIsDeleting(true);
+    const res = await deleteRoute(String(routeToDeleteId));
+    setIsDeleting(false);
+    setRouteToDeleteId(null);
+    if (res.success) {
+      dispatch(showToast({ message: "Ruta eliminada", type: "success" }));
+      refreshTable();
+    } else {
+      dispatch(showToast({ message: "Error al eliminar", type: "error" }));
     }
   };
 
@@ -193,11 +192,13 @@ const RoutesPage = () => {
           <ITButton
             onClick={() => handlePrintRouteQRs(row)}
             variant="outlined"
-            title="Imprimir QRs"
             size="small"
             color="secondary"
           >
-            <FaPrint size={14} />
+            <div className="flex items-center gap-1">
+              <FaPrint size={14} />
+              <span className="text-[10px]">QRs</span>
+            </div>
           </ITButton>
           <ITButton
             onClick={() => handleEdit(row)}
@@ -261,53 +262,61 @@ const RoutesPage = () => {
         createLabel="Nueva Ruta"
       />
 
-      <div className="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
         <ITDataTable
           key={refreshKey}
           columns={columns as any}
           fetchData={memoizedFetch as any}
           externalFilters={externalFilters}
           defaultItemsPerPage={10}
+          title=""
         />
       </div>
 
+      {/* DELETE ROUTE DIALOG */}
       <ITDialog
         isOpen={!!routeToDeleteId}
         onClose={() => setRouteToDeleteId(null)}
-        title="Confirmar Eliminación"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-8 text-center">
-          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
-            <FaTrash size={24} />
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Ruta</h3>
+                <p className="text-xs text-slate-400 font-light">Ruta operativa</p>
+              </div>
+            </div>
           </div>
-          <ITText className="text-lg font-bold text-slate-800 mb-2 uppercase tracking-tight block">
-            ¿Eliminar Ruta Operativa?
-          </ITText>
-          <ITText className="text-slate-500 text-sm mb-10 leading-relaxed px-4 block">
-            Estás por borrar una ruta y sus puntos de control.
-            <br />
-            <ITText className="font-bold text-red-500/80 block">
-              Esta acción es permanente y no se puede deshacer.
-            </ITText>
-          </ITText>
-          <div className="flex gap-4 justify-center">
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción eliminará la ruta operativa y todos sus puntos de control asociados.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
-              variant="outlined"
-              color="secondary"
+              variant="ghost"
               onClick={() => setRouteToDeleteId(null)}
-              className="!rounded-xl px-10"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
-              <ITText className="uppercase tracking-widest text-[10px] font-black block">
-                No, Mantener
-              </ITText>
+              Cancelar
             </ITButton>
             <ITButton
+              variant="filled"
+              color="danger"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
-              className="bg-red-500 hover:bg-red-600 text-white !rounded-xl px-10 border-none shadow-lg shadow-red-100"
+              disabled={isDeleting}
             >
-              <ITText className="uppercase tracking-widest text-[10px] font-black block">
-                Sí, Eliminar
-              </ITText>
+              {isDeleting ? <ITLoader size="sm" /> : "Eliminar"}
             </ITButton>
           </div>
         </div>

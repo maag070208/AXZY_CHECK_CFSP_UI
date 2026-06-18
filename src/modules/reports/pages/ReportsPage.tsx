@@ -1,6 +1,6 @@
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITBadget, ITButton, ITDataTable } from "@axzydev/axzy_ui_system";
+import { ITBadget, ITButton, ITDataTable, ITLoader } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useCallback, useState } from "react";
 import {
@@ -9,7 +9,6 @@ import {
   FaExclamationTriangle,
   FaFilePdf,
   FaLockOpen,
-  FaPlay,
   FaTrash,
   FaUserShield,
 } from "react-icons/fa";
@@ -29,6 +28,7 @@ const ReportsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClientId] = useState("");
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [configToEdit, setConfigToEdit] = useState<any>(null);
 
   const fetchData = useCallback(
@@ -118,24 +118,25 @@ const ReportsPage = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("¿Está seguro de eliminar esta configuración?")) {
-      const res = await deleteReportConfiguration(id);
-      if (res.success) {
-        dispatch(
-          showToast({
-            message: "Configuración eliminada",
-            type: "success",
-          }),
-        );
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        dispatch(
-          showToast({
-            message: "Error al eliminar configuración",
-            type: "error",
-          }),
-        );
-      }
+    if (!confirm("¿Está seguro de eliminar esta configuración?") || isDeleting) return;
+    setIsDeleting(true);
+    const res = await deleteReportConfiguration(id);
+    setIsDeleting(false);
+    if (res.success) {
+      dispatch(
+        showToast({
+          message: "Configuración eliminada",
+          type: "success",
+        }),
+      );
+      setRefreshKey((prev) => prev + 1);
+    } else {
+      dispatch(
+        showToast({
+          message: "Error al eliminar configuración",
+          type: "error",
+        }),
+      );
     }
   };
 
@@ -201,7 +202,7 @@ const ReportsPage = () => {
             disabled={isGenerating === row.id}
           >
             {isGenerating === row.id ? (
-              <FaPlay className="animate-spin" size={14} />
+              <ITLoader size="sm" />
             ) : (
               <FaFilePdf size={14} />
             )}
@@ -220,8 +221,9 @@ const ReportsPage = () => {
             color="error"
             title="Eliminar"
             size="small"
+            disabled={isDeleting}
           >
-            <FaTrash size={14} />
+            {isDeleting ? <ITLoader size="sm" /> : <FaTrash size={14} />}
           </ITButton>
         </div>
       ),
@@ -251,12 +253,12 @@ const ReportsPage = () => {
           {/* CARD: Apertura / Cierre */}
           <div
             onClick={() => setAperturaCierreOpen(true)}
-            className="bg-white rounded-2xl p-6 cursor-pointer border border-slate-200 hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-100 transition-all group"
+            className="bg-white rounded-2xl p-6 cursor-pointer border border-slate-200 hover:border-sky-500 hover:shadow-xl hover:shadow-sky-100 transition-all group"
           >
-            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors">
+            <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-sky-500 transition-colors">
               <FaLockOpen
                 size={20}
-                className="text-emerald-600 group-hover:text-white transition-colors"
+                className="text-sky-600 group-hover:text-white transition-colors"
               />
             </div>
             <h3 className="text-[13px] font-black uppercase tracking-widest text-slate-800 mb-2">
@@ -266,7 +268,7 @@ const ReportsPage = () => {
               Matriz de asistencia por punto de control. Valida evidencia
               obligatoria por día en un rango de fechas.
             </p>
-            <div className="flex items-center text-[10px] font-black text-emerald-600 uppercase tracking-widest gap-2">
+            <div className="flex items-center text-[10px] font-black text-sky-600 uppercase tracking-widest gap-2">
               <span>CONFIGURAR REPORTE</span>
               <FaChartBar />
             </div>
@@ -306,11 +308,13 @@ const ReportsPage = () => {
         <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">
           Configuraciones Guardadas
         </h2>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200">
+        <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
           <ITDataTable
             key={refreshKey}
             columns={columns as any}
             fetchData={fetchData}
+            title=""
+            defaultItemsPerPage={10}
           />
         </div>
       </div>

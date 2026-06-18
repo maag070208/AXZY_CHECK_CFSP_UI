@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from "@app/core/utils/test-utils";
+import { render, screen, waitFor } from "@app/core/utils/test-utils";
 import ClientsPage from "./ClientsPage";
 import * as clientsService from "../services/ClientsService";
 import { vi } from "vitest";
@@ -29,6 +29,7 @@ const mockClients = {
       contactName: "Juan Pérez",
       contactPhone: "555-0199",
       active: true,
+      softDelete: false,
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
       deletedAt: null,
@@ -39,12 +40,15 @@ const mockClients = {
       contactName: "María López",
       contactPhone: "555-0188",
       active: false,
+      softDelete: false,
       createdAt: "2024-01-01T00:00:00.000Z",
       updatedAt: "2024-01-01T00:00:00.000Z",
       deletedAt: null,
     },
   ],
   total: 2,
+  page: 1,
+  limit: 10,
 };
 
 describe("ClientsPage (Pruebas del módulo de Clientes)", () => {
@@ -80,7 +84,7 @@ describe("ClientsPage (Pruebas del módulo de Clientes)", () => {
     const user = userEvent.setup();
     vi.mocked(clientsService.deleteClient).mockResolvedValue({
       success: true,
-      data: undefined,
+      data: [],
       messages: ["Cliente eliminado"],
     });
 

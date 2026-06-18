@@ -43,7 +43,7 @@ const MaintenanceDetailDialog = ({
               <section>
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-4 bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.3)]" />
+                    <div className="w-1.5 h-4 bg-sky-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.3)]" />
                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                       Información General
                     </h4>
@@ -132,7 +132,7 @@ const MaintenanceDetailDialog = ({
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 border border-orange-100 flex items-center justify-center text-base font-black shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center text-base font-black shrink-0">
                     {maintenance.guard?.name?.[0]}
                     {maintenance.guard?.lastName?.[0]}
                   </div>
@@ -140,7 +140,7 @@ const MaintenanceDetailDialog = ({
                     <p className="text-[12px] font-black text-slate-800 uppercase tracking-tight truncate">
                       {maintenance.guard?.name} {maintenance.guard?.lastName}
                     </p>
-                    <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-0.5 truncate">
+                    <p className="text-[9px] font-bold text-sky-500 uppercase tracking-widest mt-0.5 truncate">
                       @{maintenance.guard?.username}
                     </p>
                   </div>
@@ -170,7 +170,7 @@ const MaintenanceDetailDialog = ({
               {maintenance.latitude && maintenance.longitude && (
                 <div className="bg-white p-2 rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                   <div className="p-4 flex items-center gap-2">
-                    <div className="w-1 h-3 bg-blue-500 rounded-full" />
+                    <div className="w-1 h-3 bg-sky-500 rounded-full" />
                     <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                       Ubicación del Reporte
                     </h5>
@@ -223,11 +223,11 @@ const MaintenanceDetailDialog = ({
 
               {/* Acción Pendiente */}
               {maintenance.status === "PENDING" && !isClient && (
-                <div className="bg-orange-50 p-6 rounded-3xl border border-orange-100">
-                  <h5 className="text-[9px] font-black text-orange-500 uppercase tracking-widest mb-3">
+                <div className="bg-rose-50 p-6 rounded-3xl border border-rose-100">
+                  <h5 className="text-[9px] font-black text-rose-500 uppercase tracking-widest mb-3">
                     Respuesta Requerida
                   </h5>
-                  <p className="text-[10px] text-orange-700 font-bold leading-relaxed mb-6 uppercase tracking-tight">
+                  <p className="text-[10px] text-rose-700 font-bold leading-relaxed mb-6 uppercase tracking-tight">
                     Este reporte requiere validación técnica inmediata.
                   </p>
                   <ITButton
@@ -236,8 +236,9 @@ const MaintenanceDetailDialog = ({
                     color="success"
                     className="w-full !rounded-xl !h-12 shadow-md shadow-emerald-500/10"
                   >
-                    <div className="flex items-center justify-center gap-2 font-black text-[9px] tracking-widest uppercase">
-                      <FaCheck size={12} /> Finalizar Atención
+                    <div className="flex items-center justify-center gap-1">
+                      <FaCheck size={14} />
+                      <span className="text-[10px]">Finalizar Atención</span>
                     </div>
                   </ITButton>
                 </div>
@@ -261,11 +262,13 @@ const MaintenanceDetailDialog = ({
             <ITButton
               variant="outlined"
               color="error"
-              className="px-6 !border-rose-100 !bg-white !text-rose-500 hover:!bg-rose-50"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={() => onDelete(maintenance)}
             >
-              <div className="flex items-center gap-2 font-black text-[10px] tracking-widest uppercase">
-                <FaTrash size={12} /> Eliminar Reporte
+              <div className="flex items-center gap-1">
+                <FaTrash size={14} />
+                <span className="text-[10px]">Eliminar Reporte</span>
               </div>
             </ITButton>
           )}

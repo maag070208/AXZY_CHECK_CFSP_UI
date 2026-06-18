@@ -14,7 +14,6 @@ import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
 import {
   FaCheck,
-  FaCheckCircle,
   FaExclamationTriangle,
   FaEye,
   FaTrash,
@@ -269,76 +268,99 @@ const IncidentsPage = () => {
         isAdmin={isAdmin}
         isClient={isClient}
       />
-      {/* Confirmation Dialogs */}
+      {/* RESOLVE INCIDENT DIALOG */}
       <ITDialog
         isOpen={!!incidentToResolveId}
         onClose={() => setIncidentToResolveId(null)}
-        title="Confirmar Resolución"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-8 text-center">
-          <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-100 shadow-sm">
-            <FaCheckCircle size={32} />
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                <FaCheck size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Resolver Incidencia</h3>
+                <p className="text-xs text-slate-400 font-light">Confirmar resolución</p>
+              </div>
+            </div>
           </div>
-          <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-2">
-            ¿Confirmar Resolución?
-          </h4>
-          <p className="text-slate-500 text-xs font-medium mb-8 uppercase tracking-tight">
-            Se registrará la incidencia como atendida permanentemente.
-          </p>
-          <div className="flex justify-center gap-3">
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              La incidencia será marcada como atendida. Esta acción no puede deshacerse.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
-              className="px-8 !text-slate-400 font-black text-[10px] uppercase tracking-widest"
               onClick={() => setIncidentToResolveId(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
             <ITButton
               variant="filled"
-              color="success"
-              className="px-10"
+              color="primary"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-emerald-100"
               onClick={confirmResolve}
+              disabled={!!resolvingId}
             >
-              <div className="font-black text-[10px] uppercase tracking-widest">
-                Confirmar
-              </div>
+              {resolvingId ? <ITLoader size="sm" color="white" /> : "Confirmar"}
             </ITButton>
           </div>
         </div>
       </ITDialog>
 
+      {/* DELETE INCIDENT DIALOG */}
       <ITDialog
         isOpen={!!incidentToDelete}
         onClose={() => setIncidentToDelete(null)}
-        title="Eliminar Incidencia"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-8 text-center">
-          <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-rose-100 shadow-sm">
-            <FaTrash size={24} />
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Incidencia</h3>
+                <p className="text-xs text-slate-400 font-light">Esta acción es permanente</p>
+              </div>
+            </div>
           </div>
-          <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-2">
-            ¿Eliminar Reporte?
-          </h4>
-          <p className="text-slate-500 text-xs font-medium mb-8 uppercase tracking-tight">
-            Esta acción es irreversible. Se perderá toda la evidencia.
-          </p>
-          <div className="flex justify-center gap-3">
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción eliminará el reporte de incidencia y todo su historial asociado.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
-              className="px-8 !text-slate-400 font-black text-[10px] uppercase tracking-widest"
               onClick={() => setIncidentToDelete(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
             <ITButton
               variant="filled"
               color="danger"
-              className="px-10"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
+              disabled={!!deletingId}
             >
-              <div className="font-black text-[10px] uppercase tracking-widest">
-                Eliminar
-              </div>
+              {deletingId ? <ITLoader size="sm" /> : "Eliminar"}
             </ITButton>
           </div>
         </div>

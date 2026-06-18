@@ -16,10 +16,15 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.locale("es");
 
+if (!localStorage.getItem("it-theme-dark-mode")) {
+  localStorage.setItem("it-theme-dark-mode", "light");
+}
+
 const customTheme = {
-  primary: "#065911",
+  primary: "#0ea5e9",
   secondary: "#54634d",
   danger: "#BA1A1A",
+  info: "#512bbb",
   success: "#4ADE80",
   layout: {
     sidebarBg: "#ffffff",

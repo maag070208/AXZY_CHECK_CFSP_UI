@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { render, screen, waitFor } from "@app/core/utils/test-utils";
 import ClientDetailsPage from "./ClientDetailsPage";
 import * as clientsService from "../services/ClientsService";
 import { vi } from "vitest";
-import React from "react";
 import "@testing-library/jest-dom";
 
 // Mock useParams & useNavigate
@@ -39,6 +39,7 @@ const mockClient = {
   contactName: "Juan Pérez",
   contactPhone: "555-0199",
   active: true,
+  softDelete: false,
   createdAt: "2024-01-01T00:00:00.000Z",
   updatedAt: "2024-01-01T00:00:00.000Z",
   deletedAt: null,

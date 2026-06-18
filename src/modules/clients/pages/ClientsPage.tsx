@@ -8,6 +8,7 @@ import {
   ITDataTable,
   ITDataTableFetchParams,
   ITDialog,
+  ITLoader,
   ITText,
   ITTripleFilter,
 } from "@axzydev/axzy_ui_system";
@@ -127,7 +128,7 @@ const ClientsPage = () => {
         }
       />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
         <ITDataTable<Client & Record<string, unknown>>
           key={refreshKey}
           fetchData={memoizedFetch}
@@ -142,7 +143,7 @@ const ClientsPage = () => {
               sortable: true,
               render: (row: Client) => (
                 <div className="flex flex-col">
-                  <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 hover:text-emerald-600 cursor-pointer transition-colors block">
+                  <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 hover:text-sky-600 cursor-pointer transition-colors block">
                     {row.name}
                   </ITText>
                   <div className="flex items-center gap-1.5">
@@ -228,12 +229,8 @@ const ClientsPage = () => {
           setIsCreateModalOpen(false);
           setEditingClient(null);
         }}
-        title={
-          editingClient
-            ? `Editar Cliente: ${editingClient.name}`
-            : "Nuevo Cliente"
-        }
-        className="!w-full !max-w-2xl"
+        title=""
+        className="!max-w-lg !w-full"
       >
         <CreateClientWizard
           clientToEdit={editingClient || undefined}
@@ -245,30 +242,50 @@ const ClientsPage = () => {
         />
       </ITDialog>
 
+      {/* DELETE CLIENT DIALOG */}
       <ITDialog
         isOpen={!!clientToDeleteId}
         onClose={() => setClientToDeleteId(null)}
-        title="Confirmar Eliminación"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-6">
-          <ITText className="text-slate-700 mb-6 block">
-            ¿Estás seguro de eliminar el cliente seleccionado? Esto no eliminará
-            sus datos históricos, pero lo ocultará del sistema principal.
-          </ITText>
-          <div className="flex justify-end gap-3">
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Cliente</h3>
+                <p className="text-xs text-slate-400 font-light">Cliente #{clientToDeleteId}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción eliminará el cliente y todos sus datos asociados de forma permanente.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
-              variant="outlined"
+              variant="ghost"
               onClick={() => setClientToDeleteId(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
             <ITButton
               variant="filled"
               color="danger"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? "Eliminando..." : "Eliminar Cliente"}
+              {isDeleting ? <ITLoader size="sm" /> : "Eliminar"}
             </ITButton>
           </div>
         </div>

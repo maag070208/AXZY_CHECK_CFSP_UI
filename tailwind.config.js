@@ -19,6 +19,18 @@ export default {
         /^(hover:bg|focus:ring)-(blue|gray|green|red|yellow|purple)-(50|300|700|800|900)$/,
     },
     {
+      pattern:
+        /^(bg|text|border)-(primary|secondary|success|danger|warning|info|purple)-(50|100|200|300|400|500|600|700|800|900|950)$/,
+    },
+    {
+      pattern:
+        /^(hover:|focus:)?(bg|text|border)-(primary|secondary|success|danger|warning|info)-(50|100|200|300|400|500|600|700|800|900)$/,
+    },
+    {
+      pattern:
+        /^(shadow|ring)-(primary|secondary|success|danger|warning|info)\/\d{2}$/,
+    },
+    {
       pattern: /^hover:underline$/, // Clase de Tailwind para subrayado al pasar el mouse
     },
     {

@@ -1,6 +1,6 @@
 import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITButton, ITInput, ITLoader, ITText } from "@axzydev/axzy_ui_system";
+import { ITButton, ITInput, ITLoader } from "@axzydev/axzy_ui_system";
 import { useFormik } from "formik";
 import React from "react";
 import { FaKey } from "react-icons/fa";
@@ -64,71 +64,65 @@ export const ChangePasswordModal: React.FC<Props> = ({
   });
 
   return (
-    <div className="flex flex-col bg-white overflow-hidden max-h-[85vh]">
-      <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
-        <section>
-          <div className="flex items-center gap-2 mb-8">
-            <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-            <ITText className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-              Seguridad de Cuenta
-            </ITText>
+    <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+      <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+            <FaKey size={18} />
           </div>
-
-          <div className="space-y-8">
-            <div className="bg-slate-50 p-6 rounded-[24px] border border-slate-100 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-500 border border-slate-100">
-                <FaKey size={20} />
-              </div>
-              <div className="flex flex-col">
-                <ITText className="text-sm font-black text-slate-800 uppercase tracking-tight">
-                  @{user.username}
-                </ITText>
-                <ITText className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-                  {user.name} {user.lastName}
-                </ITText>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <ITInput
-                label="Nueva Contraseña"
-                name="newPassword"
-                type="password"
-                value={formik.values.newPassword}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.errors.newPassword}
-                touched={formik.touched.newPassword}
-                placeholder="••••••••"
-              />
-              <ITInput
-                label="Confirmar Contraseña"
-                name="confirmPassword"
-                type="password"
-                value={formik.values.confirmPassword}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.errors.confirmPassword}
-                touched={formik.touched.confirmPassword}
-                placeholder="••••••••"
-              />
-            </div>
+          <div>
+            <h3 className="text-base font-medium text-slate-800">Cambiar Contraseña</h3>
+            <p className="text-xs text-slate-400 font-light">@{user.username}</p>
           </div>
-        </section>
+        </div>
       </div>
 
-      <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
+      <div className="px-8 py-6 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ITInput
+            label="Nueva Contraseña"
+            name="newPassword"
+            type="password"
+            value={formik.values.newPassword}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.newPassword}
+            touched={formik.touched.newPassword}
+            placeholder="••••••••"
+          />
+          <ITInput
+            label="Confirmar Contraseña"
+            name="confirmPassword"
+            type="password"
+            value={formik.values.confirmPassword}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.errors.confirmPassword}
+            touched={formik.touched.confirmPassword}
+            placeholder="••••••••"
+          />
+        </div>
+      </div>
+
+      <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
         <ITButton
           type="button"
-          variant="filled"
+          variant="ghost"
           onClick={onCancel}
-          color="secondary"
+          size="small"
+          className="px-5 whitespace-nowrap shadow shadow-slate-100"
         >
           Cancelar
         </ITButton>
 
-        <ITButton onClick={() => formik.submitForm()} color="primary">
-          {<ITLoader size="sm" />} Actualizar Clave
+        <ITButton
+          onClick={() => formik.submitForm()}
+          color="primary"
+          disabled={formik.isSubmitting}
+          size="small"
+          className="px-5 whitespace-nowrap shadow shadow-sky-100"
+        >
+          {formik.isSubmitting ? <ITLoader size="sm" /> : "Actualizar Clave"}
         </ITButton>
       </div>
     </div>

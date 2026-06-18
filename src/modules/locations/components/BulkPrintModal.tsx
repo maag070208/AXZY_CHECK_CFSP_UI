@@ -5,9 +5,10 @@ import {
   ITDialog,
   ITInput,
   ITSearchSelect,
+  ITSelect,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useState } from "react";
-import { FaMapMarkerAlt, FaPlus, FaSearch, FaTimes } from "react-icons/fa";
+import { FaMapMarkerAlt, FaPlus, FaPrint, FaSearch, FaTimes } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { Zone, getZones } from "../../zones/services/ZonesService";
 import { Location, getPaginatedLocations } from "../service/locations.service";
@@ -94,37 +95,45 @@ export const BulkPrintModal = ({
     <ITDialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Impresión Masiva de QRs"
-      className="!max-w-5xl !w-full"
+      title=""
+      className="!max-w-4xl !w-full"
     >
       <div className="flex flex-col bg-white overflow-hidden max-h-[85vh]">
+        <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+              <FaPrint size={18} />
+            </div>
+            <div>
+              <h3 className="text-base font-medium text-slate-800">Impresión Masiva</h3>
+              <p className="text-xs text-slate-400 font-light">Generar QRs</p>
+            </div>
+          </div>
+        </div>
         {/* Tab Navigation */}
-        <div className="flex-none flex px-10 border-b border-slate-100 bg-white">
+        <div className="flex-none flex px-8 border-b border-slate-100 bg-white">
           <button
             onClick={() => setActiveTab("SEARCH")}
-            className={`px-8 py-5 text-[10px] font-black tracking-[0.2em] transition-all border-b-2 uppercase ${
-              activeTab === "SEARCH"
-                ? "border-emerald-500 text-emerald-600"
-                : "border-transparent text-slate-400 hover:text-slate-600"
-            }`}
+            className={`px-8 py-5 text-[10px] font-medium tracking-[0.2em] transition-all border-b-2 uppercase ${activeTab === "SEARCH"
+              ? "border-emerald-500 text-emerald-600"
+              : "border-transparent text-slate-400 hover:text-slate-600"
+              }`}
           >
             Buscar y Agregar
           </button>
           <button
             onClick={() => setActiveTab("SELECTED")}
-            className={`px-8 py-5 text-[10px] font-black tracking-[0.2em] transition-all border-b-2 flex items-center gap-3 uppercase ${
-              activeTab === "SELECTED"
-                ? "border-emerald-500 text-emerald-600"
-                : "border-transparent text-slate-400 hover:text-slate-600"
-            }`}
+            className={`px-8 py-5 text-[10px] font-medium tracking-[0.2em] transition-all border-b-2 flex items-center gap-3 uppercase ${activeTab === "SELECTED"
+              ? "border-emerald-500 text-emerald-600"
+              : "border-transparent text-slate-400 hover:text-slate-600"
+              }`}
           >
             Seleccionados
             <span
-              className={`px-2 py-0.5 rounded-full text-[9px] font-black transition-all duration-300 ${animateBadge ? "scale-125 bg-emerald-500 text-white" : ""} ${
-                selectedIds.length > 0
-                  ? "bg-emerald-100 text-emerald-600"
-                  : "bg-slate-100 text-slate-400"
-              }`}
+              className={`px-2 py-0.5 rounded-full text-[9px] font-medium transition-all duration-300 ${animateBadge ? "scale-125 bg-emerald-500 text-white" : ""} ${selectedIds.length > 0
+                ? "bg-emerald-100 text-emerald-600"
+                : "bg-slate-100 text-slate-400"
+                }`}
             >
               {selectedIds.length}
             </span>
@@ -133,60 +142,65 @@ export const BulkPrintModal = ({
 
         {/* Filters Section (Only in SEARCH tab) */}
         {activeTab === "SEARCH" && (
-          <div className="flex-none p-10 bg-slate-50/30 border-b border-slate-100">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <ITSearchSelect
-                label="Cliente"
-                placeholder="Seleccionar cliente..."
-                options={(clients || []).map((c: any) => ({
-                  label: c.name,
-                  value: c.id,
-                }))}
-                value={clientId}
-                onChange={(val) => {
-                  setClientId(val as string);
-                  setBulkFilterZone("");
-                }}
-              />
+          <div className="flex-none px-8 py-5 bg-slate-50/30 border-b border-slate-100">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                <label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+                  Cliente
+                </label>
+                <ITSearchSelect
+                  placeholder="Seleccionar cliente..."
+                  options={(clients || []).map((c: any) => ({
+                    label: c.name,
+                    value: c.id,
+                  }))}
+                  value={clientId}
+                  onChange={(val) => {
+                    setClientId(val as string);
+                    setBulkFilterZone("");
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
                   Zona / Recurrente
                 </label>
-                <select
+                <ITSelect
                   value={bulkFilterZone}
                   onChange={(e) => setBulkFilterZone(e.target.value)}
-                  className="w-full h-[48px] px-5 rounded-2xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none transition-all focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 disabled:bg-slate-50 disabled:cursor-not-allowed"
                   disabled={!clientId}
-                >
-                  <option value="">Todas las zonas</option>
-                  {allZones
-                    .filter((z) => !clientId || z.clientId === clientId)
-                    .map((z) => (
-                      <option key={z.id} value={z.id}>
-                        {z.name}
-                      </option>
-                    ))}
-                </select>
+                  options={[
+                    { label: "Todas las zonas", value: "" },
+                    ...allZones.map((z) => ({
+                      label: z.name,
+                      value: z.id,
+                    })),
+                  ]}
+                  name=""
+                />
               </div>
-              <ITInput
-                label="Buscador"
-                placeholder="Ej. Punto de Control A..."
-                name="bulkSearch"
-                value={bulkFilterSearch}
-                onChange={(e) => setBulkFilterSearch(e.target.value)}
-                onBlur={() => {}}
-              />
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+                  Buscador
+                </label>
+                <ITInput
+                  placeholder="Ej. Punto de Control A..."
+                  name="bulkSearch"
+                  value={bulkFilterSearch}
+                  onChange={(e) => setBulkFilterSearch(e.target.value)}
+                  onBlur={() => {}}
+                />
+              </div>
             </div>
           </div>
         )}
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-10 space-y-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6 custom-scrollbar">
           <section>
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                <h4 className="text-xs font-medium text-slate-400 uppercase tracking-widest">
                   {activeTab === "SEARCH"
                     ? "Resultados de Búsqueda"
                     : "Elementos a Imprimir"}
@@ -209,7 +223,7 @@ export const BulkPrintModal = ({
                         ...newLocations,
                       ]);
                     }}
-                    className="text-[9px] font-black text-emerald-500 uppercase tracking-widest hover:text-emerald-600 transition-colors"
+                    className="text-[9px] font-medium text-emerald-500 uppercase tracking-widest hover:text-emerald-600 transition-colors"
                   >
                     Agregar Todos
                   </button>
@@ -219,7 +233,7 @@ export const BulkPrintModal = ({
                       setSelectedIds([]);
                       setSelectedLocations([]);
                     }}
-                    className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
+                    className="text-[9px] font-medium text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
                   >
                     Limpiar Selección
                   </button>
@@ -233,11 +247,10 @@ export const BulkPrintModal = ({
                   locationsToChoose.map((loc) => (
                     <label
                       key={loc.id}
-                      className={`group flex items-center gap-4 p-5 rounded-2xl border transition-all cursor-pointer ${
-                        selectedIds.includes(loc.id)
-                          ? "border-emerald-500 bg-emerald-50/30 shadow-sm"
-                          : "border-slate-100 bg-white hover:border-slate-300 hover:shadow-md"
-                      }`}
+                      className={`group flex items-center gap-4 p-5 rounded-2xl border transition-all cursor-pointer ${selectedIds.includes(loc.id)
+                        ? "border-emerald-500 bg-emerald-50/30 shadow-sm"
+                        : "border-slate-100 bg-white hover:border-slate-300 hover:shadow-md"
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -258,25 +271,24 @@ export const BulkPrintModal = ({
                         className="hidden"
                       />
                       <div
-                        className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
-                          selectedIds.includes(loc.id)
-                            ? "bg-emerald-500 border-emerald-500 text-white"
-                            : "border-slate-200 bg-white group-hover:border-slate-300"
-                        }`}
+                        className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${selectedIds.includes(loc.id)
+                          ? "bg-emerald-500 border-emerald-500 text-white"
+                          : "border-slate-200 bg-white group-hover:border-slate-300"
+                          }`}
                       >
                         {selectedIds.includes(loc.id) && (
                           <FaPlus size={8} className="rotate-45" />
                         )}
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-black text-slate-700 truncate uppercase tracking-tight">
+                        <span className="text-xs font-medium text-slate-700 truncate uppercase tracking-tight">
                           {loc.name}
                         </span>
                         <div className="flex items-center gap-1.5 mt-1">
                           <div
                             className={`w-1 h-1 rounded-full ${selectedIds.includes(loc.id) ? "bg-emerald-400" : "bg-slate-300"}`}
                           />
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest truncate">
+                          <span className="text-[9px] text-slate-400 font-medium uppercase tracking-widest truncate">
                             {loc.zone?.name || "General"}
                           </span>
                         </div>
@@ -286,7 +298,7 @@ export const BulkPrintModal = ({
                 ) : (
                   <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-300 gap-4">
                     <FaSearch size={40} className="opacity-20" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">
+                    <span className="text-[9px] font-medium uppercase tracking-widest">
                       Sin resultados encontrados
                     </span>
                   </div>
@@ -301,12 +313,12 @@ export const BulkPrintModal = ({
                       className="flex items-center justify-between p-5 rounded-2xl border border-emerald-500 bg-emerald-50/30 shadow-sm"
                     >
                       <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-black text-slate-700 truncate uppercase tracking-tight">
+                        <span className="text-xs font-medium text-slate-700 truncate uppercase tracking-tight">
                           {loc.name}
                         </span>
                         <div className="flex items-center gap-1.5 mt-1">
                           <div className="w-1 h-1 rounded-full bg-emerald-400" />
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest truncate">
+                          <span className="text-[9px] text-slate-400 font-medium uppercase tracking-widest truncate">
                             {loc.zone?.name || "General"}
                           </span>
                         </div>
@@ -329,7 +341,7 @@ export const BulkPrintModal = ({
                 ) : (
                   <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-300 gap-4">
                     <FaMapMarkerAlt size={40} className="opacity-20" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">
+                    <span className="text-[9px] font-medium uppercase tracking-widest">
                       No hay ubicaciones seleccionadas
                     </span>
                   </div>
@@ -339,29 +351,24 @@ export const BulkPrintModal = ({
           </section>
         </div>
 
-        {/* Standardized Footer */}
-        <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
+        <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
           <ITButton
-            type="button"
-            variant="filled"
+            variant="ghost"
+            size="small"
             onClick={onClose}
-            color="secondary"
+            className="px-5 whitespace-nowrap shadow shadow-slate-100"
           >
-            <span className="uppercase tracking-widest text-[10px] font-black">
-              Cancelar
-            </span>
+            Cancelar
           </ITButton>
-
           <ITButton
-            onClick={handleConfirm}
+            variant="filled"
             color="primary"
+            size="small"
+            onClick={handleConfirm}
             disabled={selectedIds.length === 0}
+            className="px-5 whitespace-nowrap shadow shadow-sky-100"
           >
-            <div className="flex items-center gap-2">
-              <span className="uppercase tracking-widest text-[10px] font-black">
-                Confirmar Impresión ({selectedIds.length})
-              </span>
-            </div>
+            Confirmar Impresión ({selectedIds.length})
           </ITButton>
         </div>
       </div>

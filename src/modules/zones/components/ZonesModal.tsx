@@ -13,7 +13,7 @@ interface Props {
   clientName: string;
 }
 
-export const ZonesModal = ({ isOpen, onClose, clientId, clientName }: Props) => {
+export const ZonesModal = ({ isOpen, onClose, clientId }: Props) => {
   const dispatch = useDispatch();
   const [zones, setZones] = useState<Zone[]>([]);
   const [newZoneName, setNewZoneName] = useState("");
@@ -83,15 +83,26 @@ export const ZonesModal = ({ isOpen, onClose, clientId, clientName }: Props) => 
     <ITDialog 
       isOpen={isOpen} 
       onClose={onClose} 
-      title={`Zonas del Cliente - ${clientName}`}
+      title=""
+      className="!max-w-md !w-full"
     >
       <div className="flex flex-col bg-white overflow-hidden max-h-[85vh]">
+        <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+              <FaLayerGroup size={18} />
+            </div>
+            <div>
+              <h3 className="text-base font-medium text-slate-800">Administrar Zonas</h3>
+              <p className="text-xs text-slate-400 font-light">Gestión de zonas y recurrentes</p>
+            </div>
+          </div>
+        </div>
         <div className="p-10 space-y-10 overflow-y-auto custom-scrollbar">
           {/* Create Section */}
           <section>
             <div className="flex items-center gap-2 mb-8">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              <h4 className="text-xs font-medium text-slate-400 uppercase tracking-widest">
                 Nueva Zona / Recurrente
               </h4>
             </div>
@@ -108,12 +119,13 @@ export const ZonesModal = ({ isOpen, onClose, clientId, clientName }: Props) => 
               <ITButton 
                 onClick={handleCreate} 
                 color="primary"
+                size="small"
                 disabled={!newZoneName.trim()}
-                className="shadow-lg shadow-emerald-100"
+                className="px-5 whitespace-nowrap shadow shadow-sky-100"
               >
-                <div className="flex items-center gap-2 px-2">
-                  <FaPlus size={10} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Agregar</span>
+                <div className="flex items-center gap-1">
+                  <FaPlus size={14} />
+                  <span className="text-[10px]">Agregar</span>
                 </div>
               </ITButton>
             </div>
@@ -122,8 +134,7 @@ export const ZonesModal = ({ isOpen, onClose, clientId, clientName }: Props) => 
           {/* List Section */}
           <section>
             <div className="flex items-center gap-2 mb-8">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              <h4 className="text-xs font-medium text-slate-400 uppercase tracking-widest">
                 Zonas Registradas ({zones.length})
               </h4>
             </div>
@@ -150,17 +161,17 @@ export const ZonesModal = ({ isOpen, onClose, clientId, clientName }: Props) => 
                         type="text"
                         value={editingZone.name}
                         onChange={(e) => setEditingZone({ ...editingZone, name: e.target.value })}
-                        className="flex-1 bg-transparent border-b-2 border-emerald-500 text-sm font-black text-slate-700 outline-none py-1 uppercase tracking-tight"
+                        className="flex-1 bg-transparent border-b-2 border-emerald-500 text-sm font-medium text-slate-700 outline-none py-1 uppercase tracking-tight"
                         autoFocus
                       />
                     ) : (
                       <div className="flex flex-col">
-                        <span className="text-sm font-black text-slate-700 uppercase tracking-tight">
+                        <span className="text-sm font-medium text-slate-700 uppercase tracking-tight">
                           {zone.name}
                         </span>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <div className={`w-1 h-1 rounded-full ${zone.active ? "bg-emerald-400" : "bg-slate-300"}`} />
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                          <span className="text-[9px] text-slate-400 font-medium uppercase tracking-widest">
                             {zone.active ? "Activo" : "Inactivo"}
                           </span>
                         </div>
@@ -177,7 +188,7 @@ export const ZonesModal = ({ isOpen, onClose, clientId, clientName }: Props) => 
                           className="!text-emerald-600 !p-2" 
                           onClick={handleUpdate}
                         >
-                          <span className="text-[10px] font-black uppercase tracking-widest px-2">Guardar</span>
+                          <span className="text-[9px] font-medium uppercase tracking-widest px-2">Guardar</span>
                         </ITButton>
                         <button 
                           className="p-2 text-slate-400 hover:text-slate-600 transition-colors" 
@@ -214,24 +225,21 @@ export const ZonesModal = ({ isOpen, onClose, clientId, clientName }: Props) => 
               {zones.length === 0 && (
                 <div className="py-20 flex flex-col items-center justify-center text-slate-300 gap-4 bg-slate-50/30 rounded-3xl border border-dashed border-slate-200">
                   <FaLayerGroup size={40} className="opacity-20" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Sin zonas registradas</span>
+                  <span className="text-[9px] font-medium uppercase tracking-widest">Sin zonas registradas</span>
                 </div>
               )}
             </div>
           </section>
         </div>
 
-        {/* Standardized Footer */}
-        <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50">
+        <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
           <ITButton
-            type="button"
-            variant="filled"
+            variant="ghost"
             onClick={onClose}
-            color="secondary"
+            size="small"
+            className="px-5 whitespace-nowrap shadow shadow-slate-100"
           >
-            <span className="uppercase tracking-widest text-[10px] font-black">
-              Cerrar Administrador
-            </span>
+            Cancelar
           </ITButton>
         </div>
       </div>

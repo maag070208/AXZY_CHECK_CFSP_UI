@@ -8,10 +8,10 @@ import {
   ITSearchSelect,
 } from "@axzydev/axzy_ui_system";
 import { useEffect, useState } from "react";
-import { FaPlus, FaTrash } from "react-icons/fa";
+import { FaClipboardList, FaPlus, FaTrash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  getLocations,
+  getLocationsByGuard,
   Location,
 } from "../../locations/service/locations.service";
 import { createAssignment } from "../service/guards.service";
@@ -37,6 +37,7 @@ export const AssignmentModal = ({
   >(undefined);
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [loadingLocations, setLoadingLocations] = useState(false);
 
   const [tasks, setTasks] = useState<
     { description: string; reqPhoto: boolean }[]
@@ -57,10 +58,12 @@ export const AssignmentModal = ({
   }, [isOpen]);
 
   const fetchData = async () => {
-    const res = await getLocations();
+    setLoadingLocations(true);
+    const res = await getLocationsByGuard(String(guardId));
     if (res.success && res.data) {
       setLocations(res.data);
     }
+    setLoadingLocations(false);
   };
 
   const addTask = () => {
@@ -148,161 +151,161 @@ export const AssignmentModal = ({
     <ITDialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Asignación Especial"
-      className="!max-w-2xl !w-full"
+      title=""
+      className="!max-w-md !w-full"
     >
-      <div className="flex flex-col bg-white overflow-hidden max-h-[85vh]">
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
-          {/* Header Guard Card */}
-          <div className="flex items-center gap-4 p-6 bg-slate-50/50 rounded-3xl border border-slate-100">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-lg font-black uppercase">
-              {guardName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </div>
-            <div>
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                Personal Asignado
-              </p>
-              <h4 className="text-base font-black text-slate-800 uppercase tracking-tight">
-                {guardName}
-              </h4>
-            </div>
+      <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+            <FaClipboardList size={18} />
           </div>
+          <div>
+            <h3 className="text-base font-medium text-slate-800">Nueva Asignación</h3>
+            <p className="text-xs text-slate-400 font-light">Asignar tarea operativa</p>
+          </div>
+        </div>
+      </div>
 
-          {/* Punto de Control */}
-          <section>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                Punto de Control
-              </h4>
+      <div className="px-8 py-6 space-y-4">
+        {/* Guard info */}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-500 flex items-center justify-center text-[10px] font-medium">
+            {guardName
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .slice(0, 2)
+              .toUpperCase()}
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-800">
+              {guardName}
+            </p>
+            <p className="text-[10px] text-slate-400 font-light">
+              Asignar ubicación y consignas
+            </p>
+          </div>
+        </div>
+
+        {/* Location */}
+        <div className="space-y-2">
+          <label className="text-xs text-slate-400 font-medium uppercase tracking-widest">
+            Ubicación
+          </label>
+          {loadingLocations ? (
+            <div className="flex items-center justify-center h-11 bg-slate-50 rounded-xl">
+              <ITLoader size="sm" />
             </div>
+          ) : (
             <ITSearchSelect
               label=""
-              placeholder="BUSCAR UBICACIÓN..."
+              placeholder="Buscar ubicación..."
               options={locationOptions}
               value={selectedLocationId}
               onChange={(val: any) => {
                 setSelectedLocationId(val);
               }}
-              className="!h-14 !rounded-2xl !bg-slate-50/50"
             />
-          </section>
-
-          {/* Consignas Section */}
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-1.5 h-4 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                  Consignas Especiales
-                </h4>
-              </div>
-              {tasks.length > 0 && (
-                <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100 uppercase">
-                  {tasks.length} {tasks.length === 1 ? "Tarea" : "Tareas"}
-                </span>
-              )}
-            </div>
-
-            <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 space-y-4">
-              <div className="flex gap-2">
-                <ITInput
-                  name="tempTaskDesc"
-                  placeholder="DESCRIBE LA TAREA..."
-                  value={tempTaskDesc}
-                  onChange={(e) => setTempTaskDesc(e.target.value)}
-                  onBlur={() => {}}
-                  className="flex-1 !h-12 !rounded-xl !bg-white !border-slate-100 font-bold !text-[11px] uppercase tracking-wide"
-                />
-                <ITButton
-                  onClick={addTask}
-                  disabled={!tempTaskDesc.trim()}
-                  className="!w-12 !h-12 !rounded-xl shadow-lg shadow-emerald-100"
-                >
-                  <FaPlus size={14} />
-                </ITButton>
-              </div>
-
-              {tasks.length > 0 ? (
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                  {tasks.map((task, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between bg-white px-4 py-3 rounded-2xl border border-slate-100 shadow-sm animate-in fade-in slide-in-from-left-2 duration-300"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-xl bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-100">
-                          {index + 1}
-                        </div>
-                        <span className="text-[11px] text-slate-600 font-black uppercase tracking-tight">
-                          {task.description}
-                        </span>
-                      </div>
-                      <ITButton
-                        onClick={() => removeTask(index)}
-                        variant="icon-only"
-                        color="gray"
-                        className="text-slate-300 hover:text-rose-500 transition-colors p-2"
-                      >
-                        <FaTrash size={12} />
-                      </ITButton>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <p className="text-[10px] text-slate-300 font-black uppercase tracking-widest italic">
-                    Sin tareas definidas
-                  </p>
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* Notes Section */}
-          <section>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                Instrucciones Adicionales
-              </h4>
-            </div>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="NOTAS U OBSERVACIONES GENERALES..."
-              className="w-full bg-slate-50/50 border border-slate-100 rounded-3xl px-5 py-4 text-[11px] font-black uppercase tracking-wide text-slate-600 h-28 resize-none outline-none focus:border-emerald-500 transition-all placeholder:text-slate-300"
-            />
-          </section>
+          )}
         </div>
 
-        {/* Standardized Footer */}
-        <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
-          <ITButton
-            variant="ghost"
-            onClick={onClose}
-            className="px-8 font-black text-[10px] uppercase tracking-widest text-slate-400"
-          >
-            Cancelar
-          </ITButton>
-          <ITButton
-            onClick={handleSubmit}
-            disabled={!selectedLocationId || submitting}
-            className="px-10 !h-12 !rounded-xl shadow-lg shadow-emerald-100"
-          >
-            {submitting ? (
-              <ITLoader size="sm" />
-            ) : (
-              <span className="font-black text-[10px] uppercase tracking-[0.2em]">
-                Generar Asignación
+        {/* Tasks */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <label className="text-xs text-slate-400 font-medium uppercase tracking-widest">
+              Consignas
+            </label>
+            {tasks.length > 0 && (
+              <span className="text-[9px] font-medium text-sky-500 bg-sky-50 px-2 py-0.5 rounded-full">
+                {tasks.length}
               </span>
             )}
-          </ITButton>
+          </div>
+
+          <div className="flex gap-2">
+            <ITInput
+              name="tempTaskDesc"
+              placeholder="Escribe una tarea..."
+              value={tempTaskDesc}
+              onChange={(e) => setTempTaskDesc(e.target.value)}
+              onBlur={() => {}}
+              className="flex-1"
+            />
+            <ITButton
+              onClick={addTask}
+              disabled={!tempTaskDesc.trim()}
+              color="primary"
+            >
+              <FaPlus size={14} />
+            </ITButton>
+          </div>
+
+          {tasks.length > 0 ? (
+            <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+              {tasks.map((task, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-slate-50/80 px-3 py-2.5 rounded-xl border border-slate-100 hover:border-sky-400 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-[9px] text-slate-400 font-light w-4">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-xs text-slate-700 font-medium">
+                      {task.description}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => removeTask(index)}
+                    className="text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    <FaTrash size={10} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-6 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <p className="text-[9px] text-slate-300 font-light">
+                Sin tareas asignadas
+              </p>
+            </div>
+          )}
         </div>
+
+        {/* Notes */}
+        <div className="space-y-2">
+          <label className="text-xs text-slate-400 font-medium uppercase tracking-widest">
+            Notas adicionales
+          </label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Instrucciones especiales..."
+            className="w-full px-3 py-2.5 text-xs text-slate-700 bg-slate-50 border border-slate-200 rounded-xl resize-none h-20 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 placeholder:text-slate-300"
+          />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
+        <ITButton
+          variant="ghost"
+          onClick={onClose}
+          size="small"
+          className="px-5 whitespace-nowrap shadow shadow-slate-100"
+        >
+          Cancelar
+        </ITButton>
+        <ITButton
+          onClick={handleSubmit}
+          disabled={!selectedLocationId || submitting}
+          color="primary"
+          size="small"
+          className="px-5 whitespace-nowrap shadow shadow-sky-100"
+        >
+          {submitting ? <ITLoader size="sm" /> : "Crear Asignación"}
+        </ITButton>
       </div>
     </ITDialog>
   );

@@ -54,15 +54,14 @@ export const ITMediaGrid: React.FC<ITMediaGridProps> = ({
 
   return (
     <div className="w-full flex flex-col gap-6 group/carousel">
-      {/* Header with Emerald Indicator */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-1.5 h-4 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
-          <h4 className="text-[11px] font-black text-slate-700 uppercase tracking-[0.2em]">
+          <p className="text-xs text-slate-400 font-light">
             {title}
-          </h4>
-          <span className="bg-slate-100 px-2 py-0.5 rounded-md text-[9px] font-black text-slate-400 uppercase tracking-widest">
-            {media.length} Archivos
+          </p>
+          <span className="text-[10px] text-slate-400 font-light">
+            {media.length} archivos
           </span>
         </div>
 
@@ -71,15 +70,15 @@ export const ITMediaGrid: React.FC<ITMediaGridProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => scroll("left")}
-              className="w-10 h-10 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:border-emerald-100 hover:shadow-md transition-all active:scale-95"
+              className="w-8 h-8 rounded-lg bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-sky-500 hover:border-sky-100 transition-all active:scale-95"
             >
-              <FaChevronLeft size={12} />
+              <FaChevronLeft size={10} />
             </button>
             <button
               onClick={() => scroll("right")}
-              className="w-10 h-10 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:border-emerald-100 hover:shadow-md transition-all active:scale-95"
+              className="w-8 h-8 rounded-lg bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-sky-500 hover:border-sky-100 transition-all active:scale-95"
             >
-              <FaChevronRight size={12} />
+              <FaChevronRight size={10} />
             </button>
           </div>
         )}
@@ -93,7 +92,7 @@ export const ITMediaGrid: React.FC<ITMediaGridProps> = ({
           <div
             key={index}
             onClick={() => setSelectedMediaIndex(index)}
-            className="relative group overflow-hidden rounded-[2.5rem] shadow-sm border border-slate-100 bg-white hover:shadow-2xl hover:shadow-emerald-900/10 hover:border-emerald-100 transition-all duration-500 snap-start shrink-0 cursor-pointer"
+            className="relative group overflow-hidden rounded-2xl shadow-sm border border-slate-100 bg-white hover:shadow-lg hover:shadow-sky-900/5 hover:border-sky-100 transition-all duration-500 snap-start shrink-0 cursor-pointer"
             style={{ width: gridSize, height: gridSize }}
           >
             {item.type === "VIDEO" ? (
@@ -104,8 +103,8 @@ export const ITMediaGrid: React.FC<ITMediaGridProps> = ({
                   muted
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/0 transition-colors duration-500">
-                  <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:border-emerald-400 transition-all duration-500 shadow-2xl">
-                    <FaPlay size={20} className="translate-x-0.5" />
+                  <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 group-hover:scale-110 group-hover:bg-sky-500 group-hover:border-sky-400 transition-all duration-500 shadow-2xl">
+                    <FaPlay size={18} className="translate-x-0.5" />
                   </div>
                 </div>
               </div>
@@ -121,15 +120,15 @@ export const ITMediaGrid: React.FC<ITMediaGridProps> = ({
               />
             )}
 
-            {/* Badge Type - Glassmorphism */}
-            <div className="absolute top-6 left-6 px-4 py-2 rounded-2xl bg-black/40 backdrop-blur-lg text-[9px] font-black text-white uppercase tracking-[0.2em] border border-white/10 pointer-events-none flex items-center gap-2">
+            {/* Type Badge */}
+            <div className="absolute top-4 left-4 px-2.5 py-1 rounded-lg bg-black/40 backdrop-blur-lg text-[9px] font-light text-white border border-white/10 pointer-events-none flex items-center gap-1.5">
               <div
-                className={`w-1.5 h-1.5 rounded-full ${item.type === "VIDEO" ? "bg-rose-400 animate-pulse" : "bg-emerald-400"}`}
+                className={`w-1.5 h-1.5 rounded-full ${item.type === "VIDEO" ? "bg-rose-400 animate-pulse" : "bg-sky-400"}`}
               />
               {item.type}
             </div>
 
-            {/* Premium Overlay Hint */}
+            {/* Overlay Hint */}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
           </div>
         ))}
@@ -139,7 +138,7 @@ export const ITMediaGrid: React.FC<ITMediaGridProps> = ({
       {selectedMediaIndex !== null &&
         createPortal(
           <div
-            className="fixed inset-0 z-[99999] flex items-center justify-center bg-white/95 backdrop-blur-2xl animate-in fade-in duration-500"
+            className="fixed inset-0 z-[99999] flex items-center justify-center bg-white animate-in fade-in duration-300"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}

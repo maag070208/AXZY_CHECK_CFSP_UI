@@ -10,7 +10,7 @@ import {
 } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle, FaFileAlt } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import {
   createReportConfiguration,
@@ -194,21 +194,27 @@ export const AperturaCierreReportModal = ({
     <ITDialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Configurar Reporte: Apertura / Cierre"
+      title=""
+      className="!max-w-md !w-full"
     >
       <div className="flex flex-col bg-white overflow-hidden max-h-[85vh]">
+        <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+              <FaFileAlt size={18} />
+            </div>
+            <div>
+              <h3 className="text-base font-medium text-slate-800">Configurar Reporte</h3>
+              <p className="text-xs text-slate-400 font-light">Apertura / Cierre</p>
+            </div>
+          </div>
+        </div>
         <div className="p-10 space-y-10 overflow-y-auto flex-1">
           {/* Nombre de la Configuración */}
           <section>
-            <div className="flex items-center gap-2 mb-8">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                DATOS GENERALES
-              </h4>
-            </div>
             <div className="grid grid-cols-1 gap-8">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+                <label className="block text-xs font-medium text-slate-500 uppercase tracking-widest mb-2">
                   Nombre del Reporte
                 </label>
                 <ITInput
@@ -224,15 +230,9 @@ export const AperturaCierreReportModal = ({
 
           {/* Fechas */}
           <section>
-            <div className="flex items-center gap-2 mb-8">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                PERIODO DE EVALUACIÓN
-              </h4>
-            </div>
             <div className="grid grid-cols-1 gap-8">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+                <label className="block text-xs font-medium text-slate-500 uppercase tracking-widest mb-2">
                   Rango de Fechas
                 </label>
                 <div className="w-full">
@@ -256,14 +256,8 @@ export const AperturaCierreReportModal = ({
 
           {/* Cliente */}
           <section>
-            <div className="flex items-center gap-2 mb-8">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                CLIENTE
-              </h4>
-            </div>
             <div className="mb-8">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+              <label className="block text-xs font-medium text-slate-500 uppercase tracking-widest mb-2">
                 Filtrar Rutas por Cliente
               </label>
               <ITSearchSelect
@@ -284,12 +278,6 @@ export const AperturaCierreReportModal = ({
           {/* Rutas */}
           {selectedClientId && (
             <section>
-              <div className="flex items-center gap-2 mb-8">
-                <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                  RUTAS A INCLUIDAS ({selectedConfigIds.length})
-                </h4>
-              </div>
 
               {loadingConfig ? (
                 <div className="flex justify-center p-10 bg-slate-50 rounded-2xl border border-slate-100">
@@ -312,7 +300,7 @@ export const AperturaCierreReportModal = ({
                         </div>
                         <div className="flex flex-col">
                           <span
-                            className={`text-sm font-bold tracking-tight uppercase ${isSelected ? "text-emerald-900" : "text-slate-700"}`}
+                            className={`text-sm font-medium tracking-tight uppercase ${isSelected ? "text-emerald-900" : "text-slate-700"}`}
                           >
                             {config.title}
                           </span>
@@ -323,7 +311,7 @@ export const AperturaCierreReportModal = ({
                 </div>
               ) : (
                 <div className="p-10 bg-slate-50 rounded-2xl border border-slate-100 text-center">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                  <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">
                     {selectedClientId
                       ? "Este cliente no tiene rutas configuradas"
                       : "Seleccione un cliente primero"}
@@ -334,33 +322,32 @@ export const AperturaCierreReportModal = ({
           )}
         </div>
 
-        <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
+        <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
           <ITButton
-            type="button"
-            variant="filled"
+            variant="ghost"
             onClick={onClose}
-            color="secondary"
+            size="small"
+            className="px-5 whitespace-nowrap shadow shadow-slate-100"
           >
             Cancelar
           </ITButton>
-
           <ITButton
-            type="button"
-            onClick={handleSave}
+            variant="filled"
             color="primary"
+            onClick={handleSave}
             disabled={
               isGenerating || selectedConfigIds.length === 0 || !name.trim()
             }
+            size="small"
+            className="px-5 whitespace-nowrap shadow shadow-sky-100"
           >
             {isGenerating ? (
               <div className="flex items-center gap-2">
                 <ITLoader size="sm" />
-                <span>GUARDANDO...</span>
+                <span className="text-[9px] font-medium uppercase tracking-widest">GUARDANDO...</span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 font-black text-[11px] uppercase tracking-widest">
-                <span>Guardar Configuración</span>
-              </div>
+              <span className="text-[9px] font-medium uppercase tracking-widest">Guardar Configuración</span>
             )}
           </ITButton>
         </div>

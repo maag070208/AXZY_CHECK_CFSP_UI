@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { ITCard, ITDatePicker, ITButton, ITBadget, ITDialog, ITLoader } from "@axzydev/axzy_ui_system";
-import { FaSync, FaClock, FaEye, FaExclamationCircle, FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa';
+import { FaSync, FaClock, FaEye, FaExclamationCircle, FaHistory, FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa';
 import * as ReportService from '../../services/ReportService';
 import dayjs from 'dayjs';
 
@@ -46,7 +46,7 @@ export const OperationalDetailTab = () => {
 
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedGuard, setSelectedGuard] = useState<ReportService.IGuardDetail | null>(null);
+    const [, setSelectedGuard] = useState<ReportService.IGuardDetail | null>(null);
     const [breakdown, setBreakdown] = useState<ReportService.IGuardDetailBreakdown | null>(null);
     const [loadingBreakdown, setLoadingBreakdown] = useState(false);
 
@@ -88,7 +88,7 @@ export const OperationalDetailTab = () => {
                 </ITButton>
             </div>
 
-            <ITCard className="shadow-2xl shadow-slate-200/60 border-none bg-white rounded-[2rem] overflow-hidden relative min-h-[400px]">
+            <ITCard className="shadow-2xl shadow-slate-200/60 border-none bg-white rounded-[24px] overflow-hidden relative min-h-[400px]">
                 <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-white">
                     <div>
                         <h3 className="text-xl font-black text-slate-800 tracking-tight">Detalle Operativo</h3>
@@ -123,7 +123,7 @@ export const OperationalDetailTab = () => {
                                     <tr key={item.guardId} className="hover:bg-slate-50/50 transition-all group">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-11 h-11 rounded-2xl bg-${roleColor}-50 text-${roleColor}-600 flex items-center justify-center font-black text-xs shadow-sm shadow-${roleColor}-100/50 group-hover:scale-105 transition-transform duration-300`}>
+                                                <div className={`w-11 h-11 rounded-xl bg-${roleColor}-50 text-${roleColor}-600 flex items-center justify-center font-medium text-xs shadow-sm shadow-${roleColor}-100/50 group-hover:scale-105 transition-transform duration-300`}>
                                                     {getInitials(item.name, item.lastName)}
                                                 </div>
                                                 <div>
@@ -178,11 +178,13 @@ export const OperationalDetailTab = () => {
                                                 size="small" 
                                                 variant="filled" 
                                                 color="primary" 
-                                                className="!rounded-2xl !py-2.5 !px-6 !bg-slate-900 group-hover:!bg-emerald-600 transition-all duration-300 shadow-xl shadow-slate-200 group-hover:shadow-emerald-200 flex items-center gap-2 ml-auto"
+                                                className="!rounded-lg !py-2.5 !px-6 !bg-slate-900 group-hover:!bg-emerald-600 transition-all duration-300 shadow-md shadow-slate-200 group-hover:shadow-emerald-200 ml-auto"
                                                 onClick={() => handleViewDetail(item)}
                                             >
-                                                <FaEye className="text-sm" />
-                                                <span className="text-[10px] font-black uppercase tracking-wider">Detalles</span>
+                                                <div className="flex items-center gap-1">
+                                                    <FaEye className="text-sm" />
+                                                    <span className="text-[10px] font-black uppercase tracking-wider">Detalles</span>
+                                                </div>
                                             </ITButton>
                                         </td>
                                     </tr>
@@ -197,34 +199,44 @@ export const OperationalDetailTab = () => {
             <ITDialog 
                 isOpen={isModalOpen} 
                 onClose={() => setIsModalOpen(false)} 
-                title={`Historial Operativo: ${selectedGuard?.name}`}
-                className="!max-w-4xl w-full"
+                title=""
+                className="!max-w-md !w-full"
             >
-                <div className="p-0 flex flex-col h-[75vh]">
+                <div className="flex flex-col bg-white overflow-hidden">
+                    <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+                        <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+                                <FaHistory size={18} />
+                            </div>
+                            <div>
+                                <h3 className="text-base font-medium text-slate-800">Historial Operativo</h3>
+                                <p className="text-xs text-slate-400 font-light">Detalle de actividad del guardia</p>
+                            </div>
+                        </div>
+                    </div>
                     <div className="flex-1 overflow-y-auto p-10 bg-slate-50/30 custom-scrollbar space-y-10">
                         {loadingBreakdown ? (
                             <div className="py-20 flex flex-col items-center gap-4">
                                 <ITLoader />
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consolidando historial...</p>
+                                <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Consolidando historial...</p>
                             </div>
                         ) : (
                             <>
                                 {/* Incomplete Rounds Section */}
                                 <section>
-                                    <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em] mb-6 flex items-center justify-between">
+                                    <h4 className="text-xs font-medium text-slate-800 uppercase tracking-widest mb-6 flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
                                             Rondas Incompletas
                                         </div>
                                         <ITBadget color="warning" variant="filled" size="small" className="!rounded-lg">{breakdown?.incompleteRounds.length || 0}</ITBadget>
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {breakdown?.incompleteRounds.length === 0 ? (
-                                            <div className="col-span-2 p-12 bg-white border border-slate-100 rounded-[2rem] text-center shadow-sm">
-                                                <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 mx-auto mb-4">
-                                                    <FaClock className="text-2xl" />
+                                            <div className="col-span-2 p-12 bg-white border border-slate-100 rounded-[24px] text-center shadow-sm">
+                                                <div className="w-11 h-11 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500 mx-auto mb-4">
+                                                    <FaClock className="text-lg" />
                                                 </div>
-                                                <p className="text-sm font-black text-slate-800 uppercase tracking-tight">Rendimiento Perfecto</p>
+                                                <p className="text-sm font-medium text-slate-800 uppercase tracking-tight">Rendimiento Perfecto</p>
                                                 <p className="text-xs text-slate-400 mt-2">Todas las rondas de este periodo fueron completadas al 100%.</p>
                                             </div>
                                         ) : (
@@ -232,24 +244,24 @@ export const OperationalDetailTab = () => {
                                                 <div key={round.roundId} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/30 hover:shadow-2xl hover:shadow-slate-200/40 transition-all duration-300">
                                                     <div className="flex justify-between items-start mb-5">
                                                         <div className="flex items-center gap-4">
-                                                            <div className="w-12 h-12 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center text-lg shadow-sm">
-                                                                <FaExclamationCircle />
+                                                            <div className="w-11 h-11 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center shadow-sm">
+                                                                <FaExclamationCircle size={18} />
                                                             </div>
                                                             <div>
-                                                                <p className="text-[10px] font-black text-slate-400 tracking-widest">ID #{round.roundId}</p>
-                                                                <p className="text-sm font-black text-slate-800 uppercase">{dayjs(round.startTime).format("DD [de] MMM")}</p>
+                                                                <p className="text-[10px] font-medium text-slate-400 tracking-widest">ID #{round.roundId}</p>
+                                                                <p className="text-sm font-medium text-slate-800 uppercase">{dayjs(round.startTime).format("DD [de] MMM")}</p>
                                                             </div>
                                                         </div>
-                                                        <ITBadget color="warning" variant="outlined" size="small" className="font-black text-[9px] !rounded-lg border-2">CRÍTICO</ITBadget>
+                                                        <ITBadget color="warning" variant="outlined" size="small" className="font-medium text-[9px] !rounded-lg border-2">CRÍTICO</ITBadget>
                                                     </div>
                                                     
                                                     <div className="space-y-4">
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter flex items-center gap-2">
+                                                            <span className="text-[10px] font-medium text-slate-400 uppercase tracking-tighter flex items-center gap-2">
                                                                 <FaClock className="text-slate-300" />
                                                                 Horario de Ronda
                                                             </span>
-                                                            <span className="text-[11px] font-black text-slate-700">
+                                                            <span className="text-[11px] font-medium text-slate-700">
                                                                 {dayjs(round.startTime).format("HH:mm")} - {dayjs(round.endTime).format("HH:mm")}
                                                             </span>
                                                         </div>
@@ -259,7 +271,7 @@ export const OperationalDetailTab = () => {
                                                                 style={{ width: `${((round.totalLocations - round.missedCount) / round.totalLocations) * 100}%` }}
                                                             />
                                                         </div>
-                                                        <div className="flex items-center justify-between text-[10px] font-black text-orange-600 uppercase">
+                                                        <div className="flex items-center justify-between text-[10px] font-medium text-orange-600 uppercase">
                                                             <span>Omisiones: {round.missedCount}</span>
                                                             <span>Efectividad: {Math.round(((round.totalLocations - round.missedCount) / round.totalLocations) * 100)}%</span>
                                                         </div>
@@ -272,9 +284,8 @@ export const OperationalDetailTab = () => {
 
                                 {/* Missed Points Section */}
                                 <section>
-                                     <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em] mb-6 flex items-center justify-between">
+                                     <h4 className="text-xs font-medium text-slate-800 uppercase tracking-widest mb-6 flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-1.5 h-6 bg-red-500 rounded-full" />
                                             Bitácora de Omisiones
                                         </div>
                                         <ITBadget color="danger" variant="filled" size="small" className="!rounded-lg">{breakdown?.missedPoints.length || 0}</ITBadget>
@@ -285,16 +296,16 @@ export const OperationalDetailTab = () => {
                                                 <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mx-auto mb-4">
                                                     <FaMapMarkerAlt className="text-2xl" />
                                                 </div>
-                                                <p className="text-sm font-black text-slate-800 uppercase">Cobertura Total</p>
+                                                <p className="text-sm font-medium text-slate-800 uppercase">Cobertura Total</p>
                                                 <p className="text-[11px] text-slate-400 mt-2">No se detectaron puntos de control omitidos en este periodo.</p>
                                             </div>
                                         ) : (
                                             <table className="w-full text-left">
                                                 <thead className="bg-slate-50/50">
                                                     <tr>
-                                                        <th className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Ubicación del Punto</th>
-                                                        <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Contexto Temporal</th>
-                                                        <th className="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Gravedad</th>
+                                                        <th className="px-8 py-4 text-[9px] font-medium text-slate-400 uppercase tracking-[0.2em]">Ubicación del Punto</th>
+                                                        <th className="px-6 py-4 text-[9px] font-medium text-slate-400 uppercase tracking-[0.2em]">Contexto Temporal</th>
+                                                        <th className="px-8 py-4 text-[9px] font-medium text-slate-400 uppercase tracking-[0.2em] text-right">Gravedad</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-50">
@@ -302,24 +313,24 @@ export const OperationalDetailTab = () => {
                                                         <tr key={index} className="hover:bg-slate-50/30 transition-colors">
                                                             <td className="px-8 py-5">
                                                                 <div className="flex items-center gap-4">
-                                                                    <div className="w-10 h-10 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center text-sm shadow-sm">
+                                                                    <div className="w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center text-sm shadow-sm">
                                                                         <FaMapMarkerAlt />
                                                                     </div>
                                                                     <div>
-                                                                        <div className="font-black text-slate-700 uppercase text-[11px] tracking-tight">{point.locationName}</div>
-                                                                        <div className="text-[9px] text-slate-400 font-bold tracking-widest uppercase">Pasillo: {point.aisle}</div>
+                                                                        <div className="font-medium text-slate-700 uppercase text-[11px] tracking-tight">{point.locationName}</div>
+                                                                        <div className="text-[9px] text-slate-400 font-medium tracking-widest uppercase">Pasillo: {point.aisle}</div>
                                                                     </div>
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-5">
-                                                                <div className="font-black text-slate-600 text-[10px] uppercase flex items-center gap-2">
+                                                                <div className="font-medium text-slate-600 text-[10px] uppercase flex items-center gap-2">
                                                                     <FaCalendarAlt className="text-slate-300" />
                                                                     {dayjs(point.startTime).format("DD/MM/YYYY")}
                                                                 </div>
                                                                 <div className="text-[9px] text-slate-400 font-medium mt-1">Ronda: #{point.roundId} @ {dayjs(point.startTime).format("HH:mm")} hrs</div>
                                                             </td>
                                                             <td className="px-8 py-5 text-right">
-                                                                <span className="text-[8px] font-black text-red-600 bg-red-50 border border-red-100 px-3 py-1.5 rounded-full uppercase tracking-widest">Aviso de Omisión</span>
+                                                                <span className="text-[8px] font-medium text-red-600 bg-red-50 border border-red-100 px-3 py-1.5 rounded-full uppercase tracking-widest">Aviso de Omisión</span>
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -331,9 +342,14 @@ export const OperationalDetailTab = () => {
                             </>
                         )}
                     </div>
-                    <div className="px-10 py-6 border-t border-slate-50 bg-white flex justify-end">
-                        <ITButton variant="outlined" color="primary" onClick={() => setIsModalOpen(false)} className="!rounded-[1.25rem] px-12 py-3 !border-2 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-colors">
-                            Cerrar Historial
+                    <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
+                        <ITButton
+                            variant="ghost"
+                            onClick={() => setIsModalOpen(false)}
+                            size="small"
+                            className="px-5 whitespace-nowrap shadow shadow-slate-100"
+                        >
+                            Cancelar
                         </ITButton>
                     </div>
                 </div>

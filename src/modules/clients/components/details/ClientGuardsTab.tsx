@@ -7,7 +7,7 @@ import {
   ITSelect,
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useState } from "react";
-import { FaClock, FaSync, FaTimes, FaUserShield } from "react-icons/fa";
+import { FaClock, FaSync, FaTimes, FaTrash } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { getSchedules } from "../../../schedules/SchedulesService";
 import {
@@ -86,12 +86,12 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
       type: "string",
       render: (row: User) => (
         <div className="flex flex-col">
-          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+          <span className="font-medium text-slate-700 text-sm">
             {row.name} {row.lastName}
           </span>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+            <span className="text-slate-400 text-[10px]">
               @{row.username}
             </span>
           </div>
@@ -128,14 +128,14 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
       type: "string",
       render: (row: User) => (
         <div className="flex flex-col">
-          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+          <span className="font-medium text-slate-700 text-sm">
             {row.schedule?.name || "SIN HORARIO"}
           </span>
           <div className="flex items-center gap-1.5">
             <div
               className={`w-1.5 h-1.5 rounded-full ${row.schedule ? "bg-emerald-400" : "bg-slate-200"}`}
             />
-            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+            <span className="text-slate-400 text-[10px]">
               {row.schedule
                 ? `${row.schedule.startTime} - ${row.schedule.endTime}`
                 : "PENDIENTE ASIGNACIÓN"}
@@ -174,12 +174,12 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h3 className="text-sm font-black text-slate-800 uppercase tracking-[0.1em]">
+          <h3 className="text-base font-medium text-slate-800">
             Personal Asignado
           </h3>
-          <p className="text-[11px] text-slate-400 font-bold uppercase mt-1 tracking-widest">
+          <p className="text-xs text-slate-400 font-light mt-0.5">
             Control de guardias y personal operativo en sitio
           </p>
         </div>
@@ -187,9 +187,9 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
           onClick={() => setRefreshKey((prev) => prev + 1)}
           size="small"
           variant="ghost"
-          className="h-10 w-10 p-0 flex justify-center items-center bg-slate-50 rounded-xl hover:bg-slate-100"
+          className="w-9 h-9 p-0 flex items-center justify-center bg-slate-50 rounded-lg hover:bg-slate-100"
         >
-          <FaSync className="text-slate-400" />
+          <FaSync className="text-slate-400" size={12} />
         </ITButton>
       </div>
 
@@ -205,65 +205,75 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
       <ITDialog
         isOpen={!!changingScheduleUser}
         onClose={() => setChangingScheduleUser(null)}
-        title={`Gestión de Horario`}
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-8 space-y-8">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="w-20 h-20 rounded-[28px] bg-amber-50 text-amber-500 flex items-center justify-center shadow-inner">
-              <FaClock size={32} />
-            </div>
-            <div>
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
-                Cambiar Horario
-              </h3>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2">
-                {changingScheduleUser?.name} {changingScheduleUser?.lastName}
-              </p>
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+                <FaClock size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Gestión de Horario</h3>
+                <p className="text-xs text-slate-400 font-light">{changingScheduleUser?.name} {changingScheduleUser?.lastName}</p>
+              </div>
             </div>
           </div>
 
-          <ITSelect
-            label="Seleccionar Nueva Jornada"
-            name="scheduleId"
-            placeholder="Seleccionar horario..."
-            options={schedules.map((s) => ({
-              label: `${s.name} (${s.startTime} - ${s.endTime})`,
-              value: s.id,
-            }))}
-            value={changingScheduleUser?.scheduleId || ""}
-            onChange={async (e: any) => {
-              const val = e.target.value;
-              if (!changingScheduleUser) return;
-              const res = await updateUser(changingScheduleUser.id, {
-                scheduleId: val as string,
-              });
-              if (res.success) {
-                dispatch(
-                  showToast({
-                    message: "Horario actualizado con éxito",
-                    type: "success",
-                  }),
-                );
-                setRefreshKey((prev) => prev + 1);
-                setChangingScheduleUser(null);
-              } else {
-                dispatch(
-                  showToast({
-                    message: res.messages?.[0] || "Error al actualizar",
-                    type: "error",
-                  }),
-                );
-              }
-            }}
-          />
+          <div className="px-8 py-6 space-y-3">
+            <span className="text-xs text-slate-400 font-medium">Seleccionar Jornada</span>
+            <ITSelect
+              name="scheduleId"
+              placeholder="Seleccionar horario..."
+              options={schedules.map((s) => ({
+                label: `${s.name} (${s.startTime} - ${s.endTime})`,
+                value: s.id,
+              }))}
+              value={changingScheduleUser?.scheduleId || ""}
+              onChange={async (e: any) => {
+                const val = e.target.value;
+                if (!changingScheduleUser) return;
+                const res = await updateUser(changingScheduleUser.id, {
+                  scheduleId: val as string,
+                });
+                if (res.success) {
+                  dispatch(
+                    showToast({
+                      message: "Horario actualizado con éxito",
+                      type: "success",
+                    }),
+                  );
+                  setRefreshKey((prev) => prev + 1);
+                  setChangingScheduleUser(null);
+                } else {
+                  dispatch(
+                    showToast({
+                      message: res.messages?.[0] || "Error al actualizar",
+                      type: "error",
+                    }),
+                  );
+                }
+              }}
+            />
+          </div>
 
-          <div className="flex justify-center pt-4">
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
               onClick={() => setChangingScheduleUser(null)}
-              className="text-slate-400 font-bold uppercase text-[10px] tracking-widest"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
-              Cerrar Ventana
+              Cancelar
+            </ITButton>
+            <ITButton
+              onClick={() => setChangingScheduleUser(null)}
+              color="primary"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-sky-100"
+            >
+              Cerrar
             </ITButton>
           </div>
         </div>
@@ -272,42 +282,43 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
       <ITDialog
         isOpen={!!removingUser}
         onClose={() => setRemovingUser(null)}
-        title={`Confirmar Desasignación`}
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-8 space-y-8">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="w-20 h-20 rounded-[28px] bg-red-50 text-red-500 flex items-center justify-center shadow-inner">
-              <FaUserShield size={32} />
-            </div>
-            <div>
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
-                Remover Guardia
-              </h3>
-              <p className="text-slate-400 text-xs font-bold leading-relaxed mt-2">
-                ¿Está seguro que desea desvincular a{" "}
-                <span className="text-slate-800 font-black">
-                  {removingUser?.name} {removingUser?.lastName}
-                </span>{" "}
-                de este cliente?
-              </p>
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Desasignar Guardia</h3>
+                <p className="text-xs text-slate-400 font-light">{removingUser?.name || "Guardia"}</p>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-4">
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              El guardia será removido de este cliente y perderá acceso a sus ubicaciones.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
               onClick={() => setRemovingUser(null)}
-              className="text-slate-400 font-bold uppercase text-[10px] tracking-widest flex-1 h-12"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
             <ITButton
-              onClick={() =>
-                removingUser && handleRemoveFromClient(removingUser)
-              }
               variant="filled"
               color="danger"
-              className="flex-1 h-12 shadow-lg shadow-red-500/10 font-black uppercase text-[10px] tracking-widest"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
+              onClick={() => removingUser && handleRemoveFromClient(removingUser)}
             >
               Confirmar Baja
             </ITButton>

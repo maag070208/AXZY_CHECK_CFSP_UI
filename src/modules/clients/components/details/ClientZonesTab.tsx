@@ -139,12 +139,12 @@ export const ClientZonesTab = ({ clientId }: Props) => {
       type: "string",
       render: (row: Zone) => (
         <div className="flex flex-col">
-          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+          <span className="font-medium text-slate-700 text-sm">
             {row.name}
           </span>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+            <span className="text-slate-400 text-[10px]">
               ÁREA DE CONTROL
             </span>
           </div>
@@ -181,12 +181,12 @@ export const ClientZonesTab = ({ clientId }: Props) => {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h3 className="text-sm font-black text-slate-800 uppercase tracking-[0.1em]">
+          <h3 className="text-base font-medium text-slate-800">
             Administración de Zonas
           </h3>
-          <p className="text-[11px] text-slate-400 font-bold uppercase mt-1 tracking-widest">
+          <p className="text-xs text-slate-400 font-light mt-0.5">
             Defina los sectores o áreas recurrentes para el cliente
           </p>
         </div>
@@ -194,13 +194,13 @@ export const ClientZonesTab = ({ clientId }: Props) => {
           onClick={() => setRefreshKey((prev) => prev + 1)}
           size="small"
           variant="ghost"
-          className="h-10 w-10 p-0 flex justify-center items-center bg-slate-50 rounded-xl hover:bg-slate-100"
+          className="w-9 h-9 p-0 flex items-center justify-center bg-slate-50 rounded-lg hover:bg-slate-100"
         >
-          <FaSync className="text-slate-400" />
+          <FaSync className="text-slate-400" size={12} />
         </ITButton>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-end gap-4 mb-12 bg-white p-6 rounded-[30px] border border-slate-100 shadow-sm">
+      <div className="flex items-end gap-3 mb-8 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
         <div className="flex-1">
           <ITInput
             label="Registrar Nueva Zona / Recurrente"
@@ -214,14 +214,13 @@ export const ClientZonesTab = ({ clientId }: Props) => {
         <ITButton
           onClick={handleCreate}
           disabled={creating || !newZoneName.trim()}
-          className="mb-0.5"
           color={newZoneName.trim() ? "success" : "primary"}
+          size="small"
+          className="px-5 whitespace-nowrap shadow shadow-slate-100 mb-0.5"
         >
-          <div className="flex items-center gap-3">
-            <FaPlus size={12} />
-            <span className="text-xs uppercase tracking-widest font-black">
-              {creating ? "Registrando..." : "Registrar Zona"}
-            </span>
+          <div className="flex items-center gap-1">
+            <FaPlus size={14} />
+            <span className="text-[10px]">{creating ? "Registrando..." : "Registrar"}</span>
           </div>
         </ITButton>
       </div>
@@ -238,34 +237,49 @@ export const ClientZonesTab = ({ clientId }: Props) => {
       <ITDialog
         isOpen={!!editingZone}
         onClose={() => setEditingZone(null)}
-        title="Editar Identificador de Zona"
+        title=""
+        className="!max-w-md !w-full"
       >
         {editingZone && (
-          <div className="p-6 space-y-6">
-            <ITInput
-              label="Nombre de la Zona / Recurrente"
-              value={editingZone.name}
-              onChange={(e) =>
-                setEditingZone({ ...editingZone, name: e.target.value })
-              }
-              name="editZoneName"
-              onBlur={() => {}}
-              placeholder="Ej: Area de Embarques"
-            />
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-50">
+          <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+            <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+                  <FaEdit size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-medium text-slate-800">Editar Zona</h3>
+                  <p className="text-xs text-slate-400 font-light">{editingZone.name}</p>
+                </div>
+              </div>
+            </div>
+            <div className="px-8 py-6">
+              <ITInput
+                label="Nombre de la Zona"
+                value={editingZone.name}
+                onChange={(e) =>
+                  setEditingZone({ ...editingZone, name: e.target.value })
+                }
+                name="editZoneName"
+                onBlur={() => {}}
+                placeholder="Ej: Area de Embarques"
+              />
+            </div>
+            <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
               <ITButton
                 variant="ghost"
                 onClick={() => setEditingZone(null)}
-                className="font-bold text-slate-400"
+                size="small"
+                className="px-5 whitespace-nowrap shadow shadow-slate-100"
               >
                 Cancelar
               </ITButton>
               <ITButton
                 onClick={handleUpdate}
                 disabled={updating}
-                variant="filled"
-                color="success"
-                className="px-8 font-black shadow-lg shadow-emerald-500/10"
+                color="primary"
+                size="small"
+                className="px-5 whitespace-nowrap shadow shadow-sky-100"
               >
                 {updating ? "Guardando..." : "Guardar Cambios"}
               </ITButton>

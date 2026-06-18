@@ -3,20 +3,27 @@ import LOGO from "@assets/logo.png";
 import {
   FaBook,
   FaBuilding,
-  FaChild,
-  FaClock,
+  FaClipboardList,
   FaCogs,
-  FaExclamationTriangle,
   FaHome,
-  FaListAlt,
-  FaRoute,
-  FaSearchLocation,
   FaUserShield,
-  FaWrench,
-  FaChartBar
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
+
+const ROLES = {
+  ADMIN: ["ADMIN"],
+  ADMIN_LIDER: ["ADMIN", "LIDER"],
+  ADMIN_SHIFT: ["ADMIN", "SHIFT"],
+  ADMIN_SHIFT_LIDER: ["ADMIN", "SHIFT", "LIDER"],
+  ADMIN_SHIFT_RESDN: ["ADMIN", "SHIFT", "RESDN", "LIDER"],
+  ALL: undefined,
+};
+
+const hasRole = (userRole: string | null, roles?: string[]) => {
+  if (!roles || roles.length === 0) return true;
+  return roles.includes(userRole ?? "");
+};
 
 export const useNavigationItems = (): any[] => {
   const navigate = useNavigate();
@@ -34,114 +41,180 @@ export const useNavigationItems = (): any[] => {
     );
   };
 
-  const baseItems: any[] = [
+  const items: any[] = [
     {
       id: "home",
       label: "Inicio",
       action: () => navigate("/home"),
       isActive: isRouteActive("/home"),
-      icon: <FaHome  />,
+      icon: <FaHome />,
     },
     {
-      id: "clients",
-      label: "Clientes",
-      action: () => navigate("/clients"),
-      isActive: isRouteActive("/clients"),
-      icon: <FaBuilding  />,
+      id: "residencial",
+      label: "Residencial",
+      icon: <FaBuilding />,
+      isActive:
+        isRouteActive("/clients") || isRouteActive("/locations"),
+      subitems: [
+        {
+          id: "clients",
+          label: "Clientes",
+          action: () => navigate("/clients"),
+          isActive: isRouteActive("/clients"),
+          roles: ROLES.ADMIN_SHIFT_LIDER,
+        },
+        {
+          id: "locations",
+          label: "Ubicaciones",
+          action: () => navigate("/locations"),
+          isActive: isRouteActive("/locations"),
+          roles: ROLES.ADMIN_SHIFT_LIDER,
+        },
+      ],
     },
     {
-      id: "locations",
-      label: "Ubicaciones",
-      action: () => navigate("/locations"),
-      isActive: isRouteActive("/locations"),
-      icon: <FaSearchLocation  />,
-    },
-    {
-      id: "routes",
-      label: "Configuración de Rondas",
-      action: () => navigate("/routes"),
-      isActive: isRouteActive("/routes"),
-      icon: <FaRoute  />,
-    },
-    {
-      id: "incidents",
-      label: "Incidencias",
-      action: () => navigate("/incidents"),
-      isActive: isRouteActive("/incidents"),
-      icon: <FaExclamationTriangle  />, 
-    },
-    {
-      id: "maintenances",
-      label: "Mantenimientos",
-      action: () => navigate("/maintenances"),
-      isActive: isRouteActive("/maintenances"),
-      icon: <FaWrench  />, 
-    },
-    {
-      id: "kardex",
-      label: "Kardex",
-      action: () => navigate("/kardex"),
-      isActive: isRouteActive("/kardex"),
-      icon: <FaBook  />,
-    },
-    {
-      id: "rounds",
-      label: "Historial de recorridos",
-      action: () => navigate("/rounds"),
-      isActive: isRouteActive("/rounds"),
-      icon: <FaClock  />,
-    },
-    {
-      id: "guards",
-      label: "Guardias",
-      action: () => navigate("/guards"),
-      isActive: isRouteActive("/guards"),
+      id: "seguridad",
+      label: "Seguridad",
       icon: <FaUserShield />,
+      isActive:
+        isRouteActive("/guards") ||
+        isRouteActive("/guard-logs") ||
+        isRouteActive("/guard-discipline") ||
+        isRouteActive("/schedules"),
+      subitems: [
+        {
+          id: "guards",
+          label: "Guardias",
+          action: () => navigate("/guards"),
+          isActive: isRouteActive("/guards"),
+          roles: ROLES.ADMIN_SHIFT_RESDN,
+        },
+        {
+          id: "schedule",
+          label: "Horarios",
+          action: () => navigate("/schedules"),
+          isActive: isRouteActive("/schedules"),
+          roles: ROLES.ADMIN_SHIFT_LIDER,
+        },
+        {
+          id: "guard-logs",
+          label: "Prenómina",
+          action: () => navigate("/guard-logs"),
+          isActive: isRouteActive("/guard-logs"),
+          roles: ROLES.ADMIN_SHIFT_RESDN,
+        },
+        {
+          id: "guard-discipline",
+          label: "Incidencias a Guardias",
+          action: () => navigate("/guard-discipline"),
+          isActive: isRouteActive("/guard-discipline"),
+          roles: ROLES.ADMIN_SHIFT_RESDN,
+        },
+      ],
     },
     {
-      id: 'schedule',
-      label: 'Horarios',
-       action: () => navigate("/schedules"),
-      isActive: isRouteActive("/schedules"),
-      icon: <FaListAlt  />,
+      id: "operaciones",
+      label: "Operaciones",
+      icon: <FaClipboardList />,
+      isActive:
+        isRouteActive("/incidents") ||
+        isRouteActive("/maintenances") ||
+        isRouteActive("/routes") ||
+        isRouteActive("/rounds"),
+      subitems: [
+        {
+          id: "incidents",
+          label: "Incidencias",
+          action: () => navigate("/incidents"),
+          isActive: isRouteActive("/incidents"),
+          roles: ROLES.ADMIN_SHIFT_RESDN,
+        },
+        {
+          id: "maintenances",
+          label: "Mantenimientos",
+          action: () => navigate("/maintenances"),
+          isActive: isRouteActive("/maintenances"),
+          roles: ROLES.ADMIN_SHIFT_RESDN,
+        },
+        {
+          id: "routes",
+          label: "Configuración de Rondas",
+          action: () => navigate("/routes"),
+          isActive: isRouteActive("/routes"),
+          roles: ROLES.ADMIN_SHIFT_LIDER,
+        },
+        {
+          id: "rounds",
+          label: "Historial de recorridos",
+          action: () => navigate("/rounds"),
+          isActive: isRouteActive("/rounds"),
+          roles: ROLES.ADMIN_SHIFT_RESDN,
+        },
+      ],
     },
     {
-      id: 'reports',
-      label: 'Reportes',
-       action: () => navigate("/reports"),
-      isActive: isRouteActive("/reports"),
-      icon: <FaChartBar  />,
-    }
+      id: "gestion",
+      label: "Gestión",
+      icon: <FaBook />,
+      isActive:
+        isRouteActive("/kardex") ||
+        isRouteActive("/reports"),
+      subitems: [
+        {
+          id: "kardex",
+          label: "Kardex",
+          action: () => navigate("/kardex"),
+          isActive: isRouteActive("/kardex"),
+          roles: ROLES.ADMIN_SHIFT_LIDER,
+        },
+        {
+          id: "reports",
+          label: "Reportes",
+          action: () => navigate("/reports"),
+          isActive: isRouteActive("/reports"),
+          roles: ROLES.ADMIN_SHIFT_LIDER,
+        },
+      ],
+    },
+    {
+      id: "sistema",
+      label: "Sistema",
+      icon: <FaCogs />,
+      isActive:
+        isRouteActive("/users") ||
+        isRouteActive("/settings"),
+      subitems: [
+        {
+          id: "users",
+          label: "Usuarios",
+          action: () => navigate("/users"),
+          isActive: isRouteActive("/users"),
+          roles: ROLES.ADMIN_LIDER,
+        },
+        {
+          id: "settings",
+          label: "Catálogos",
+          action: () => navigate("/settings"),
+          isActive: isRouteActive("/settings"),
+          roles: ROLES.ADMIN_LIDER,
+        },
+      ],
+    },
   ];
 
-  if (user?.role === "RESDN") {
-    return baseItems.filter(item => 
-      item.id === "home" || 
-      item.id === "rounds" || 
-      item.id === "incidents" || 
-      item.id === "maintenances" || 
-      item.id === "guards"
-    );
-  }
-
-  if (user?.role === "ADMIN" || user?.role === "LIDER") {
-    baseItems.push({
-      id: "users",
-      label: "Usuarios",
-      action: () => navigate("/users"),
-      isActive: isRouteActive("/users"),
-      icon: <FaChild  />,
-    });
-    baseItems.push({
-      id: "settings",
-      label: "Catálogos",
-      action: () => navigate("/settings"),
-      isActive: isRouteActive("/settings"),
-      icon: <FaCogs />,
-    });
-  }
-
-  return baseItems;
+  return items
+    .map((item) => {
+      if (item.subitems) {
+        const visibleSubitems = item.subitems.filter((sub: any) =>
+          hasRole(user?.role ?? null, sub.roles)
+        );
+        if (visibleSubitems.length === 0) return null;
+        return { ...item, subitems: visibleSubitems };
+      }
+      if (!hasRole(user?.role ?? null, item.roles)) return null;
+      return item;
+    })
+    .filter(Boolean);
 };
 
 // ------------- NAVBAR (legacy) -----------------
@@ -168,7 +241,7 @@ export const Navbar = () => {
 };
 
 export const NAVBAR_LOGO = () => (
-  <img src={LOGO} className="h-[80px] hidden md:flex" />
+  <img src={LOGO} className="h-[60px] hidden md:flex" />
 );
 
 export const SIDEBAR_LOGO = () => (

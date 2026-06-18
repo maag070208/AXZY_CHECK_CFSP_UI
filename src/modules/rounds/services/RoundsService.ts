@@ -1,4 +1,4 @@
-import { get, post, put } from "@app/core/axios/axios";
+import { get, post, put, remove } from "@app/core/axios/axios";
 import { TResult } from "@app/core/types/TResult";
 
 export interface IRound {
@@ -102,4 +102,8 @@ export const startRound = async (guardId: string): Promise<TResult<IRound>> => {
 
 export const endRound = async (id: string): Promise<TResult<IRound>> => {
     return await put<IRound>(`/rounds/${id}/end`, {});
+};
+
+export const deleteRound = async (id: string): Promise<TResult<boolean>> => {
+    return await remove<boolean>(`/rounds/${id}`);
 };

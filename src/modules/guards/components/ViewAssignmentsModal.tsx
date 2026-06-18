@@ -3,6 +3,7 @@ import {
   ITButton,
   ITDialog,
   ITLoader,
+  ITTable,
 } from "@axzydev/axzy_ui_system";
 import { useEffect, useState } from "react";
 import {
@@ -17,11 +18,13 @@ import {
   FaLayerGroup,
   FaMapMarkerAlt,
   FaSync,
+  FaTrash,
   FaUserShield,
 } from "react-icons/fa";
 import {
   getAllAssignmentsByGuard,
   updateAssignmentStatus,
+  deleteAssignment,
 } from "../service/guards.service";
 import { Assignment, AssignmentStatus } from "../types/guards.types";
 import dayjs from "dayjs";
@@ -81,6 +84,8 @@ export const ViewAssignmentsModal = ({
   const [approvingId, setApprovingId] = useState<number | null>(null);
   const [selectedAssignment, setSelectedAssignment] =
     useState<Assignment | null>(null);
+  const [assignmentToDeleteId, setAssignmentToDeleteId] = useState<string | number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchAssignments = async () => {
     setLoading(true);
@@ -102,6 +107,18 @@ export const ViewAssignmentsModal = ({
       setSelectedAssignment(null);
     }
   }, [isOpen, guardId]);
+
+  const confirmDeleteAssignment = async () => {
+    if (!assignmentToDeleteId || isDeleting) return;
+    setIsDeleting(true);
+    const res = await deleteAssignment(assignmentToDeleteId);
+    setIsDeleting(false);
+    setAssignmentToDeleteId(null);
+    if (res.success) {
+      setAssignments((prev) => prev.filter((a) => a.id !== assignmentToDeleteId));
+      if (selectedAssignment?.id === assignmentToDeleteId) setSelectedAssignment(null);
+    }
+  };
 
   const handleApprove = async (id: number) => {
     setApprovingId(id);
@@ -133,64 +150,68 @@ export const ViewAssignmentsModal = ({
     <ITDialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Expediente de Asignaciones"
+      title=""
       className="!max-w-6xl !w-full"
     >
-      <div className="flex flex-col h-[85vh]  ">
+      <div className="flex flex-col h-[85vh]">
         {/* Profile Header */}
-        <div className="flex-none p-8 bg-white border-b border-slate-100">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="w-20 h-20 rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center text-2xl font-black text-slate-400 shadow-sm">
-                {guardName.charAt(0)}
+        <div className="flex-none px-8 pt-8 pb-6 bg-white border-b border-slate-100">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+                <FaUserShield size={18} />
               </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+              <div>
+                <h3 className="text-base font-medium text-slate-800">
                   {guardName}
                 </h3>
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100 text-[10px] font-black uppercase tracking-widest">
-                    <FaUserShield size={10} />
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <span className="inline-flex items-center gap-1.5 text-[10px] text-emerald-600 font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     {guard?.client?.name || "Sin Cliente"}
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-100 text-[10px] font-black uppercase tracking-widest">
-                    <FaClock size={10} />
+                  </span>
+                  <span className="text-slate-300">•</span>
+                  <span className="inline-flex items-center gap-1.5 text-[10px] text-sky-600 font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
                     {guard?.schedule?.name || "Sin Turno"}
-                  </div>
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {!isClient && (
                 <>
                   <ITButton
                     onClick={onReassignSchedule}
-                    variant="outline"
-                    className="!rounded-xl !h-11 !px-5 !border-slate-100 !bg-white !text-amber-500 hover:!bg-amber-50"
+                    variant="ghost"
+                    size="small"
+                    className="px-5 whitespace-nowrap shadow shadow-slate-100"
                   >
-                    <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
-                      <FaClock /> Turno
+                    <div className="flex items-center gap-1">
+                      <FaClock size={14} />
+                      <span className="text-[10px]">Turno</span>
                     </div>
                   </ITButton>
                   <ITButton
                     onClick={onReassignClient}
-                    variant="outline"
-                    className="!rounded-xl !h-11 !px-5 !border-slate-100 !bg-white !text-indigo-500 hover:!bg-indigo-50"
+                    variant="ghost"
+                    size="small"
+                    className="px-5 whitespace-nowrap shadow shadow-slate-100"
                   >
-                    <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
-                      <FaUserShield /> Cliente
+                    <div className="flex items-center gap-1">
+                      <FaUserShield size={14} />
+                      <span className="text-[10px]">Cliente</span>
                     </div>
                   </ITButton>
-                  <div className="w-px h-8 bg-slate-100 mx-1" />
                 </>
               )}
               <ITButton
                 onClick={fetchAssignments}
                 variant="ghost"
-                className="!w-11 !h-11 !rounded-xl !text-slate-400"
+                className="!w-9 !h-9 !rounded-lg !text-slate-400"
               >
-                <FaSync className={loading ? "animate-spin" : ""} />
+                <FaSync size={14} className={loading ? "animate-spin" : ""} />
               </ITButton>
             </div>
           </div>
@@ -201,7 +222,7 @@ export const ViewAssignmentsModal = ({
           {loading && !selectedAssignment && !assignments.length ? (
             <div className="h-full flex flex-col items-center justify-center space-y-4">
               <ITLoader />
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
                 Cargando expediente...
               </p>
             </div>
@@ -211,26 +232,26 @@ export const ViewAssignmentsModal = ({
               <div className="flex items-center gap-4 mb-8">
                 <ITButton
                   onClick={() => setSelectedAssignment(null)}
-                  variant="icon-only"
-                  color="gray"
-                  className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:border-emerald-100 transition-all shadow-sm"
+                  variant="ghost"
+                  className="!w-9 !h-9 !rounded-lg !text-slate-400"
                 >
                   <FaArrowLeft size={14} />
                 </ITButton>
                 <div>
-                  <div className="flex items-center gap-3">
-                    <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-medium text-slate-800">
                       Reporte de Ubicación
                     </h4>
                     <ITBadget
+                    size="small"
                       color={getStatusColor(selectedAssignment.status)}
                       variant="outlined"
-                      className="font-black text-[9px] px-3 tracking-widest"
+                      className="text-[9px] font-medium px-2.5 tracking-widest"
                     >
                       {statusTranslations[selectedAssignment.status]}
                     </ITBadget>
                   </div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                  <p className="text-xs text-slate-400 font-light mt-0.5">
                     ID #{selectedAssignment.id} •{" "}
                     {selectedAssignment.location?.name}
                   </p>
@@ -241,13 +262,11 @@ export const ViewAssignmentsModal = ({
                 {/* Left Column (8): Evidence and Checklist */}
                 <div className="lg:col-span-8 space-y-8">
                   {/* Evidence Card */}
-                  <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />{" "}
-                        Evidencia Multimedia
-                      </h5>
-                    </div>
+                  <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm space-y-4">
+                    <h5 className="text-[10px] font-medium text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+                      Evidencia Multimedia
+                    </h5>
 
                     {selectedAssignment.kardex?.flatMap(
                       (k: KardexEntry) => k.media || [],
@@ -264,9 +283,9 @@ export const ViewAssignmentsModal = ({
                         gridSize={280}
                       />
                     ) : (
-                      <div className="py-20 bg-slate-50/50 rounded-[24px] border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center">
-                        <FaFileAlt className="text-slate-200 text-4xl mb-4" />
-                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                      <div className="py-16 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center">
+                        <FaFileAlt className="text-slate-200 text-3xl mb-3" />
+                        <p className="text-xs text-slate-400 font-light">
                           Sin registros visuales
                         </p>
                       </div>
@@ -274,59 +293,65 @@ export const ViewAssignmentsModal = ({
                   </div>
 
                   {/* Checklist Card */}
-                  <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-6">
-                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{" "}
+                  <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm space-y-4">
+                    <h5 className="text-[10px] font-medium text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       Consignas Operativas
                     </h5>
 
-                    <div className="grid grid-cols-1 gap-3">
-                      {selectedAssignment.tasks.map((task) => (
-                        <div
-                          key={task.id}
-                          className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${
-                            task.completed
-                              ? "bg-emerald-50/30 border-emerald-100"
-                              : "bg-slate-50/30 border-slate-100"
-                          }`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div
-                              className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs shadow-sm transition-all ${
-                                task.completed
-                                  ? "bg-emerald-500 text-white"
-                                  : "bg-white text-slate-200 border border-slate-100"
-                              }`}
-                            >
-                              <FaCheckCircle />
+                    <ITTable
+                      columns={[
+                        {
+                          key: "description",
+                          label: "Tarea",
+                          type: "string",
+                          sortable: true,
+                          render: (row: any) => (
+                            <div className="flex items-center gap-3">
+                              <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] shadow-sm transition-all ${row.completed ? "bg-emerald-500 text-white" : "bg-white text-slate-200 border border-slate-100"}`}>
+                                <FaCheckCircle size={10} />
+                              </div>
+                              <span className={`text-[11px] font-medium ${row.completed ? "text-emerald-700" : "text-slate-600"}`}>
+                                {row.description}
+                              </span>
                             </div>
-                            <span
-                              className={`text-[11px] font-black uppercase tracking-tight ${task.completed ? "text-emerald-700" : "text-slate-600"}`}
-                            >
-                              {task.description}
-                            </span>
-                          </div>
-                          {task.completed && (
-                            <div className="text-right">
-                              <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">
-                                Completada
-                              </p>
-                              <p className="text-[9px] font-bold text-slate-400">
-                                {dayjs(task.completedAt).format("HH:mm")} hrs
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                          ),
+                        },
+                        {
+                          key: "completedAt",
+                          label: "Estado",
+                          type: "date",
+                          sortable: true,
+                          render: (row: any) =>
+                            row.completed && row.completedAt ? (
+                              <div className="text-right">
+                                <p className="text-[9px] font-medium text-emerald-500 uppercase tracking-widest">
+                                  Completada
+                                </p>
+                                <p className="text-[9px] text-slate-400 font-light">
+                                  {dayjs(row.completedAt).format("HH:mm")} hrs
+                                </p>
+                              </div>
+                            ) : (
+                              <span className="text-[9px] text-slate-300">Pendiente</span>
+                            ),
+                        },
+                      ]}
+                      data={selectedAssignment.tasks as any}
+                      size="sm"
+                      defaultItemsPerPage={10}
+                      itemsPerPageOptions={[5, 10, 20]}
+                      className="!border-0 !shadow-none"
+                      containerClassName="!space-y-0"
+                    />
 
                     {selectedAssignment.notes && (
-                      <div className="mt-8 pt-8 border-t border-slate-50">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">
+                      <div className="mt-6 pt-6 border-t border-slate-50">
+                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-3">
                           Observaciones del Guardia
                         </p>
-                        <div className="bg-amber-50/50 p-6 rounded-2xl border border-amber-100/50">
-                          <p className="text-xs text-slate-600 font-bold italic leading-relaxed">
+                        <div className="bg-amber-50/50 p-5 rounded-2xl border border-amber-100/50">
+                          <p className="text-xs text-slate-600 font-light italic leading-relaxed">
                             "{selectedAssignment.notes}"
                           </p>
                         </div>
@@ -337,8 +362,8 @@ export const ViewAssignmentsModal = ({
 
                 {/* Right Column (4): Info and Status */}
                 <div className="lg:col-span-4 space-y-6">
-                  <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm sticky top-8">
-                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8">
+                  <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm sticky top-8">
+                    <h5 className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-6">
                       Información General
                     </h5>
 
@@ -350,7 +375,7 @@ export const ViewAssignmentsModal = ({
                         subValue={`Zona ${selectedAssignment.location?.aisle || "N/A"}`}
                       />
                       <DetailItem
-                        icon={<FaCalendarAlt className="text-indigo-500" />}
+                        icon={<FaCalendarAlt className="text-sky-500" />}
                         label="Fecha de Inicio"
                         value={dayjs(selectedAssignment.createdAt).format(
                           "DD/MM/YYYY",
@@ -370,21 +395,23 @@ export const ViewAssignmentsModal = ({
                     {selectedAssignment.status ===
                       AssignmentStatus.UNDER_REVIEW &&
                       !isClient && (
-                        <div className="mt-12">
+                        <div className="mt-8">
                           <ITButton
                             onClick={() => handleApprove(selectedAssignment.id)}
                             disabled={approvingId === selectedAssignment.id}
-                            className="w-full !h-14 !rounded-2xl shadow-xl shadow-emerald-100"
+                            variant="filled"
+                            color="primary"
+                            size="small"
+                            className="w-full px-5 whitespace-nowrap shadow shadow-sky-100"
                           >
-                            <div className="flex items-center gap-3 font-black text-[10px] uppercase tracking-widest">
-                              {approvingId === selectedAssignment.id ? (
-                                <ITLoader size="sm" />
-                              ) : (
-                                <>
-                                  <FaCheckDouble size={16} /> Aprobar Reporte
-                                </>
-                              )}
-                            </div>
+                            {approvingId === selectedAssignment.id ? (
+                              <ITLoader size="sm" />
+                            ) : (
+                              <div className="flex items-center gap-1">
+                                <FaCheckDouble size={14} />
+                                <span className="text-[10px]">Aprobar Reporte</span>
+                              </div>
+                            )}
                           </ITButton>
                         </div>
                       )}
@@ -393,94 +420,158 @@ export const ViewAssignmentsModal = ({
               </div>
             </div>
           ) : assignments.length > 0 ? (
-            /* LIST VIEW */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in-95 duration-500">
-              {assignments.map((assignment) => (
-                <div
-                  key={assignment.id}
-                  onClick={() => setSelectedAssignment(assignment)}
-                  className="group bg-white rounded-[32px] border border-slate-100 p-8 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all cursor-pointer relative overflow-hidden"
-                >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50/30 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-700" />
-
-                  <div className="relative space-y-6">
-                    <div className="flex justify-between items-start">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-emerald-500 group-hover:text-white group-hover:border-emerald-400 transition-all duration-300">
-                        <FaMapMarkerAlt size={20} />
-                      </div>
-                      <ITBadget
-                        color={getStatusColor(assignment.status)}
-                        variant="outlined"
-                        className="font-black text-[8px] px-2 tracking-widest"
+            <ITTable
+              columns={[
+                {
+                  key: "location.name",
+                  label: "Ubicación",
+                  type: "string",
+                  sortable: true,
+                  filter: true,
+                  render: (row: any) => (
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => setSelectedAssignment(row)}>
+                      <FaMapMarkerAlt size={12} className="text-slate-400" />
+                      <span className="text-sm font-medium text-slate-800 hover:text-sky-600 transition-colors">
+                        {row.location?.name || "Sin Ubicación"}
+                      </span>
+                    </div>
+                  ),
+                },
+                {
+                  key: "createdAt",
+                  label: "Fecha",
+                  type: "date",
+                  sortable: true,
+                  render: (row: any) => (
+                    <span className="text-xs text-slate-400 font-light">
+                      {dayjs(row.createdAt).format("DD/MM/YYYY HH:mm")}
+                    </span>
+                  ),
+                },
+                {
+                  key: "status",
+                  label: "Estado",
+                  type: "string",
+                  sortable: true,
+                  filter: true,
+                  render: (row: any) => (
+                    <ITBadget
+                      color={getStatusColor(row.status)}
+                      variant="outlined"
+                      size="small"
+                      className="text-[9px] font-medium px-2.5 tracking-widest"
+                    >
+                      {statusTranslations[row.status as AssignmentStatus]}
+                    </ITBadget>
+                  ),
+                },
+                {
+                  key: "tasks",
+                  label: "Tareas",
+                  type: "number",
+                  sortable: true,
+                  render: (row: any) => (
+                    <span className="text-xs font-medium text-slate-400">
+                      {row.tasks.length} tareas
+                    </span>
+                  ),
+                },
+                {
+                  key: "actions",
+                  label: "",
+                  type: "actions",
+                  sortable: false,
+                  filter: false,
+                  actions: (row: any) => (
+                    <>
+                      <ITButton
+                        onClick={() => setSelectedAssignment(row)}
+                        variant="ghost"
+                        className="!w-7 !h-7 !rounded-lg !text-sky-500"
                       >
-                        {statusTranslations[assignment.status]}
-                      </ITBadget>
-                    </div>
-
-                    <div>
-                      <h5 className="text-sm font-black text-slate-800 uppercase tracking-tight group-hover:text-emerald-600 transition-colors">
-                        {assignment.location?.name || "Sin Ubicación"}
-                      </h5>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                        {dayjs(assignment.createdAt).format("DD/MM/YYYY HH:mm")}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                      <div className="flex items-center gap-2">
-                        <div className="flex -space-x-2">
-                          {assignment.tasks.slice(0, 3).map((_, i) => (
-                            <div
-                              key={i}
-                              className="w-6 h-6 rounded-full bg-emerald-100 border-2 border-white flex items-center justify-center text-emerald-600"
-                            >
-                              <FaCheckCircle size={10} />
-                            </div>
-                          ))}
-                        </div>
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                          {assignment.tasks.length} Tareas
-                        </span>
-                      </div>
-                      <FaChevronRight
-                        size={12}
-                        className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                        <FaChevronRight size={10} />
+                      </ITButton>
+                      <ITButton
+                        onClick={() => setAssignmentToDeleteId(row.id)}
+                        variant="ghost"
+                        className="!w-7 !h-7 !rounded-lg !text-rose-400 hover:!text-rose-600"
+                      >
+                        <FaTrash size={10} />
+                      </ITButton>
+                    </>
+                  ),
+                },
+              ]}
+              data={assignments as any}
+              defaultItemsPerPage={10}
+              itemsPerPageOptions={[5, 10, 20]}
+            />
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
-              <div className="w-24 h-24 rounded-[40px] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-200">
-                <FaExclamationTriangle size={40} />
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300">
+                <FaExclamationTriangle size={24} />
               </div>
-              <div className="space-y-2">
-                <h5 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+              <div className="space-y-1">
+                <h5 className="text-base font-medium text-slate-800">
                   Sin Historial
                 </h5>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] max-w-xs">
-                  No se han registrado asignaciones operativas para este
-                  guardia.
+                <p className="text-xs text-slate-400 font-light max-w-xs">
+                  No se han registrado asignaciones operativas para este guardia.
                 </p>
               </div>
             </div>
           )}
         </div>
-
-        {/* Standardized Footer */}
-        <div className="flex-none flex justify-end items-center px-10 py-6 border-t border-slate-100 bg-slate-50/50 gap-4">
-          <ITButton
-            variant="filled"
-            color="secondary"
-            className="px-8 font-black text-[10px] uppercase tracking-widest"
-            onClick={onClose}
-          >
-            Cerrar Expediente
-          </ITButton>
-        </div>
       </div>
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <ITDialog
+        isOpen={!!assignmentToDeleteId}
+        onClose={() => setAssignmentToDeleteId(null)}
+        title=""
+        className="!max-w-md !w-full"
+      >
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Asignación</h3>
+                <p className="text-xs text-slate-400 font-light">Esta acción es permanente</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción eliminará la asignación y su historial asociado de forma permanente.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
+            <ITButton
+              variant="ghost"
+              onClick={() => setAssignmentToDeleteId(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
+            >
+              Cancelar
+            </ITButton>
+            <ITButton
+              variant="filled"
+              color="danger"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
+              onClick={confirmDeleteAssignment}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <ITLoader size="sm" /> : "Eliminar"}
+            </ITButton>
+          </div>
+        </div>
+      </ITDialog>
     </ITDialog>
   );
 };
@@ -493,19 +584,19 @@ interface DetailItemProps {
 }
 
 const DetailItem = ({ icon, label, value, subValue }: DetailItemProps) => (
-  <div className="flex items-start gap-4">
-    <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
+  <div className="flex items-start gap-3">
+    <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
       {icon}
     </div>
     <div>
-      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">
+      <p className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mb-0.5">
         {label}
       </p>
-      <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight">
+      <p className="text-xs font-medium text-slate-700">
         {value}
       </p>
       {subValue && (
-        <p className="text-[9px] font-bold text-slate-400 mt-0.5">{subValue}</p>
+        <p className="text-[9px] text-slate-400 font-light mt-0.5">{subValue}</p>
       )}
     </div>
   </div>

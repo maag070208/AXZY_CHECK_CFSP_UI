@@ -1,0 +1,15 @@
+La lista que aparece en la imagen es:
+
+
+
+    Modificación de horarios
+OK       Eliminar registros 
+       Auditoría del uniforme
+OK       Usuario de cliente para ver incidencias
+OK       Reporte de incidencia de colaborador
+       Plantillas
+       Autorización de incidencias por supervisor
+       Enviar incidencias por WhatsApp
+OK       Administrador generar incidencias o metto
+OK       Asistencia por medio del sistema reporte para prenómina
+OK       Apertura de locales QR

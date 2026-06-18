@@ -349,13 +349,14 @@ const LocationsPage = () => {
         }
       />
 
-      <div className="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
         <ITDataTable
           key={refreshKey}
           columns={columns as any}
           fetchData={memoizedFetch as any}
           externalFilters={externalFilters}
           defaultItemsPerPage={10}
+          title=""
         />
       </div>
 
@@ -379,77 +380,112 @@ const LocationsPage = () => {
       <ITDialog
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Registro de Ubicación"
+        title=""
+        className="!max-w-lg !w-full"
       >
         {isModalOpen && (
-          <LocationForm
-            initialData={
-              selectedClientId
-                ? {
-                    clientId: selectedClientId as string,
-                    aisle: "",
-                    spot: "",
-                    number: "",
-                    name: "",
-                  }
-                : undefined
-            }
-            onSubmit={handleCreate}
-            onCancel={() => setIsModalOpen(false)}
-          />
+          <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+            <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+                  <FaSearchLocation size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-medium text-slate-800">Registro de Ubicación</h3>
+                  <p className="text-xs text-slate-400 font-light">Nuevo punto de control</p>
+                </div>
+              </div>
+            </div>
+            <LocationForm
+              initialData={
+                selectedClientId
+                  ? {
+                      clientId: selectedClientId as string,
+                      aisle: "",
+                      spot: "",
+                      number: "",
+                      name: "",
+                    }
+                  : undefined
+              }
+              onSubmit={handleCreate}
+              onCancel={() => setIsModalOpen(false)}
+            />
+          </div>
         )}
       </ITDialog>
 
       <ITDialog
         isOpen={!!editingLocation}
         onClose={() => setEditingLocation(null)}
-        title="Actualizar Ubicación"
+        title=""
+        className="!max-w-lg !w-full"
       >
         {editingLocation && (
-          <LocationForm
-            initialData={editingLocation}
-            onSubmit={handleEdit}
-            onCancel={() => setEditingLocation(null)}
-          />
+          <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+            <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                  <FaEdit size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-medium text-slate-800">Actualizar Ubicación</h3>
+                  <p className="text-xs text-slate-400 font-light">{editingLocation?.name || "Ubicación"}</p>
+                </div>
+              </div>
+            </div>
+            <LocationForm
+              initialData={editingLocation}
+              onSubmit={handleEdit}
+              onCancel={() => setEditingLocation(null)}
+            />
+          </div>
         )}
       </ITDialog>
 
+      {/* DELETE LOCATION DIALOG */}
       <ITDialog
         isOpen={!!locationToDelete}
         onClose={() => setLocationToDelete(null)}
-        title="Confirmar Eliminación"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-6 text-center">
-          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
-            <FaTrash size={24} />
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Ubicación</h3>
+                <p className="text-xs text-slate-400 font-light">{locationToDelete?.name || "Ubicación"}</p>
+              </div>
+            </div>
           </div>
-          <h3 className="text-lg font-bold text-slate-800 mb-2">
-            ¿Eliminar ubicación?
-          </h3>
-          <p className="text-slate-500 text-sm mb-8">
-            Estás por borrar{" "}
-            <span className="font-bold text-slate-700">
-              {locationToDelete?.name}
-            </span>
-            .<br />
-            Esta acción es permanente y no se puede deshacer.
-          </p>
-          <div className="flex gap-3 justify-center">
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción eliminará la ubicación y todos sus registros asociados de forma permanente.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
-              variant="outlined"
-              color="secondary"
+              variant="ghost"
               onClick={() => setLocationToDelete(null)}
-              className="!rounded-xl px-8"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
-              No, Mantener
+              Cancelar
             </ITButton>
             <ITButton
-              onClick={confirmDelete}
               variant="filled"
               color="danger"
-              className="!rounded-xl px-8"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
+              onClick={confirmDelete}
             >
-              Sí, Eliminar
+              Eliminar
             </ITButton>
           </div>
         </div>

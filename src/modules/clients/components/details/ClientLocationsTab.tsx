@@ -11,7 +11,7 @@ import {
 } from "@app/modules/locations/service/locations.service";
 import { ITButton, ITDataTable, ITDialog } from "@axzydev/axzy_ui_system";
 import { useCallback, useState } from "react";
-import { FaEdit, FaPlus, FaQrcode, FaSync, FaTrash } from "react-icons/fa";
+import { FaEdit, FaMapMarkerAlt, FaPlus, FaQrcode, FaSync, FaTrash } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 
 interface Props {
@@ -77,12 +77,12 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
       type: "string",
       render: (row: Location) => (
         <div className="flex flex-col">
-          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+          <span className="font-medium text-slate-700 text-sm">
             {row.name}
           </span>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+            <span className="text-slate-400 text-[10px]">
               {row.reference ? `REF: ${row.reference}` : "SIN REFERENCIA"}
             </span>
           </div>
@@ -95,12 +95,12 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
       type: "string",
       render: (row: any) => (
         <div className="flex flex-col">
-          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+          <span className="font-medium text-slate-700 text-sm">
             {row.zone?.name || "SIN ZONA"}
           </span>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+            <span className="text-slate-400 text-[10px]">
               PUNTO DE CONTROL
             </span>
           </div>
@@ -114,12 +114,10 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
       actions: (row: Location) => (
         <div className="flex items-center gap-2">
           <ITButton
-            onClick={() => {
-              setIsBulkPrintOpen(true);
-            }}
+            onClick={() => handlePrintBulk([row.id])}
             size="small"
             variant="outlined"
-            title="Asistente QR"
+            title="Imprimir QR"
           >
             <FaQrcode size={14} />
           </ITButton>
@@ -147,12 +145,12 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h3 className="text-sm font-black text-slate-800 uppercase tracking-[0.1em]">
+          <h3 className="text-base font-medium text-slate-800">
             Directorio de Ubicaciones
           </h3>
-          <p className="text-[11px] text-slate-400 font-bold uppercase mt-1 tracking-widest">
+          <p className="text-xs text-slate-400 font-light mt-0.5">
             Gestión de puntos de control y códigos QR
           </p>
         </div>
@@ -161,25 +159,31 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
             onClick={() => setRefreshKey((prev) => prev + 1)}
             size="small"
             variant="ghost"
-            className="h-10 w-10 p-0 flex justify-center items-center bg-slate-50 rounded-xl hover:bg-slate-100"
+            className="w-9 h-9 p-0 flex items-center justify-center bg-slate-50 rounded-lg hover:bg-slate-100"
           >
-            <FaSync className="text-slate-400" />
+            <FaSync className="text-slate-400" size={12} />
           </ITButton>
           <ITButton
             onClick={() => setIsBulkPrintOpen(true)}
-            variant="outline"
-            className="h-10 px-6 rounded-xl font-black text-[11px] uppercase tracking-widest border-emerald-100 text-emerald-600 hover:bg-emerald-50 flex items-center gap-2 transition-all"
+            size="small"
+            variant="outlined"
+            className="px-5 whitespace-nowrap shadow shadow-slate-100"
           >
-            <FaQrcode size={12} />
-            Imprimir
+            <div className="flex items-center gap-1">
+              <FaQrcode size={14} />
+              <span className="text-[10px]">Imprimir QRs</span>
+            </div>
           </ITButton>
           <ITButton
             onClick={() => setIsCreateModalOpen(true)}
             color="primary"
-            className="h-10 px-6 rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-500/10"
+            size="small"
+            className="px-5 whitespace-nowrap shadow shadow-sky-100"
           >
-            <FaPlus size={12} />
-            Nueva Ubicación
+            <div className="flex items-center gap-1">
+              <FaPlus size={14} />
+              <span className="text-[10px]">Nueva Ubicación</span>
+            </div>
           </ITButton>
         </div>
       </div>
@@ -196,9 +200,21 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
       <ITDialog
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title="Registrar Nueva Ubicación"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-2">
+        <div className="flex flex-col bg-white overflow-hidden">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+                <FaMapMarkerAlt size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Nueva Ubicación</h3>
+                <p className="text-xs text-slate-400 font-light">Registrar punto de control</p>
+              </div>
+            </div>
+          </div>
           {isCreateModalOpen && (
             <LocationForm
               initialData={{
@@ -239,10 +255,22 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
       <ITDialog
         isOpen={!!editingLocation}
         onClose={() => setEditingLocation(null)}
-        title="Actualizar Información de Ubicación"
+        title=""
+        className="!max-w-md !w-full"
       >
-        {editingLocation && (
-          <div className="p-2">
+        <div className="flex flex-col bg-white overflow-hidden">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+                <FaMapMarkerAlt size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Editar Ubicación</h3>
+                <p className="text-xs text-slate-400 font-light">{editingLocation?.name || "Actualizar datos del punto de control"}</p>
+              </div>
+            </div>
+          </div>
+          {editingLocation && (
             <LocationForm
               initialData={editingLocation}
               onSubmit={async (data) => {
@@ -267,8 +295,8 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
               }}
               onCancel={() => setEditingLocation(null)}
             />
-          </div>
-        )}
+          )}
+        </div>
       </ITDialog>
 
       <BulkPrintModal

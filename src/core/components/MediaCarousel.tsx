@@ -101,34 +101,31 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="pointer-events-auto flex flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <div className="w-1.5 h-4 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)]" />
-            <h4 className="text-slate-800 text-xl font-black uppercase tracking-tight">
-              {title}
-            </h4>
-          </div>
+          <h4 className="text-slate-800 text-base font-medium">
+            {title}
+          </h4>
           <div className="flex items-center gap-2">
-            <span className="text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+            <span className="text-[10px] text-sky-600 font-light bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">
               Evidencia {currentIndex + 1} de {media.length}
             </span>
             {currentItem.type === "VIDEO" && (
-              <span className="text-rose-500 text-[10px] font-black uppercase tracking-[0.2em] bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100 animate-pulse">
+              <span className="text-[10px] text-rose-500 font-light bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100 animate-pulse">
                 Video Operativo
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex gap-4 pointer-events-auto">
+        <div className="flex gap-3 pointer-events-auto">
           <button
             onClick={(e) => {
               e.stopPropagation();
               toggleFullscreen();
             }}
             title={isFullscreen ? "Contraer" : "Expandir"}
-            className="w-14 h-14 rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 hover:text-white hover:shadow-[0_10px_20px_rgba(16,185,129,0.2)] transition-all active:scale-90 shadow-sm"
+            className="w-10 h-10 rounded-xl border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-sky-500 hover:border-sky-400 hover:text-white transition-all active:scale-90"
           >
-            {isFullscreen ? <FaCompress size={18} /> : <FaExpand size={18} />}
+            {isFullscreen ? <FaCompress size={14} /> : <FaExpand size={14} />}
           </button>
           {onClose && (
             <button
@@ -137,9 +134,9 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
                 onClose();
               }}
               title="Cerrar Galería"
-              className="w-14 h-14 rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-rose-500 hover:border-rose-400 hover:text-white hover:shadow-[0_10px_20px_rgba(244,63,94,0.2)] transition-all active:scale-90 shadow-sm"
+              className="w-10 h-10 rounded-xl border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-rose-500 hover:border-rose-400 hover:text-white transition-all active:scale-90"
             >
-              <FaTimes size={18} />
+              <FaTimes size={14} />
             </button>
           )}
         </div>
@@ -164,31 +161,31 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
               src={currentItem.url}
               controls
               autoPlay
-              className="max-w-full max-h-full object-contain rounded-3xl shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] border border-slate-200/50 animate-in fade-in zoom-in-95 duration-700 bg-black"
+              className="max-w-full max-h-full object-contain rounded-2xl border border-slate-200/50 animate-in fade-in zoom-in-95 duration-700 bg-black"
               onClick={(e) => e.stopPropagation()}
             />
           ) : (
             <img
               src={currentItem.url}
               alt={currentItem.title || `Media ${currentIndex}`}
-              className="max-w-full max-h-full object-contain rounded-3xl shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] border border-slate-200/50 select-none animate-in fade-in zoom-in-95 duration-700"
+              className="max-w-full max-h-full object-contain rounded-2xl border border-slate-200/50 select-none animate-in fade-in zoom-in-95 duration-700"
               onClick={(e) => e.stopPropagation()}
             />
           )}
 
-          {/* Premium Nav Controls */}
+          {/* Nav Controls */}
           {media.length > 1 && (
-            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-10 pointer-events-none opacity-0 group-hover/view:opacity-100 transition-opacity duration-300">
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 pointer-events-none opacity-0 group-hover/view:opacity-100 transition-opacity duration-300">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   prevSlide();
                 }}
-                className="pointer-events-auto w-16 h-16 rounded-[2rem] bg-white shadow-xl border border-slate-100 text-slate-400 flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 hover:text-white hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all group/btn"
+                className="pointer-events-auto w-12 h-12 rounded-xl bg-white shadow-lg border border-slate-100 text-slate-400 flex items-center justify-center hover:bg-sky-500 hover:border-sky-400 hover:text-white transition-all group/btn"
               >
                 <FaChevronLeft
-                  size={20}
-                  className="group-hover/btn:-translate-x-1 transition-transform"
+                  size={16}
+                  className="group-hover/btn:-translate-x-0.5 transition-transform"
                 />
               </button>
               <button
@@ -196,11 +193,11 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
                   e.stopPropagation();
                   nextSlide();
                 }}
-                className="pointer-events-auto w-16 h-16 rounded-[2rem] bg-white shadow-xl border border-slate-100 text-slate-400 flex items-center justify-center hover:bg-emerald-500 hover:border-emerald-400 hover:text-white hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all group/btn"
+                className="pointer-events-auto w-12 h-12 rounded-xl bg-white shadow-lg border border-slate-100 text-slate-400 flex items-center justify-center hover:bg-sky-500 hover:border-sky-400 hover:text-white transition-all group/btn"
               >
                 <FaChevronRight
-                  size={20}
-                  className="group-hover/btn:translate-x-1 transition-transform"
+                  size={16}
+                  className="group-hover/btn:translate-x-0.5 transition-transform"
                 />
               </button>
             </div>
@@ -209,7 +206,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
       </div>
 
       {/* Thumbnails Navigator */}
-      <div className="h-28 bg-white border-t border-slate-100 px-8 flex items-center justify-center gap-4 shrink-0 overflow-x-auto no-scrollbar shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
+      <div className="h-24 bg-white border-t border-slate-100 px-6 flex items-center justify-center gap-3 shrink-0 overflow-x-auto no-scrollbar">
         {media.map((item, idx) => (
           <button
             key={idx}
@@ -218,10 +215,10 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
               setCurrentIndex(idx);
             }}
             className={`
-              relative w-16 h-16 rounded-[1.25rem] overflow-hidden border-2 transition-all duration-500 shrink-0
+              relative w-14 h-14 rounded-xl overflow-hidden border-2 transition-all duration-500 shrink-0
               ${
                 currentIndex === idx
-                  ? "border-emerald-500 scale-110 shadow-[0_10px_20px_rgba(16,185,129,0.2)] ring-4 ring-emerald-500/5"
+                  ? "border-sky-500 scale-110 ring-2 ring-sky-500/10"
                   : "border-slate-100 opacity-50 hover:opacity-100 hover:border-slate-200 hover:scale-105"
               }
             `}
@@ -233,7 +230,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
                   className="w-full h-full object-cover opacity-50"
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <FaPlay size={12} className="text-white drop-shadow-md" />
+                  <FaPlay size={10} className="text-white" />
                 </div>
               </div>
             ) : (
@@ -245,7 +242,7 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
             )}
 
             {currentIndex === idx && (
-              <div className="absolute inset-0 bg-emerald-500/5 pointer-events-none" />
+              <div className="absolute inset-0 bg-sky-500/5 pointer-events-none" />
             )}
           </button>
         ))}

@@ -327,8 +327,8 @@ const UsersPage = () => {
       <ITDialog
         isOpen={!!changingPasswordUser}
         onClose={() => setChangingPasswordUser(null)}
-        title="Cambiar Contraseña"
-        className="!max-w-lg !w-full"
+        title=""
+        className="!max-w-md !w-full"
       >
         {changingPasswordUser && (
           <ChangePasswordModal
@@ -343,53 +343,41 @@ const UsersPage = () => {
       <ITDialog
         isOpen={!!changingClientUser}
         onClose={() => setChangingClientUser(null)}
-        title="Reasignar Cliente"
-        className="!max-w-xl !w-full"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="flex flex-col bg-white overflow-hidden">
-          <div className="p-10 space-y-10">
-            <section>
-              <div className="flex items-center gap-2 mb-8">
-                <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-                <ITText className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                  Asignación Corporativa
-                </ITText>
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+                <FaUserShield size={18} />
               </div>
-
-              <div className="space-y-6">
-                <div className="p-6 bg-slate-50 rounded-[24px] border border-slate-100 flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-indigo-500 border border-slate-100">
-                    <FaUserShield size={20} />
-                  </div>
-                  <div className="flex flex-col">
-                    <ITText className="text-sm font-black text-slate-800 uppercase tracking-tight">
-                      {changingClientUser?.name} {changingClientUser?.lastName}
-                    </ITText>
-                    <ITText className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-                      ID: {changingClientUser?.id?.slice(0, 8)}
-                    </ITText>
-                  </div>
-                </div>
-
-                <ITSelect
-                  label="Seleccionar Cliente Destino"
-                  name="clientId"
-                  placeholder="SELECCIONAR CLIENTE..."
-                  options={
-                    clients.map((c) => ({ label: c.name, value: c.id })) as any
-                  }
-                  value={changingClientUser?.clientId || ""}
-                  onChange={(e: any) => handleReassignClient(e.target.value)}
-                />
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Reasignar Cliente</h3>
+                <p className="text-xs text-slate-400 font-light">{changingClientUser?.name} {changingClientUser?.lastName}</p>
               </div>
-            </section>
+            </div>
           </div>
 
-          <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
+          <div className="px-8 py-6">
+            <div className="space-y-3">
+              <span className="text-xs text-slate-400 font-medium uppercase tracking-widest">Seleccionar Cliente Destino</span>
+              <ITSelect
+                name="clientId"
+                placeholder="SELECCIONAR CLIENTE..."
+                options={clients.map((c) => ({ label: c.name, value: c.id })) as any}
+                value={changingClientUser?.clientId || ""}
+                onChange={(e: any) => handleReassignClient(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
-              variant="filled"
-              color="secondary"
+              variant="ghost"
               onClick={() => setChangingClientUser(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
@@ -401,56 +389,44 @@ const UsersPage = () => {
       <ITDialog
         isOpen={!!changingScheduleUser}
         onClose={() => setChangingScheduleUser(null)}
-        title="Cambiar Turno"
-        className="!max-w-xl !w-full"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="flex flex-col bg-white overflow-hidden">
-          <div className="p-10 space-y-10">
-            <section>
-              <div className="flex items-center gap-2 mb-8">
-                <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-                <ITText className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                  Control de Horario
-                </ITText>
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                <FaClock size={18} />
               </div>
-
-              <div className="space-y-6">
-                <div className="p-6 bg-slate-50 rounded-[24px] border border-slate-100 flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-amber-500 border border-slate-100">
-                    <FaClock size={20} />
-                  </div>
-                  <div className="flex flex-col">
-                    <ITText className="text-sm font-black text-slate-800 uppercase tracking-tight">
-                      {changingScheduleUser?.name}{" "}
-                      {changingScheduleUser?.lastName}
-                    </ITText>
-                    <ITText className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-                      HORARIO ACTUAL:{" "}
-                      {changingScheduleUser?.schedule?.name || "N/A"}
-                    </ITText>
-                  </div>
-                </div>
-
-                <ITSelect
-                  label="Horario Operativo"
-                  name="scheduleId"
-                  placeholder="SELECCIONAR TURNO..."
-                  options={schedules.map((s) => ({
-                    label: `${s.name} (${s.startTime} - ${s.endTime})`,
-                    value: s.id,
-                  }))}
-                  value={changingScheduleUser?.scheduleId || ""}
-                  onChange={(e: any) => handleReassignSchedule(e.target.value)}
-                />
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Cambiar Turno</h3>
+                <p className="text-xs text-slate-400 font-light">{changingScheduleUser?.name} {changingScheduleUser?.lastName}</p>
               </div>
-            </section>
+            </div>
           </div>
 
-          <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
+          <div className="px-8 py-6">
+            <div className="space-y-3">
+              <span className="text-xs text-slate-400 font-medium uppercase tracking-widest">Horario Operativo</span>
+              <ITSelect
+                name="scheduleId"
+                placeholder="SELECCIONAR TURNO..."
+                options={schedules.map((s) => ({
+                  label: `${s.name} (${s.startTime} - ${s.endTime})`,
+                  value: s.id,
+                }))}
+                value={changingScheduleUser?.scheduleId || ""}
+                onChange={(e: any) => handleReassignSchedule(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
-              variant="filled"
-              color="secondary"
+              variant="ghost"
               onClick={() => setChangingScheduleUser(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
@@ -462,35 +438,46 @@ const UsersPage = () => {
       <ITDialog
         isOpen={!!userToDeleteId}
         onClose={() => setUserToDeleteId(null)}
-        title="Eliminar Registro"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-10 text-center">
-          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-rose-100 shadow-sm">
-            <FaTrash size={32} />
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Registro</h3>
+                <p className="text-xs text-slate-400 font-light">Usuario #{userToDeleteId}</p>
+              </div>
+            </div>
           </div>
-          <ITText className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3">
-            ¿Inhabilitar Usuario?
-          </ITText>
-          <ITText className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto block">
-            Esta acción es definitiva y revocaría todos los permisos de acceso
-            de forma inmediata.
-          </ITText>
-          <div className="flex gap-4 justify-center">
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción es definitiva y revocaría todos los permisos de acceso de forma inmediata.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
-              className="px-8 font-black text-[11px] uppercase tracking-widest text-slate-400"
               onClick={() => setUserToDeleteId(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
             <ITButton
               variant="filled"
               color="danger"
-              className="px-10 !rounded-2xl shadow-xl shadow-rose-200"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? <ITLoader size="sm" /> : "ELIMINAR AHORA"}
+              {isDeleting ? <ITLoader size="sm" /> : "Eliminar"}
             </ITButton>
           </div>
         </div>

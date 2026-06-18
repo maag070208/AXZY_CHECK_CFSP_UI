@@ -53,6 +53,8 @@ const GuardsPage = () => {
   const { data: clients } = useCatalog("client");
   const [schedules, setSchedules] = useState<any[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isReassigningClient, setIsReassigningClient] = useState(false);
+  const [isReassigningSchedule, setIsReassigningSchedule] = useState(false);
 
   useEffect(() => {
     getSchedules().then(setSchedules);
@@ -312,57 +314,55 @@ const GuardsPage = () => {
       <ITDialog
         isOpen={!!changingClientUser}
         onClose={() => setChangingClientUser(null)}
+        title=""
         className="!max-w-md !w-full"
       >
-        <div className="p-10 space-y-8">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="w-20 h-20 rounded-3xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-sm">
-              <FaUserShield size={40} />
-            </div>
-            <div>
-              <ITText className="text-xl font-black text-slate-800 uppercase tracking-tight block">
-                Reasignar Cliente
-              </ITText>
-              <ITText className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1 block">
-                {changingClientUser?.name} {changingClientUser?.lastName}
-              </ITText>
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+                <FaUserShield size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Reasignar Cliente</h3>
+                <p className="text-xs text-slate-400 font-light">{changingClientUser?.name} {changingClientUser?.lastName}</p>
+              </div>
             </div>
           </div>
 
-          <ITSelect
-            label="Seleccionar Cliente Destino"
-            name="clientId"
-            placeholder="BUSCAR CLIENTE..."
-            options={
-              clients.map((c) => ({ label: c.name, value: c.id })) as any
-            }
-            value={changingClientUser?.clientId || ""}
-            onChange={(e: any) => {
-              const val = e.target.value;
-              if (!changingClientUser) return;
-              updateUser(changingClientUser.id, {
-                clientId: val as string,
-              }).then((res) => {
-                if (res.success) {
-                  dispatch(
-                    showToast({
-                      message: "Cliente reasignado",
-                      type: "success",
-                    }),
-                  );
-                  refreshTable();
-                  setChangingClientUser(null);
-                }
-              });
-            }}
-            className="!h-14 !rounded-2xl !bg-slate-50/50"
-          />
+          <div className="px-8 py-6">
+            <div className="space-y-3">
+              <span className="text-xs text-slate-400 font-medium uppercase tracking-widest">Seleccionar Cliente Destino</span>
+              <ITSelect
+                name="clientId"
+                placeholder="BUSCAR CLIENTE..."
+                options={clients.map((c) => ({ label: c.name, value: c.id })) as any}
+                value={changingClientUser?.clientId || ""}
+                onChange={(e: any) => {
+                  const val = e.target.value;
+                  if (!changingClientUser || isReassigningClient) return;
+                  setIsReassigningClient(true);
+                  updateUser(changingClientUser.id, { clientId: val as string })
+                    .finally(() => setIsReassigningClient(false))
+                    .then((res) => {
+                      if (res.success) {
+                        dispatch(showToast({ message: "Cliente reasignado", type: "success" }));
+                        refreshTable();
+                        setChangingClientUser(null);
+                      }
+                    });
+                }}
+                disabled={isReassigningClient}
+              />
+            </div>
+          </div>
 
-          <div className="flex justify-center pt-4">
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
               onClick={() => setChangingClientUser(null)}
-              className="px-10 font-black text-[10px] uppercase tracking-widest text-slate-400"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
@@ -374,58 +374,58 @@ const GuardsPage = () => {
       <ITDialog
         isOpen={!!changingScheduleUser}
         onClose={() => setChangingScheduleUser(null)}
+        title=""
         className="!max-w-md !w-full"
       >
-        <div className="p-10 space-y-8">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="w-20 h-20 rounded-3xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100 shadow-sm">
-              <FaClock size={40} />
-            </div>
-            <div>
-              <ITText className="text-xl font-black text-slate-800 uppercase tracking-tight block">
-                Cambiar Turno
-              </ITText>
-              <ITText className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1 block">
-                {changingScheduleUser?.name} {changingScheduleUser?.lastName}
-              </ITText>
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                <FaClock size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Cambiar Turno</h3>
+                <p className="text-xs text-slate-400 font-light">{changingScheduleUser?.name} {changingScheduleUser?.lastName}</p>
+              </div>
             </div>
           </div>
 
-          <ITSelect
-            label="Horario Operativo"
-            name="scheduleId"
-            placeholder="SELECCIONAR TURNO..."
-            options={schedules.map((s) => ({
-              label: `${s.name} (${s.startTime} - ${s.endTime})`,
-              value: s.id,
-            }))}
-            value={changingScheduleUser?.scheduleId || ""}
-            onChange={(e: any) => {
-              const val = e.target.value;
-              if (!changingScheduleUser) return;
-              updateUser(changingScheduleUser.id, {
-                scheduleId: val as string,
-              }).then((res) => {
-                if (res.success) {
-                  dispatch(
-                    showToast({
-                      message: "Horario actualizado",
-                      type: "success",
-                    }),
-                  );
-                  refreshTable();
-                  setChangingScheduleUser(null);
-                }
-              });
-            }}
-            className="!h-14 !rounded-2xl !bg-slate-50/50"
-          />
+          <div className="px-8 py-6">
+            <div className="space-y-3">
+              <span className="text-xs text-slate-400 font-medium uppercase tracking-widest">Horario Operativo</span>
+              <ITSelect
+                name="scheduleId"
+                placeholder="SELECCIONAR TURNO..."
+                options={schedules.map((s) => ({
+                  label: `${s.name} (${s.startTime} - ${s.endTime})`,
+                  value: s.id,
+                }))}
+                value={changingScheduleUser?.scheduleId || ""}
+                onChange={(e: any) => {
+                  const val = e.target.value;
+                  if (!changingScheduleUser || isReassigningSchedule) return;
+                  setIsReassigningSchedule(true);
+                  updateUser(changingScheduleUser.id, { scheduleId: val as string })
+                    .finally(() => setIsReassigningSchedule(false))
+                    .then((res) => {
+                      if (res.success) {
+                        dispatch(showToast({ message: "Horario actualizado", type: "success" }));
+                        refreshTable();
+                        setChangingScheduleUser(null);
+                      }
+                    });
+                }}
+                disabled={isReassigningSchedule}
+              />
+            </div>
+          </div>
 
-          <div className="flex justify-center pt-4">
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
               onClick={() => setChangingScheduleUser(null)}
-              className="px-10 font-black text-[10px] uppercase tracking-widest text-slate-400"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
@@ -433,49 +433,96 @@ const GuardsPage = () => {
         </div>
       </ITDialog>
 
-      {/* TOGGLE STATUS DIALOG */}
-      <ITDialog
-        isOpen={!!guardToToggle}
-        onClose={() => setGuardToToggle(null)}
-        title="Confirmar Acción"
+ {/* TOGGLE STATUS DIALOG - Modern Minimalist with Color Accents */}
+<ITDialog
+  isOpen={!!guardToToggle}
+  onClose={() => setGuardToToggle(null)}
+  title=""
+  className="!max-w-md !w-full"
+>
+  <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+    {/* Header with subtle color accent */}
+    <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+      <div className="flex items-center gap-3">
+        {/* Colored icon circle */}
+        <div 
+          className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
+            guardToToggle?.active 
+              ? "bg-rose-50 text-red-500" 
+              : "bg-emerald-50 text-emerald-500"
+          }`}
+        >
+          <FaPowerOff size={18} />
+        </div>
+        <div>
+          <h3 className="text-base font-medium text-slate-800">
+            {guardToToggle?.active ? "Desactivar Guardia" : "Activar Guardia"}
+          </h3>
+          <p className="text-xs text-slate-400 font-light">
+            {guardToToggle?.name || "Usuario"}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {/* Content */}
+    <div className="px-8 py-6">
+      {/* Status indicator */}
+      <div className="flex items-center justify-center gap-2 mb-4">
+        <span className="text-xs text-slate-400 font-medium uppercase tracking-widest">
+          Estado actual:
+        </span>
+        <span 
+          className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+            guardToToggle?.active ? "text-rose-500" : "text-emerald-500"
+          }`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${
+            guardToToggle?.active ? "bg-rose-500" : "bg-emerald-500"
+          }`} />
+          {guardToToggle?.active ? "Activo" : "Inactivo"}
+        </span>
+      </div>
+
+      {/* Description */}
+      <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+        {guardToToggle?.active
+          ? "El guardia perderá acceso a la aplicación. Los turnos activos serán suspendidos."
+          : "El guardia recuperará acceso a la aplicación y podrá retomar sus tareas."}
+      </p>
+    </div>
+
+    {/* Footer */}
+    <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
+      <ITButton
+        variant="ghost"
+        size="small"
+        onClick={() => setGuardToToggle(null)}
+        className="px-5 whitespace-nowrap shadow shadow-slate-100"
       >
-        <div className="p-10 text-center">
-          <div
-            className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-8 border shadow-sm ${guardToToggle?.active ? "bg-rose-50 text-rose-500 border-rose-100" : "bg-emerald-50 text-emerald-500 border-emerald-100"}`}
-          >
-            <FaPowerOff size={32} />
-          </div>
-          <ITText className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3 block">
-            {guardToToggle?.active
-              ? "¿Desactivar Guardia?"
-              : "¿Activar Guardia?"}
-          </ITText>
-          <ITText className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto block">
-            {guardToToggle?.active
-              ? "El guardia perderá el acceso a la aplicación móvil y sus turnos activos serán suspendidos."
-              : "El guardia recuperará el acceso y podrá retomar sus tareas y turnos asignados."}
-          </ITText>
-          <div className="flex gap-4 justify-center">
-            <ITButton
-              variant="ghost"
-              className="px-8 font-black text-[11px] uppercase tracking-widest text-slate-400"
-              onClick={() => setGuardToToggle(null)}
-            >
-              Cancelar
-            </ITButton>
-            <ITButton
-              variant="filled"
-              color={guardToToggle?.active ? "danger" : "primary"}
-              className={`px-10 !rounded-2xl shadow-xl ${guardToToggle?.active ? "shadow-rose-200" : "shadow-emerald-200"}`}
-              onClick={confirmToggleStatus}
-              disabled={isUpdating}
-            >
-              {isUpdating ? <ITLoader size="sm" /> : "CONFIRMAR ACCIÓN"}
-            </ITButton>
-          </div>
-        </div>
-      </ITDialog>
-
+        Cancelar
+      </ITButton>
+      <ITButton
+        variant="filled"
+        color={guardToToggle?.active ? "danger" : "primary"}
+        size="small"
+        className={`px-5 whitespace-nowrap shadow transition-all ${
+          guardToToggle?.active 
+            ? "shadow-rose-100 bg-rose-500 hover:bg-rose-600" 
+            : "shadow-emerald-100 bg-emerald-500 hover:bg-emerald-600"
+        }`}
+        onClick={confirmToggleStatus}
+        disabled={isUpdating}
+      >
+        {isUpdating ? (
+          <ITLoader size="sm" color="white" />
+        ) : (
+          guardToToggle?.active ? "Desactivar" : "Activar"
+        )}
+      </ITButton>
+    </div>
+  </div>
+</ITDialog>
       {selectedGuard && (
         <>
           <AssignmentModal

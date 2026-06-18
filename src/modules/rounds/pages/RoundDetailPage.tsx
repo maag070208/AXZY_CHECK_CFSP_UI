@@ -1,6 +1,6 @@
 import { ITMediaGrid } from "@app/core/components/ITMediaGrid";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITBadget, ITButton, ITLoader } from "@axzydev/axzy_ui_system";
+import { ITButton, ITLoader } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -8,6 +8,7 @@ import {
   FaBuilding,
   FaCalendarAlt,
   FaCheckCircle,
+  FaCircle,
   FaClock,
   FaExclamationTriangle,
   FaFileAlt,
@@ -226,7 +227,7 @@ const RoundDetailPage = () => {
     return (
       <div className="min-h-screen   flex flex-col items-center justify-center space-y-4">
         <ITLoader />
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+        <p className="text-xs text-slate-400 font-light">
           Sincronizando ruta...
         </p>
       </div>
@@ -239,17 +240,20 @@ const RoundDetailPage = () => {
           <div className="w-20 h-20 bg-rose-50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-rose-100">
             <FaExclamationTriangle className="text-rose-500 text-3xl" />
           </div>
-          <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-2">
+          <h3 className="text-base font-medium text-slate-800 mb-2">
             Ronda no encontrada
           </h3>
-          <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mb-8">
+          <p className="text-[10px] text-slate-400 font-light mb-8">
             El registro solicitado no existe o fue removido.
           </p>
           <ITButton
             onClick={() => navigate(-1)}
-            className="w-full !h-14 !rounded-2xl shadow-xl shadow-emerald-100"
+            size="small"
           >
-            VOLVER AL HISTORIAL
+            <div className="flex items-center gap-1">
+              <FaArrowLeft size={14} />
+              <span className="text-[10px]">Volver al historial</span>
+            </div>
           </ITButton>
         </div>
       </div>
@@ -268,10 +272,10 @@ const RoundDetailPage = () => {
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-slate-50 group-hover:bg-emerald-500 group-hover:text-white flex items-center justify-center transition-all text-slate-400 border border-slate-100 group-hover:border-emerald-400 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-slate-50 group-hover:bg-sky-500 group-hover:text-white flex items-center justify-center transition-all text-slate-400 border border-slate-100 group-hover:border-sky-400 shadow-sm">
               <FaArrowLeft size={14} />
             </div>
-            <span className="text-[10px] font-black text-slate-400 group-hover:text-emerald-600 uppercase tracking-widest transition-colors">
+            <span className="text-[10px] text-slate-400 group-hover:text-sky-600 transition-colors font-light">
               Volver
             </span>
           </button>
@@ -285,19 +289,20 @@ const RoundDetailPage = () => {
                   "_blank",
                 );
               }}
-              variant="outline"
-              className="!h-11 !px-6 !rounded-xl !border-slate-100 !bg-white !text-slate-600"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
-              <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
-                <FaFileAlt className="text-emerald-500" /> Exportar PDF
+              <div className="flex items-center gap-1">
+                <span className="text-[10px]">Exportar PDF</span>
               </div>
             </ITButton>
-            <ITBadget
-              color={data.round.status === "COMPLETED" ? "success" : "warning"}
-              className="font-black text-[9px] px-4 tracking-widest"
-            >
-              {data.round.status === "COMPLETED" ? "FINALIZADA" : "EN CURSO"}
-            </ITBadget>
+            <span className={`px-4 py-1.5 rounded-full text-[10px] font-medium tracking-wide border shadow-sm ${
+              data.round.status === "COMPLETED"
+                ? "bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/20"
+                : "bg-amber-50 text-amber-600 border-amber-200"
+            }`}>
+              {data.round.status === "COMPLETED" ? "COMPLETADA" : "EN CURSO"}
+            </span>
           </div>
         </div>
       </div>
@@ -307,10 +312,10 @@ const RoundDetailPage = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-slate-600 flex items-center justify-center border border-indigo-100 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100 shadow-sm">
                 <FaRoute size={20} />
               </div>
-              <h1 className="text-3xl md:text-4xl font-black text-slate-800 uppercase tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-medium text-slate-800">
                 {title}
               </h1>
             </div>
@@ -371,26 +376,26 @@ const RoundDetailPage = () => {
           <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-10">
             <div className="flex flex-wrap items-center justify-between gap-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100 shadow-sm">
                   <FaMapMarkedAlt size={22} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                  <h3 className="text-base font-medium text-slate-800">
                     Esquema de Recorrido
                   </h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">
+                  <p className="text-xs text-slate-400 font-light mt-0.5">
                     Visualización secuencial de la ruta
                   </p>
                 </div>
               </div>
               <ITButton
                 onClick={handleOpenRouteMap}
-                variant="outline"
-                className="!h-12 !px-6 !rounded-2xl !border-slate-100 !bg-slate-50 !text-slate-600"
+                size="small"
+                className="px-5 whitespace-nowrap shadow shadow-slate-100"
               >
-                <div className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
-                  <FaMapMarkedAlt className="text-blue-500" /> Trazar en Google
-                  Maps
+                <div className="flex items-center gap-1">
+                  <FaMapMarkedAlt size={14} className="text-sky-500" />
+                  <span className="text-[10px]">Trazar en Google Maps</span>
                 </div>
               </ITButton>
             </div>
@@ -403,22 +408,22 @@ const RoundDetailPage = () => {
                       <div className="flex flex-col items-center mx-4">
                         <div className="w-16 h-1 bg-slate-100 rounded-full relative overflow-hidden">
                           {node.diffMs > 0 && (
-                            <div className="absolute inset-0 bg-emerald-500/20" />
+                            <div className="absolute inset-0 bg-sky-500/20" />
                           )}
                         </div>
-                        {!isResident &&
-                          node.timeDiff &&
-                          node.timeDiff !== "--" && (
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2 bg-white px-2 py-0.5 rounded-lg border border-slate-100 shadow-sm">
-                              {node.timeDiff}
-                            </span>
-                          )}
+                          {!isResident &&
+                            node.timeDiff &&
+                            node.timeDiff !== "--" && (
+                              <span className="text-[9px] text-slate-400 font-light mt-2 bg-white px-2 py-0.5 rounded-lg border border-slate-100 shadow-sm">
+                                {node.timeDiff}
+                              </span>
+                            )}
                       </div>
                     )}
                     <div className="flex flex-col items-center w-32 group">
                       <div
                         className={`w-16 h-16 rounded-[24px] flex items-center justify-center shadow-xl transition-all duration-500 group-hover:scale-110 border-4 border-white
-                          ${node.status === "START" ? "bg-indigo-600 text-white shadow-indigo-200" : ""}
+                          ${node.status === "START" ? "bg-sky-500 text-white shadow-sky-200" : ""}
                           ${node.status === "END" ? "bg-slate-800 text-white shadow-slate-300" : ""}
                           ${node.status === "SUCCESS" ? "bg-emerald-500 text-white shadow-emerald-200" : ""}
                           ${node.status === "DUPLICATE" ? "bg-rose-500 text-white shadow-rose-200" : ""}
@@ -435,18 +440,18 @@ const RoundDetailPage = () => {
                           <FaCheckCircle size={22} />
                         )}
                         {node.status === "DUPLICATE" && (
-                          <span className="font-black text-2xl">!</span>
+                          <span className="font-medium text-2xl">!</span>
                         )}
                         {node.status === "INCOMPLETE" && (
                           <FaExclamationTriangle size={20} />
                         )}
                         {node.status === "MISSING" && (
-                          <span className="font-black text-xl">?</span>
+                          <span className="font-medium text-xl">?</span>
                         )}
                         {node.status === "PENDING" && <FaClock size={20} />}
                       </div>
                       <div className="mt-4 text-center">
-                        <p className="text-[10px] font-black text-slate-800 uppercase tracking-tight leading-tight line-clamp-2">
+                        <p className="text-[10px] font-medium text-slate-700 leading-tight line-clamp-2">
                           {node.label}
                         </p>
                       </div>
@@ -460,9 +465,8 @@ const RoundDetailPage = () => {
 
         {/* Timeline Refined */}
         <div className="space-y-8">
-          <div className="flex items-center gap-4 ml-2">
-            <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
-            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+          <div className="ml-2">
+            <h2 className="text-base font-medium text-slate-800">
               Expediente de Tiempo
             </h2>
           </div>
@@ -476,21 +480,42 @@ const RoundDetailPage = () => {
               >
                 <TimelineIcon type={event.type} />
 
-                <div className="bg-white rounded-[32px] border border-slate-100 shadow-lg shadow-slate-200/40 p-8 hover:shadow-xl transition-all group overflow-hidden relative">
+                <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8 group overflow-hidden relative">
                   <div className="flex flex-col lg:flex-row justify-between gap-6 mb-8">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                        <span className="text-[10px] text-slate-400 font-light">
                           {dayjs(event.timestamp).format("HH:mm:ss [HRS]")}
                         </span>
                         <div className="w-px h-3 bg-slate-200" />
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span className="text-[9px] text-slate-400 font-light">
                           {dayjs(event.timestamp).format("DD MMMM, YYYY")}
                         </span>
                       </div>
-                      <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight group-hover:text-slate-600 transition-colors">
+                      <h3 className="text-base font-medium text-slate-800 group-hover:text-slate-600 transition-colors">
                         {event.description}
                       </h3>
+                      {event.type === "SCAN" && event.data?.assignment?.tasks?.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {event.data.assignment.tasks.map((task: any) => (
+                            <span
+                              key={task.id}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] border ${
+                                task.completed
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : "bg-amber-50 text-amber-700 border-amber-200"
+                              }`}
+                            >
+                              {task.completed ? (
+                                <FaCheckCircle size={10} className="text-emerald-500" />
+                              ) : (
+                                <FaCircle size={10} className="text-amber-400" />
+                              )}
+                              {task.description}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -499,9 +524,8 @@ const RoundDetailPage = () => {
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Evidence Column */}
                         <div className="space-y-6">
-                          <div className="flex items-center gap-3 ml-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          <div className="ml-1">
+                            <p className="text-[10px] text-slate-400 font-light">
                               Registros de Campo
                             </p>
                           </div>
@@ -513,7 +537,7 @@ const RoundDetailPage = () => {
                           ) : (
                             <div className="py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center">
                               <FaFileAlt className="text-slate-200 text-3xl mb-3" />
-                              <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                              <p className="text-[10px] text-slate-300 font-light">
                                 Sin evidencia fotográfica
                               </p>
                             </div>
@@ -522,9 +546,8 @@ const RoundDetailPage = () => {
 
                         {/* Location/Map Column */}
                         <div className="space-y-6">
-                          <div className="flex items-center gap-3 ml-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          <div className="ml-1">
+                            <p className="text-[10px] text-slate-400 font-light">
                               Geoposicionamiento
                             </p>
                           </div>
@@ -539,7 +562,7 @@ const RoundDetailPage = () => {
                             </div>
                           ) : (
                             <div className="h-[240px] bg-slate-50 rounded-[24px] border border-slate-100 flex items-center justify-center">
-                              <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                              <p className="text-[10px] text-slate-300 font-light">
                                 GPS no disponible
                               </p>
                             </div>
@@ -547,49 +570,18 @@ const RoundDetailPage = () => {
                         </div>
                       </div>
 
-                      {/* Dynamic Task List or Notes */}
-                      {(event.data?.notes || event.data?.assignment?.tasks) && (
-                        <div className="pt-8 border-t border-slate-50 grid grid-cols-1 md:grid-cols-2 gap-8">
-                          {event.data?.notes && (
-                            <div className="space-y-3">
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                                Observaciones
+                      {event.data?.notes && (
+                        <div className="pt-8 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div className="space-y-3">
+                            <p className="text-xs text-slate-400 font-light">
+                              Observaciones
+                            </p>
+                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                              <p className="text-xs text-slate-600 font-light italic leading-relaxed">
+                                "{event.data.notes}"
                               </p>
-                              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                                <p className="text-xs text-slate-600 font-bold italic leading-relaxed">
-                                  "{event.data.notes}"
-                                </p>
-                              </div>
                             </div>
-                          )}
-                          {event.data?.assignment?.tasks && (
-                            <div className="space-y-3">
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                                Tareas Asignadas
-                              </p>
-                              <div className="space-y-2">
-                                {event.data.assignment.tasks.map(
-                                  (task: any) => (
-                                    <div
-                                      key={task.id}
-                                      className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm"
-                                    >
-                                      <div
-                                        className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] transition-all ${task.completed ? "bg-emerald-500 text-white" : "bg-slate-50 text-slate-200 border border-slate-100"}`}
-                                      >
-                                        <FaCheckCircle />
-                                      </div>
-                                      <span
-                                        className={`text-[10px] font-black uppercase tracking-tight ${task.completed ? "text-emerald-700" : "text-slate-500"}`}
-                                      >
-                                        {task.description}
-                                      </span>
-                                    </div>
-                                  ),
-                                )}
-                              </div>
-                            </div>
-                          )}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -599,15 +591,11 @@ const RoundDetailPage = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       <div className="space-y-6">
                         <div className="flex items-center gap-3">
-                          <ITBadget
-                            color="danger"
-                            variant="outlined"
-                            className="font-black text-[9px] px-3 tracking-widest"
-                          >
+                          <span className="text-[10px] font-medium text-rose-500 px-3 py-1 rounded-full border border-rose-200 bg-rose-50">
                             INCIDENTE: {event.data?.category}
-                          </ITBadget>
+                          </span>
                         </div>
-                        <p className="text-sm text-slate-600 font-bold leading-relaxed">
+                        <p className="text-sm text-slate-600 leading-relaxed">
                           {event.data?.description}
                         </p>
                         {event.data?.media?.length > 0 && (
@@ -652,10 +640,10 @@ const HeaderMetric = ({ icon, label, value }: any) => (
       {icon}
     </div>
     <div>
-      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+      <p className="text-[9px] font-light text-slate-400">
         {label}
       </p>
-      <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight">
+      <p className="text-[11px] font-medium text-slate-700">
         {value}
       </p>
     </div>
@@ -664,30 +652,27 @@ const HeaderMetric = ({ icon, label, value }: any) => (
 
 const MetricCard = ({ icon, color, label, value, subValue }: any) => {
   const colors: any = {
-    indigo: "from-indigo-500 to-indigo-600 shadow-indigo-100",
-    emerald: "from-emerald-500 to-emerald-600 shadow-emerald-100",
-    amber: "from-amber-500 to-amber-600 shadow-amber-100",
+    indigo: "from-sky-500 to-sky-600",
+    emerald: "from-emerald-500 to-emerald-600",
+    amber: "from-amber-500 to-amber-600",
   };
 
   return (
-    <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-lg shadow-slate-200/40 relative overflow-hidden group">
-      <div
-        className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${colors[color]} opacity-[0.03] rounded-full -mr-8 -mt-8 group-hover:scale-150 transition-transform duration-700`}
-      />
-      <div className="relative space-y-4">
+    <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
+      <div className="space-y-4">
         <div
-          className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${colors[color]} flex items-center justify-center text-white shadow-lg`}
+          className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${colors[color]} flex items-center justify-center text-white shadow-sm`}
         >
           {icon}
         </div>
         <div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">
+          <p className="text-[10px] font-light text-slate-400 mb-1">
             {label}
           </p>
-          <p className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+          <p className="text-2xl font-medium text-slate-800">
             {value}
           </p>
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+          <p className="text-[9px] text-slate-400 font-light mt-1">
             {subValue}
           </p>
         </div>
@@ -699,24 +684,24 @@ const MetricCard = ({ icon, color, label, value, subValue }: any) => {
 const TimelineIcon = ({ type }: { type: string }) => {
   const styles: any = {
     START: {
-      bg: "bg-indigo-600",
+      bg: "bg-sky-500",
       icon: <FaPlay className="ml-1" />,
-      border: "border-indigo-100 shadow-indigo-100",
+      border: "border-sky-100",
     },
     SCAN: {
       bg: "bg-emerald-500",
       icon: <FaQrcode />,
-      border: "border-emerald-100 shadow-emerald-100",
+      border: "border-emerald-100",
     },
     INCIDENT: {
       bg: "bg-rose-500",
       icon: <FaExclamationTriangle />,
-      border: "border-rose-100 shadow-rose-100",
+      border: "border-rose-100",
     },
     END: {
       bg: "bg-slate-800",
       icon: <FaCheckCircle />,
-      border: "border-slate-100 shadow-slate-100",
+      border: "border-slate-100",
     },
   };
 
@@ -728,7 +713,7 @@ const TimelineIcon = ({ type }: { type: string }) => {
 
   return (
     <div
-      className={`absolute -left-[19px] top-0 w-9 h-9 rounded-xl ${config.bg} ${config.border} border-4 text-white flex items-center justify-center z-10 shadow-lg text-xs transition-transform group-hover:scale-110`}
+      className={`absolute -left-[19px] top-0 w-9 h-9 rounded-xl ${config.bg} ${config.border} border-4 text-white flex items-center justify-center z-10 shadow-sm text-xs transition-transform group-hover:scale-110`}
     >
       {config.icon}
     </div>

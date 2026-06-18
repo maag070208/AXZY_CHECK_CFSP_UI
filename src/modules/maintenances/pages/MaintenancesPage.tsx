@@ -14,7 +14,6 @@ import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
 import {
   FaCheck,
-  FaCheckCircle,
   FaEye,
   FaTrash,
   FaWrench,
@@ -205,11 +204,22 @@ const MaintenancesPage = () => {
                 )}
               </ITButton>
             )}
+            {isAdmin && (
+              <ITButton
+                onClick={() => setMaintenanceToDelete(row)}
+                variant="outlined"
+                color="error"
+                title="Eliminar"
+                size="small"
+              >
+                <FaTrash size={14} />
+              </ITButton>
+            )}
           </div>
         ),
       },
     ],
-    [isAdmin, resolvingId, deletingId, isClient],
+    [isAdmin, resolvingId, isClient],
   );
 
   return (
@@ -257,75 +267,98 @@ const MaintenancesPage = () => {
         isAdmin={isAdmin}
         isClient={isClient}
       />
-      {/* Confirmation Dialogs */}
+      {/* RESOLVE MAINTENANCE DIALOG */}
       <ITDialog
         isOpen={!!maintenanceToResolveId}
         onClose={() => setMaintenanceToResolveId(null)}
-        title="Confirmar Resolución"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-10 text-center">
-          <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-emerald-100 shadow-sm">
-            <FaCheckCircle size={40} />
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                <FaCheck size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Resolver Mantenimiento</h3>
+                <p className="text-xs text-slate-400 font-light">Confirmar resolución</p>
+              </div>
+            </div>
           </div>
-          <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3">
-            ¿Confirmar Resolución?
-          </h4>
-          <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto">
-            El estatus cambiará a "Atendido" y quedará registrado bajo su
-            perfil.
-          </p>
-          <div className="flex gap-4 justify-center">
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              El mantenimiento será marcado como atendido. Esta acción no puede deshacerse.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
-              className="px-8 font-black text-[11px] uppercase tracking-widest text-slate-400"
               onClick={() => setMaintenanceToResolveId(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
             <ITButton
               variant="filled"
-              color="success"
-              className="px-10 !rounded-2xl shadow-xl shadow-emerald-200"
+              color="primary"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-emerald-100"
               onClick={confirmResolve}
               disabled={!!resolvingId}
             >
-              {resolvingId ? <ITLoader size="sm" /> : "SÍ, RESOLVER"}
+              {resolvingId ? <ITLoader size="sm" color="white" /> : "Sí, Resolver"}
             </ITButton>
           </div>
         </div>
       </ITDialog>
+      {/* DELETE MAINTENANCE DIALOG */}
       <ITDialog
         isOpen={!!maintenanceToDelete}
         onClose={() => setMaintenanceToDelete(null)}
-        title="Eliminar Registro"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-10 text-center">
-          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-rose-100 shadow-sm">
-            <FaTrash size={32} />
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Registro</h3>
+                <p className="text-xs text-slate-400 font-light">Mantenimiento</p>
+              </div>
+            </div>
           </div>
-          <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3">
-            ¿Eliminar Reporte?
-          </h4>
-          <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto">
-            Esta acción es definitiva y borrará toda la evidencia asociada al
-            registro #{maintenanceToDelete?.id.toString().slice(0, 8)}.
-          </p>
-          <div className="flex gap-4 justify-center">
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción eliminará el reporte de mantenimiento y todo su historial asociado.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
-              className="px-8 font-black text-[11px] uppercase tracking-widest text-slate-400"
               onClick={() => setMaintenanceToDelete(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
             <ITButton
               variant="filled"
               color="danger"
-              className="px-10 !rounded-2xl shadow-xl shadow-rose-200"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
               disabled={!!deletingId}
             >
-              {deletingId ? <ITLoader size="sm" /> : "ELIMINAR AHORA"}
+              {deletingId ? <ITLoader size="sm" /> : "Eliminar"}
             </ITButton>
           </div>
         </div>

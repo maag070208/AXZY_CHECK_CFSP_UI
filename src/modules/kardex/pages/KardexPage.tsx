@@ -4,15 +4,20 @@ import {
   ITBadget,
   ITButton,
   ITDataTable,
+  ITDialog,
+  ITLoader,
   ITTripleFilter,
 } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
-import { FaBook, FaEye, FaUser } from "react-icons/fa";
+import { FaBook, FaEye, FaTrash, FaUser } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { showToast } from "@app/core/store/toast/toast.slice";
 import KardexDetailDialog from "../components/KardexDetailDialog";
-import { getPaginatedKardex, KardexEntry } from "../services/KardexService";
+import { deleteKardexEntry, getPaginatedKardex, KardexEntry } from "../services/KardexService";
 
 const KardexPage = () => {
+  const dispatch = useDispatch();
   const [refreshKey, setRefreshKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [scanTypeFilter, setScanTypeFilter] = useState("ALL");
@@ -21,6 +26,22 @@ const KardexPage = () => {
     dayjs().tz("America/Tijuana").toDate(),
   ]);
   const [viewingEntry, setViewingEntry] = useState<KardexEntry | null>(null);
+  const [entryToDeleteId, setEntryToDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const confirmDelete = async () => {
+    if (!entryToDeleteId || isDeleting) return;
+    setIsDeleting(true);
+    const res = await deleteKardexEntry(entryToDeleteId);
+    setIsDeleting(false);
+    setEntryToDeleteId(null);
+    if (res.success) {
+      dispatch(showToast({ message: "Marcaje eliminado", type: "success" }));
+      setRefreshKey((p) => p + 1);
+    } else {
+      dispatch(showToast({ message: "Error al eliminar marcaje", type: "error" }));
+    }
+  };
 
   const externalFilters = useMemo(() => {
     const filters: any = {};
@@ -143,15 +164,26 @@ const KardexPage = () => {
         key: "actions",
         label: "CONTROL",
         render: (row: KardexEntry) => (
-          <ITButton
-            onClick={() => setViewingEntry(row)}
-            variant="outlined"
-            size="small"
-            color="secondary"
-            title="Ver Detalle"
-          >
-            <FaEye size={14} />
-          </ITButton>
+          <div className="flex items-center gap-2">
+            <ITButton
+              onClick={() => setViewingEntry(row)}
+              variant="outlined"
+              size="small"
+              color="secondary"
+              title="Ver Detalle"
+            >
+              <FaEye size={14} />
+            </ITButton>
+            <ITButton
+              onClick={() => setEntryToDeleteId(row.id)}
+              variant="outlined"
+              size="small"
+              color="error"
+              title="Eliminar"
+            >
+              <FaTrash size={14} />
+            </ITButton>
+          </div>
         ),
       },
     ],
@@ -202,13 +234,64 @@ const KardexPage = () => {
           fetchData={memoizedFetch as any}
           externalFilters={externalFilters}
           defaultItemsPerPage={10}
+          title=""
         />
         <KardexDetailDialog
           isOpen={!!viewingEntry}
           onClose={() => setViewingEntry(null)}
           entry={viewingEntry}
+          onDelete={setEntryToDeleteId}
         />
       </div>
+
+      {/* DELETE KARDEX ENTRY DIALOG */}
+      <ITDialog
+        isOpen={!!entryToDeleteId}
+        onClose={() => setEntryToDeleteId(null)}
+        title=""
+        className="!max-w-md !w-full"
+      >
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Marcaje</h3>
+                <p className="text-xs text-slate-400 font-light">Expediente Kardex</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción eliminará el registro del expediente Kardex de forma permanente.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
+            <ITButton
+              variant="ghost"
+              onClick={() => setEntryToDeleteId(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
+            >
+              Cancelar
+            </ITButton>
+            <ITButton
+              variant="filled"
+              color="danger"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
+              onClick={confirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <ITLoader size="sm" /> : "Eliminar"}
+            </ITButton>
+          </div>
+        </div>
+      </ITDialog>
     </div>
   );
 };

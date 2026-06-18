@@ -14,11 +14,12 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaEye, FaRoute, FaStop, FaUser } from "react-icons/fa";
+import { FaEye, FaRoute, FaStop, FaTrash, FaUser } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getRoutesList } from "../../routes/services/RoutesService";
 import {
+  deleteRound,
   endRound,
   getPaginatedRounds,
   IRound,
@@ -49,6 +50,8 @@ const RoundsPage = () => {
 
   const [routesMap, setRoutesMap] = useState<Record<string, string>>({});
   const [roundToFinishId, setRoundToFinishId] = useState<string | null>(null);
+  const [roundToDeleteId, setRoundToDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     getRoutesList().then((res) => {
@@ -108,7 +111,21 @@ const RoundsPage = () => {
     [externalFilters],
   );
 
-  const confirmEndRound = async () => {
+  const confirmDeleteRound = async () => {
+    if (!roundToDeleteId || isDeleting) return;
+    setIsDeleting(true);
+    const res = await deleteRound(roundToDeleteId);
+    setIsDeleting(false);
+    setRoundToDeleteId(null);
+    if (res.success) {
+      dispatch(showToast({ message: "Ronda eliminada", type: "success" }));
+      setRefreshKey((prev) => prev + 1);
+    } else {
+      dispatch(showToast({ message: res.messages?.[0] || "Error al eliminar ronda", type: "error" }));
+    }
+  };
+
+  const handleEndRound = async () => {
     if (!roundToFinishId || isFinishing) return;
     setIsFinishing(true);
     const res = await endRound(roundToFinishId);
@@ -175,7 +192,7 @@ const RoundsPage = () => {
               {/* INICIO - destacado */}
               <div className="flex items-center gap-2">
                 <div className="w-5 text-center">
-                  <span className="text-[10px] font-black text-indigo-500">
+                  <span className="text-[10px] font-black text-sky-500">
                     ▶
                   </span>
                 </div>
@@ -254,6 +271,17 @@ const RoundsPage = () => {
                 <FaStop size={14} />
               </ITButton>
             )}
+            {row.status === "COMPLETED" && (
+              <ITButton
+                onClick={() => setRoundToDeleteId(row.id)}
+                variant="outlined"
+                size="small"
+                color="error"
+                title="Eliminar"
+              >
+                <FaTrash size={14} />
+              </ITButton>
+            )}
           </div>
         ),
       },
@@ -330,35 +358,95 @@ const RoundsPage = () => {
       <ITDialog
         isOpen={!!roundToFinishId}
         onClose={() => setRoundToFinishId(null)}
-        title="Finalizar Recorrido"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-10 text-center">
-          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-rose-100 shadow-sm">
-            <FaStop size={32} />
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                <FaStop size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Finalizar Recorrido</h3>
+                <p className="text-xs text-slate-400 font-light">Forzar cierre de ronda</p>
+              </div>
+            </div>
           </div>
-          <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3">
-            ¿Forzar Cierre de Ronda?
-          </h4>
-          <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto">
-            Esta acción detendrá el seguimiento en tiempo real y marcará el
-            registro como finalizado de forma definitiva.
-          </p>
-          <div className="flex gap-4 justify-center">
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción cerrará la ronda actual de forma forzada. Los puntos pendientes quedarán registrados como incompletos.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
-              className="px-8 font-black text-[11px] uppercase tracking-widest text-slate-400"
               onClick={() => setRoundToFinishId(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
+            >
+              Cancelar
+            </ITButton>
+            <ITButton
+              variant="filled"
+              color="primary"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-amber-100"
+              onClick={handleEndRound}
+              disabled={isFinishing}
+            >
+              {isFinishing ? <ITLoader size="sm" color="white" /> : "Finalizar"}
+            </ITButton>
+          </div>
+        </div>
+      </ITDialog>
+
+      {/* DELETE ROUND DIALOG */}
+      <ITDialog
+        isOpen={!!roundToDeleteId}
+        onClose={() => setRoundToDeleteId(null)}
+        title=""
+        className="!max-w-md !w-full"
+      >
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Ronda</h3>
+                <p className="text-xs text-slate-400 font-light">Esta acción es permanente</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción eliminará el registro de la ronda y todo su historial asociado de forma permanente.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
+            <ITButton
+              variant="ghost"
+              onClick={() => setRoundToDeleteId(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
             <ITButton
               variant="filled"
               color="danger"
-              className="px-10 !rounded-2xl shadow-xl shadow-rose-200"
-              onClick={confirmEndRound}
-              disabled={isFinishing}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
+              onClick={confirmDeleteRound}
+              disabled={isDeleting}
             >
-              {isFinishing ? <ITLoader size="sm" /> : "FINALIZAR AHORA"}
+              {isDeleting ? <ITLoader size="sm" /> : "Eliminar"}
             </ITButton>
           </div>
         </div>

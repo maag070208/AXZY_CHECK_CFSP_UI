@@ -163,7 +163,7 @@ export const CreateUserWizard: React.FC<Props> = ({
                 {/* SECTION 1: IDENTITY */}
                 <section>
                   <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                    <div className="w-1.5 h-4 bg-sky-500 rounded-full" />
                     <ITText className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">
                       Detalles del Perfil
                     </ITText>
@@ -196,7 +196,7 @@ export const CreateUserWizard: React.FC<Props> = ({
                 {/* SECTION 2: ACCESS CREDENTIALS */}
                 <section>
                   <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                    <div className="w-1.5 h-4 bg-sky-500 rounded-full" />
                     <ITText className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">
                       Credenciales de Acceso
                     </ITText>

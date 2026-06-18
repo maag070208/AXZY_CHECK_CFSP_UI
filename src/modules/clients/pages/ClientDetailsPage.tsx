@@ -1,5 +1,5 @@
 import { ModuleHeader } from "@app/core/components/ModuleHeader";
-import { ITButton, ITTabs, ITTabItem, ITText } from "@axzydev/axzy_ui_system";
+import { ITButton, ITTabs, ITTabItem } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useState } from "react";
 import {
   FaArrowLeft,
@@ -62,7 +62,7 @@ const ClientDetailsPage = () => {
 
   if (loading) {
     return (
-      <div className="p-8   min-h-screen">
+      <div className="p-8 min-h-screen">
         <div className="animate-pulse space-y-8">
           <div className="h-4 w-32 bg-slate-200 rounded-full" />
           <div className="flex justify-between items-end">
@@ -80,18 +80,18 @@ const ClientDetailsPage = () => {
 
   if (!client) {
     return (
-      <div className="min-h-screen flex items-center justify-center   p-8">
+      <div className="min-h-screen flex items-center justify-center p-8">
         <div className="text-center space-y-6 max-w-sm">
           <div className="w-20 h-20 bg-red-50 text-red-500 rounded-[30px] flex items-center justify-center mx-auto shadow-inner">
             <FaBuilding size={32} />
           </div>
           <div>
-            <ITText className="text-2xl font-black text-slate-800 uppercase tracking-tight block">
+            <p className="text-2xl font-medium text-slate-800">
               Cliente Extraviado
-            </ITText>
-            <ITText className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2 leading-relaxed block">
+            </p>
+            <p className="text-xs text-slate-400 font-light mt-2">
               El registro que buscas no existe o ha sido removido del sistema.
-            </ITText>
+            </p>
           </div>
           <ITButton
             onClick={() => navigate("/clients")}
@@ -106,31 +106,34 @@ const ClientDetailsPage = () => {
   }
 
   return (
-    <div className="p-8   min-h-screen">
+    <div className="p-8 min-h-screen">
       <div className="mb-8">
-        <ITButton variant="ghost" onClick={() => navigate("/clients")}>
-          <ITText className="flex items-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em]">
-            <FaArrowLeft size={10} />
-            Directorio Principal
-          </ITText>
+        <ITButton
+          variant="ghost"
+          size="small"
+          onClick={() => navigate("/clients")}
+          className="px-5 whitespace-nowrap shadow shadow-slate-100"
+        >
+          <div className="flex items-center gap-1">
+            <FaArrowLeft size={14} />
+            <span className="text-[10px]">Directorio Principal</span>
+          </div>
         </ITButton>
       </div>
 
       <ModuleHeader
         title={client.name}
-        subtitle={`RFC: ${client.rfc || "N/A"} • CONTACTO: ${client.contactName?.toUpperCase() || "N/A"}`}
+        subtitle={`RFC: ${client.rfc || "N/A"} - CONTACTO: ${client.contactName?.toUpperCase() || "N/A"}`}
         icon={FaBuilding}
         actions={
-          <div className="flex items-center gap-4">
-            <div
-              className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border shadow-sm ${
-                client.active
-                  ? "bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/20"
-                  : "bg-slate-100 text-slate-400 border-slate-200"
-              }`}
-            >
-              {client.active ? "ACTIVO" : "INACTIVO"}
-            </div>
+          <div
+            className={`px-4 py-1.5 rounded-full text-[10px] font-medium tracking-wide border shadow-sm ${
+              client.active
+                ? "bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/20"
+                : "bg-slate-100 text-slate-400 border-slate-200"
+            }`}
+          >
+            {client.active ? "ACTIVO" : "INACTIVO"}
           </div>
         }
       />

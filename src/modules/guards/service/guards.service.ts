@@ -1,4 +1,4 @@
-import { get, post, patch } from "@app/core/axios/axios";
+import { get, post, patch, remove } from "@app/core/axios/axios";
 import { fetchDataTable } from "@app/core/services/table-fetcher.service";
 import { ITDataTableFetchParams, ITDataTableResponse } from "@app/core/types/datatable.types";
 import { CreateAssignmentDTO, Assignment } from "../types/guards.types";
@@ -33,4 +33,8 @@ export const getAssignmentsByClient = async (clientId: string | number) => {
 
 export const getAssignmentsDataTable = async (params: ITDataTableFetchParams): Promise<ITDataTableResponse<Assignment>> => {
     return await fetchDataTable<Assignment>("/assignments/datatable", params);
+};
+
+export const deleteAssignment = async (id: string | number) => {
+    return await remove<boolean>(`/assignments/${id}`);
 };

@@ -97,94 +97,92 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
   }, [formik.values.clientId]);
 
   return (
-    <div className="flex flex-col bg-white overflow-hidden">
-      <form onSubmit={formik.handleSubmit} className="flex flex-col h-full">
-        <div className="p-10 space-y-10">
-          <section>
-            <div className="flex items-center gap-2 mb-8">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                Configuración de Ubicación
-              </h4>
-            </div>
+    <form onSubmit={formik.handleSubmit}>
+      <div className="px-8 py-5 space-y-5 max-h-[60vh] overflow-y-auto">
+        <section>
+          <h4 className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-3">
+            Configuración de Ubicación
+          </h4>
 
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <ITSearchSelect
-                  key={`${formik.values.clientId}-${clients.length}`}
-                  label="Cliente Responsable"
-                  placeholder={
-                    loadingClients
-                      ? "Cargando clientes..."
-                      : "Seleccionar cliente..."
-                  }
-                  options={(clients || []).map((c: any) => ({
-                    label: c.name || c.label,
-                    value: c.id,
-                  }))}
-                  value={formik.values.clientId}
-                  onChange={(val) => formik.setFieldValue("clientId", val)}
-                  error={formik.errors.clientId as string}
-                  touched={!!formik.touched.clientId}
-                />
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <ITSearchSelect
+                key={`${formik.values.clientId}-${clients.length}`}
+                label="Cliente Responsable"
+                placeholder={
+                  loadingClients
+                    ? "Cargando clientes..."
+                    : "Seleccionar cliente..."
+                }
+                options={(clients || []).map((c: any) => ({
+                  label: c.name || c.label,
+                  value: c.id,
+                }))}
+                value={formik.values.clientId}
+                onChange={(val) => formik.setFieldValue("clientId", val)}
+                error={formik.errors.clientId as string}
+                touched={!!formik.touched.clientId}
+              />
 
-                <ITSelect
-                  label="Recurrente (Zona)"
-                  name="zoneId"
-                  value={formik.values.zoneId}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.errors.zoneId as string}
-                  touched={!!formik.touched.zoneId}
-                  placeholder={
-                    loadingZones ? "Cargando..." : "Seleccionar zona"
-                  }
-                  options={zones.map((z) => ({ label: z.name, value: z.id }))}
-                  disabled={loadingZones || !formik.values.clientId}
-                />
-              </div>
-
-              <ITInput
-                label="Nombre de la Ubicación"
-                name="name"
-                value={formik.values.name}
+              <ITSelect
+                label="Recurrente (Zona)"
+                name="zoneId"
+                value={formik.values.zoneId}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                error={formik.errors.name as string}
-                touched={!!formik.touched.name}
-                placeholder="Ej: Recepción, Oficina 101"
+                error={formik.errors.zoneId as string}
+                touched={!!formik.touched.zoneId}
+                placeholder={
+                  loadingZones ? "Cargando..." : "Seleccionar zona"
+                }
+                options={zones.map((z) => ({ label: z.name, value: z.id }))}
+                disabled={loadingZones || !formik.values.clientId}
               />
             </div>
-          </section>
-        </div>
 
-        <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
-          <ITButton
-            type="button"
-            variant="filled"
-            onClick={onCancel}
-            color="secondary"
-          >
-            Cancelar
-          </ITButton>
+            <ITInput
+              label="Nombre de la Ubicación"
+              name="name"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.errors.name as string}
+              touched={!!formik.touched.name}
+              placeholder="Ej: Recepción, Oficina 101"
+            />
+          </div>
+        </section>
+      </div>
 
-          <ITButton
-            type="submit"
-            onClick={() => setIsSavingAndNew(true)}
-            variant="filled"
-            color="warning"
-          >
-            Guardar y Nueva
-          </ITButton>
-          <ITButton
-            type="submit"
-            onClick={() => setIsSavingAndNew(false)}
-            color="primary"
-          >
-            Registrar Punto
-          </ITButton>
-        </div>
-      </form>
-    </div>
+      <div className="flex-none flex justify-end items-center px-8 py-4 border-t border-slate-100 bg-slate-50/30 gap-3">
+        <ITButton
+          variant="ghost"
+          size="small"
+          onClick={onCancel}
+          className="px-5 whitespace-nowrap shadow shadow-slate-100"
+        >
+          Cancelar
+        </ITButton>
+        <ITButton
+          type="submit"
+          onClick={() => setIsSavingAndNew(true)}
+          size="small"
+          variant="filled"
+          color="warning"
+          className="px-5 whitespace-nowrap shadow shadow-amber-100"
+        >
+          Guardar y Nueva
+        </ITButton>
+        <ITButton
+          size="small"
+          type="submit"
+          onClick={() => setIsSavingAndNew(false)}
+          color="primary"
+          className="px-5 whitespace-nowrap shadow shadow-slate-100"
+        >
+          Registrar Punto
+        </ITButton>
+      </div>
+    </form>
   );
 };

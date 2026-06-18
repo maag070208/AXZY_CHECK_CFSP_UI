@@ -303,72 +303,74 @@ const SchedulesPage = () => {
       <ITDialog
         isOpen={isModalOpen}
         onClose={closeModal}
-        title="Gestión de Horarios"
-        className="!max-w-xl !w-full"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="flex flex-col bg-white overflow-hidden">
-          <div className="p-10 space-y-10">
-            <section>
-              <div className="flex items-center gap-2 mb-8">
-                <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                  Configuración del Turno
-                </h4>
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center">
+                <FaClock size={18} />
               </div>
-
-              <div className="space-y-8">
-                <ITInput
-                  label="Nombre del Horario"
-                  name="name"
-                  placeholder="EJ. MATUTINO 12X12"
-                  value={name}
-                  onChange={(e: any) => setName(e.target.value.toUpperCase())}
-                  onBlur={() => {}}
-                />
-
-                <div className="grid grid-cols-2 gap-8">
-                  <ITTimePicker
-                    label="Hora de Entrada"
-                    name="startTime"
-                    value={startTime}
-                    onChange={(e: any) => setStartTime(e.target.value)}
-                    onBlur={() => {}}
-                  />
-                  <ITTimePicker
-                    label="Hora de Salida"
-                    name="endTime"
-                    value={endTime}
-                    onChange={(e: any) => setEndTime(e.target.value)}
-                    onBlur={() => {}}
-                  />
-                </div>
-
-                {editingSchedule && (
-                  <div className="mt-8 flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <div>
-                      <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
-                        Estado del registro
-                      </h5>
-                      <p className="text-[10px] text-slate-400 font-medium mt-0.5">
-                        Activar/desactivar operatividad en el sistema
-                      </p>
-                    </div>
-                    <ITSlideToggle
-                      isOn={active}
-                      onToggle={(val) => setActive(val)}
-                    />
-                  </div>
-                )}
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Gestión de Horarios</h3>
+                <p className="text-xs text-slate-400 font-light">{editingSchedule ? "Editar turno" : "Nuevo turno"}</p>
               </div>
-            </section>
+            </div>
           </div>
 
-          <div className="flex-none flex justify-end items-center px-10 py-8 border-t border-slate-100 bg-slate-50/50 gap-4">
+          <div className="px-8 py-6 space-y-4">
+            <ITInput
+              label="Nombre del Horario"
+              name="name"
+              placeholder="EJ. MATUTINO 12X12"
+              value={name}
+              onChange={(e: any) => setName(e.target.value.toUpperCase())}
+              onBlur={() => {}}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <ITTimePicker
+                label="Hora de Entrada"
+                name="startTime"
+                value={startTime}
+                onChange={(e: any) => setStartTime(e.target.value)}
+                onBlur={() => {}}
+              />
+              <ITTimePicker
+                label="Hora de Salida"
+                name="endTime"
+                value={endTime}
+                onChange={(e: any) => setEndTime(e.target.value)}
+                onBlur={() => {}}
+              />
+            </div>
+
+            {editingSchedule && (
+                <div className="flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                <div>
+                  <h5 className="text-xs font-medium text-slate-700 uppercase tracking-wide">
+                    Estado del registro
+                  </h5>
+                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                    Activar/desactivar operatividad en el sistema
+                  </p>
+                </div>
+                <ITSlideToggle
+                  isOn={active}
+                  onToggle={(val) => setActive(val)}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               type="button"
-              variant="filled"
+              variant="ghost"
               onClick={closeModal}
-              color="secondary"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
@@ -377,6 +379,8 @@ const SchedulesPage = () => {
               onClick={handleSave}
               disabled={isSaving || !name || !startTime || !endTime}
               color="primary"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-sky-100"
             >
               {isSaving ? <ITLoader size="sm" /> : "Guardar Turno"}
             </ITButton>
@@ -384,38 +388,49 @@ const SchedulesPage = () => {
         </div>
       </ITDialog>
 
-      {/* DELETE DIALOG */}
+      {/* DELETE SCHEDULE DIALOG */}
       <ITDialog
         isOpen={!!scheduleToDeleteId}
         onClose={() => setScheduleToDeleteId(null)}
-        title="Eliminar Registro"
+        title=""
+        className="!max-w-md !w-full"
       >
-        <div className="p-10 text-center">
-          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-rose-100 shadow-sm">
-            <FaTrash size={32} />
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Horario</h3>
+                <p className="text-xs text-slate-400 font-light">Registro de turno</p>
+              </div>
+            </div>
           </div>
-          <h4 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3">
-            ¿Eliminar Horario?
-          </h4>
-          <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto">
-            Esta acción es definitiva y podría afectar la asignación de personal
-            activo.
-          </p>
-          <div className="flex gap-4 justify-center">
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción eliminará el horario. Los usuarios asignados perderán su turno actual.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
-              className="px-8 font-black text-[11px] uppercase tracking-widest text-slate-400"
               onClick={() => setScheduleToDeleteId(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
             <ITButton
               variant="filled"
               color="danger"
-              className="px-10 !rounded-2xl shadow-xl shadow-rose-200"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
             >
-              ELIMINAR AHORA
+              Eliminar
             </ITButton>
           </div>
         </div>
@@ -429,14 +444,14 @@ const SchedulesPage = () => {
       >
         <div className="p-8">
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100">
-              <FaUser size={20} />
+            <div className="w-11 h-11 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100">
+              <FaUser size={18} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+              <h3 className="text-xl font-medium text-slate-800 uppercase tracking-tight">
                 Personal Asignado
               </h3>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-0.5">
                 {viewingScheduleName}
               </p>
             </div>
@@ -445,20 +460,20 @@ const SchedulesPage = () => {
           {loadingUsers ? (
             <div className="py-20 flex flex-col items-center justify-center space-y-4">
               <ITLoader size="lg" />
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
+              <p className="text-slate-400 text-[10px] font-medium uppercase tracking-[0.2em]">
                 Sincronizando...
               </p>
             </div>
           ) : selectedScheduleUsers.length === 0 ? (
             <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-200 border border-slate-100">
-                <FaUser size={24} />
+              <div className="w-11 h-11 rounded-xl bg-slate-50 flex items-center justify-center text-slate-200 border border-slate-100">
+                <FaUser size={18} />
               </div>
               <div>
-                <p className="text-slate-900 font-black text-sm uppercase tracking-tight">
+                <p className="text-slate-900 font-medium text-sm uppercase tracking-tight">
                   Sin personal asignado
                 </p>
-                <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest mt-1">
+                <p className="text-slate-400 text-[9px] font-medium uppercase tracking-widest mt-1">
                   No hay usuarios vinculados a este turno
                 </p>
               </div>
@@ -471,15 +486,15 @@ const SchedulesPage = () => {
                   className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-100/20 transition-all group"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-black border border-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-500 transition-colors uppercase">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-medium border border-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-500 transition-colors uppercase">
                       {user.name?.[0]}
                       {user.lastName?.[0]}
                     </div>
                     <div>
-                      <p className="text-xs font-black text-slate-900 uppercase tracking-tight">
+                      <p className="text-xs font-medium text-slate-900 uppercase tracking-tight">
                         {user.name} {user.lastName}
                       </p>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                      <p className="text-[9px] text-slate-400 font-medium uppercase tracking-widest">
                         @{user.username}
                       </p>
                     </div>
@@ -496,7 +511,7 @@ const SchedulesPage = () => {
             <ITButton
               onClick={() => setViewingUsers(false)}
               variant="ghost"
-              className="px-8 font-black text-[10px] uppercase tracking-widest text-slate-400"
+              className="px-8 font-medium text-[10px] uppercase tracking-widest text-slate-400"
             >
               Cerrar
             </ITButton>

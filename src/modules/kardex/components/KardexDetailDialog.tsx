@@ -9,6 +9,7 @@ import {
   FaFileAlt,
   FaMapMarkerAlt,
   FaSync,
+  FaTrash,
 } from "react-icons/fa";
 import { KardexEntry } from "../services/KardexService";
 
@@ -16,12 +17,14 @@ interface KardexDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
   entry: KardexEntry | null;
+  onDelete?: (id: string) => void;
 }
 
 const KardexDetailDialog = ({
   isOpen,
   onClose,
   entry,
+  onDelete,
 }: KardexDetailDialogProps) => {
   if (!entry) return null;
 
@@ -42,7 +45,7 @@ const KardexDetailDialog = ({
               <section>
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-4 bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.3)]" />
+                    <div className="w-1.5 h-4 bg-sky-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.3)]" />
                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                       Información del Responsable
                     </h4>
@@ -84,7 +87,7 @@ const KardexDetailDialog = ({
               {/* Notas y Observaciones */}
               <section>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-1.5 h-4 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
+                  <div className="w-1.5 h-4 bg-sky-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                     Reporte y Observaciones
                   </h4>
@@ -129,7 +132,7 @@ const KardexDetailDialog = ({
                         return (
                           <p
                             key={i}
-                            className="text-[13px] font-bold text-slate-600 leading-relaxed pl-4 border-l-4 border-indigo-100 italic"
+                            className="text-[13px] font-bold text-slate-600 leading-relaxed pl-4 border-l-4 border-sky-100 italic"
                           >
                             "{trimmed}"
                           </p>
@@ -149,7 +152,7 @@ const KardexDetailDialog = ({
               {/* Evidencia Multimedia */}
               <section>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-1.5 h-4 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
+                  <div className="w-1.5 h-4 bg-sky-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                     Evidencia Multimedia
                   </h4>
@@ -185,7 +188,7 @@ const KardexDetailDialog = ({
 
                 <div className="space-y-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center text-lg font-black shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center text-lg font-black shrink-0">
                       <FaCalendarAlt size={18} />
                     </div>
                     <div>
@@ -218,13 +221,13 @@ const KardexDetailDialog = ({
               <div className="bg-white p-2 rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-1 h-3 bg-blue-500 rounded-full" />
+                    <div className="w-1 h-3 bg-sky-500 rounded-full" />
                     <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                       Punto de Control
                     </h5>
                   </div>
                   <div className="flex items-center gap-1">
-                    <FaMapMarkerAlt size={10} className="text-indigo-500" />
+                    <FaMapMarkerAlt size={10} className="text-sky-500" />
                     <span className="text-[10px] font-black text-slate-800 uppercase tracking-tighter">
                       {entry.location?.name || "N/A"}
                     </span>
@@ -247,6 +250,20 @@ const KardexDetailDialog = ({
 
         {/* Standardized Footer */}
         <div className="flex-none flex justify-end items-center px-8 py-6 border-t border-slate-100 bg-slate-50/50 gap-4">
+          {onDelete && (
+            <ITButton
+              variant="outlined"
+              color="error"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
+              onClick={() => onDelete(entry.id)}
+            >
+              <div className="flex items-center gap-1">
+                <FaTrash size={14} />
+                <span className="text-[10px]">Eliminar Marcaje</span>
+              </div>
+            </ITButton>
+          )}
           <ITButton
             variant="filled"
             color="secondary"

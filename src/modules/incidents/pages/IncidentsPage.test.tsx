@@ -3,7 +3,6 @@ import IncidentsPage from "./IncidentsPage";
 import * as incidentService from "../services/IncidentService";
 import { vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import React from "react";
 import "@testing-library/jest-dom";
 
 // Mock useNavigate
@@ -62,9 +61,11 @@ const mockIncidents = {
       description: "Fuga en pasillo principal",
       media: [],
       createdAt: "2024-01-01T12:00:00.000Z",
-      status: "PENDING",
+      status: "PENDING" as const,
       clientId: "client-1",
       guardId: "guard-1",
+      categoryId: "cat-1",
+      typeId: "type-1",
       guard: { id: "guard-1", name: "Juan", lastName: "Pérez", username: "juanperez" },
       client: { id: "client-1", name: "Corporativo Alfa" },
       category: { id: "cat-1", name: "Mantenimiento" },
@@ -100,7 +101,7 @@ describe("IncidentsPage (Pruebas del módulo de Incidencias)", () => {
     const user = userEvent.setup();
     vi.mocked(incidentService.resolveIncident).mockResolvedValue({
       success: true,
-      data: undefined,
+      data: {} as any,
       messages: ["Incidencia resuelta"],
     });
 

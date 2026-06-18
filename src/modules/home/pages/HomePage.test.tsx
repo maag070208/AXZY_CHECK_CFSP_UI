@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor, store } from "@app/core/utils/test-
 import HomePage from "./HomePage";
 import { vi } from "vitest";
 import { setAuth, logout } from "@app/core/store/auth/auth.slice";
-import React from "react";
 import "@testing-library/jest-dom";
 
 // Mock useNavigate
