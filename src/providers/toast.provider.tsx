@@ -2,6 +2,7 @@ import { AppState } from "@app/core/store/store";
 import { hideToast } from "@app/core/store/toast/toast.slice";
 import { ITToast } from "@axzydev/axzy_ui_system";
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 interface ToastProviderProps {
@@ -27,15 +28,19 @@ const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   return (
     <>
       {children}
-      {isVisible && (
-        <ITToast
-          message={message}
-          type={type}
-          duration={duration}
-          position={position}
-          onClose={() => dispatch(hideToast())}
-        />
-      )}
+      {isVisible &&
+        createPortal(
+          <div className="fixed inset-0 z-[99999] pointer-events-none">
+            <ITToast
+              message={message}
+              type={type}
+              duration={duration}
+              position={position}
+              onClose={() => dispatch(hideToast())}
+            />
+          </div>,
+          document.body,
+        )}
     </>
   );
 };

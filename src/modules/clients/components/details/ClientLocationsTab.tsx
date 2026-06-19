@@ -9,21 +9,39 @@ import {
   getPaginatedLocations,
   updateLocation,
 } from "@app/modules/locations/service/locations.service";
-import { ITButton, ITDataTable, ITDialog } from "@axzydev/axzy_ui_system";
-import { useCallback, useState } from "react";
+import { ITButton, ITDataTable, ITDialog, ITLoader } from "@axzydev/axzy_ui_system";
+import { useCallback, useEffect, useState } from "react";
 import { FaEdit, FaMapMarkerAlt, FaPlus, FaQrcode, FaSync, FaTrash } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 
 interface Props {
   clientId: string;
+  selectedZoneId?: string | null;
+  onCreateFromZone?: () => void;
 }
 
-export const ClientLocationsTab = ({ clientId }: Props) => {
+export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone }: Props) => {
   const dispatch = useDispatch();
   const [refreshKey, setRefreshKey] = useState(0);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBulkPrintOpen, setIsBulkPrintOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
+  const [createInitialData, setCreateInitialData] = useState<any>(null);
+  const [locationToDelete, setLocationToDelete] = useState<Location | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (selectedZoneId) {
+      setCreateInitialData({
+        clientId: String(clientId),
+        zoneId: selectedZoneId,
+        name: "",
+        reference: "",
+      });
+      setIsCreateModalOpen(true);
+      onCreateFromZone?.();
+    }
+  }, [selectedZoneId]);
 
   const memoizedFetch = useCallback(
     (params: any) => {
@@ -54,19 +72,32 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("¿Estás seguro de eliminar esta ubicación?")) return;
-    const res = await deleteLocation(id);
-    if (res.success) {
-      dispatch(showToast({ message: "Ubicación eliminada", type: "success" }));
-      setRefreshKey((prev) => prev + 1);
-    } else {
+  const confirmDelete = async () => {
+    if (!locationToDelete || isDeleting) return;
+    setIsDeleting(true);
+    try {
+      const res = await deleteLocation(locationToDelete.id);
+      if (res.success) {
+        dispatch(showToast({ message: "Ubicación eliminada", type: "success" }));
+        setRefreshKey((prev) => prev + 1);
+        setLocationToDelete(null);
+      } else {
+        dispatch(
+          showToast({
+            message: res.messages?.[0] || "Error al eliminar",
+            type: "error",
+          }),
+        );
+      }
+    } catch (err: any) {
       dispatch(
         showToast({
-          message: res.messages?.[0] || "Error al eliminar",
+          message: err?.messages?.[0] || "Error al eliminar ubicación",
           type: "error",
         }),
       );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -130,7 +161,7 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
             <FaEdit size={14} />
           </ITButton>
           <ITButton
-            onClick={() => handleDelete(row.id)}
+            onClick={() => setLocationToDelete(row)}
             size="small"
             variant="outlined"
             color="error"
@@ -199,7 +230,10 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
 
       <ITDialog
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setCreateInitialData(null);
+        }}
         title=""
         className="!max-w-md !w-full"
       >
@@ -217,36 +251,50 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
           </div>
           {isCreateModalOpen && (
             <LocationForm
-              initialData={{
-                clientId: String(clientId),
-                aisle: "",
-                spot: "",
-                number: "",
-                name: "",
-              }}
+              initialData={
+                createInitialData || {
+                  clientId: String(clientId),
+                  zoneId: "",
+                  name: "",
+                  reference: "",
+                }
+              }
               onSubmit={async (data, keepOpen) => {
-                const res = await createLocation(data);
-                if (res.success) {
-                  if (!keepOpen) {
-                    setIsCreateModalOpen(false);
+                try {
+                  const res = await createLocation(data);
+                  if (res.success) {
+                    if (!keepOpen) {
+                      setIsCreateModalOpen(false);
+                      setCreateInitialData(null);
+                    }
+                    setRefreshKey((prev) => prev + 1);
+                    dispatch(
+                      showToast({
+                        message: "Ubicación creada con éxito",
+                        type: "success",
+                      }),
+                    );
+                  } else {
+                    dispatch(
+                      showToast({
+                        message: res.messages?.[0] || "Error al crear",
+                        type: "error",
+                      }),
+                    );
                   }
-                  setRefreshKey((prev) => prev + 1);
+                } catch (err: any) {
                   dispatch(
                     showToast({
-                      message: "Ubicación creada con éxito",
-                      type: "success",
-                    }),
-                  );
-                } else {
-                  dispatch(
-                    showToast({
-                      message: res.messages?.[0] || "Error al crear",
+                      message: err?.messages?.[0] || "Error al crear ubicación",
                       type: "error",
                     }),
                   );
                 }
               }}
-              onCancel={() => setIsCreateModalOpen(false)}
+              onCancel={() => {
+                setIsCreateModalOpen(false);
+                setCreateInitialData(null);
+              }}
             />
           )}
         </div>
@@ -274,20 +322,29 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
             <LocationForm
               initialData={editingLocation}
               onSubmit={async (data) => {
-                const res = await updateLocation(editingLocation.id, data);
-                if (res.success) {
-                  setEditingLocation(null);
-                  setRefreshKey((prev) => prev + 1);
+                try {
+                  const res = await updateLocation(editingLocation.id, data);
+                  if (res.success) {
+                    setEditingLocation(null);
+                    setRefreshKey((prev) => prev + 1);
+                    dispatch(
+                      showToast({
+                        message: "Ubicación actualizada",
+                        type: "success",
+                      }),
+                    );
+                  } else {
+                    dispatch(
+                      showToast({
+                        message: res.messages?.[0] || "Error al actualizar",
+                        type: "error",
+                      }),
+                    );
+                  }
+                } catch (err: any) {
                   dispatch(
                     showToast({
-                      message: "Ubicación actualizada",
-                      type: "success",
-                    }),
-                  );
-                } else {
-                  dispatch(
-                    showToast({
-                      message: res.messages?.[0] || "Error al actualizar",
+                      message: err?.messages?.[0] || "Error al actualizar ubicación",
                       type: "error",
                     }),
                   );
@@ -296,6 +353,54 @@ export const ClientLocationsTab = ({ clientId }: Props) => {
               onCancel={() => setEditingLocation(null)}
             />
           )}
+        </div>
+      </ITDialog>
+
+      <ITDialog
+        isOpen={!!locationToDelete}
+        onClose={() => setLocationToDelete(null)}
+        title=""
+        className="!max-w-md !w-full"
+      >
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Ubicación</h3>
+                <p className="text-xs text-slate-400 font-light">{locationToDelete?.name}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción eliminará la ubicación y todos sus registros asociados de forma permanente.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
+            <ITButton
+              variant="ghost"
+              onClick={() => setLocationToDelete(null)}
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
+            >
+              Cancelar
+            </ITButton>
+            <ITButton
+              variant="filled"
+              color="danger"
+              size="small"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
+              onClick={confirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <ITLoader size="sm" /> : "Eliminar"}
+            </ITButton>
+          </div>
         </div>
       </ITDialog>
 

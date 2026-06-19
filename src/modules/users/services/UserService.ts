@@ -19,6 +19,7 @@ export interface User {
   shiftEnd?: string;   // HH:mm
   isLoggedIn?: boolean;
   assignmentLogs?: any[];
+  assignments?: any[];
   schedule?: Schedule;
   scheduleId?: string;
   clientId?: string;

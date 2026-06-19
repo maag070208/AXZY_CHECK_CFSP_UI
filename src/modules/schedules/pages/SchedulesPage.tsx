@@ -235,7 +235,7 @@ const SchedulesPage = () => {
         key: "actions",
         label: "CONTROL",
         render: (row: Schedule) => (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-1.5 md:gap-2">
             <ITButton
               onClick={() => openModal(row)}
               variant="outlined"
@@ -261,7 +261,7 @@ const SchedulesPage = () => {
   );
 
   return (
-    <div className="p-6   min-h-screen font-sans">
+    <div className="p-4 md:p-6 min-h-screen font-sans">
       <ModuleHeader
         title="Directorio de Horarios"
         subtitle="Gestión de turnos operativos y controles de asistencia"
@@ -288,15 +288,17 @@ const SchedulesPage = () => {
         }
       />
 
-      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
-        <ITDataTable
-          key={refreshKey}
-          fetchData={memoizedFetch as any}
-          columns={columns as any}
-          externalFilters={externalFilters}
-          defaultItemsPerPage={10}
-          title=""
-        />
+      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
+        <div className="min-w-[650px]">
+          <ITDataTable
+            key={refreshKey}
+            fetchData={memoizedFetch as any}
+            columns={columns as any}
+            externalFilters={externalFilters}
+            defaultItemsPerPage={10}
+            title=""
+          />
+        </div>
       </div>
 
       {/* CREATE/EDIT MODAL */}

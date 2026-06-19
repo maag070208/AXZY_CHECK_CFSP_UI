@@ -9,6 +9,7 @@ import {
   ITDialog,
   ITLoader,
   ITTripleFilter,
+  isLightColor,
 } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
@@ -68,22 +69,33 @@ const MaintenancesPage = () => {
   const confirmResolve = async () => {
     if (!maintenanceToResolveId) return;
     setResolvingId(maintenanceToResolveId);
-    const res = await resolveMaintenance(maintenanceToResolveId as any);
-    setResolvingId(null);
-    setMaintenanceToResolveId(null);
+    try {
+      const res = await resolveMaintenance(maintenanceToResolveId as any);
+      setResolvingId(null);
+      setMaintenanceToResolveId(null);
 
-    if (res.success) {
-      setRefreshKey((p) => p + 1);
-      if (viewingMaintenance?.id === (maintenanceToResolveId as any)) {
-        setViewingMaintenance(null);
+      if (res.success) {
+        setRefreshKey((p) => p + 1);
+        if (viewingMaintenance?.id === (maintenanceToResolveId as any)) {
+          setViewingMaintenance(null);
+        }
+        dispatch(
+          showToast({ message: "Mantenimiento resuelto", type: "success" }),
+        );
+      } else {
+        dispatch(
+          showToast({
+            message: res.messages?.[0] || "Error al resolver mantenimiento",
+            type: "error",
+          }),
+        );
       }
-      dispatch(
-        showToast({ message: "Mantenimiento resuelto", type: "success" }),
-      );
-    } else {
+    } catch (err: any) {
+      setResolvingId(null);
+      setMaintenanceToResolveId(null);
       dispatch(
         showToast({
-          message: "Error al resolver mantenimiento",
+          message: err?.messages?.[0] || "Error al resolver mantenimiento",
           type: "error",
         }),
       );
@@ -93,15 +105,21 @@ const MaintenancesPage = () => {
   const confirmDelete = async () => {
     if (!maintenanceToDelete) return;
     setDeletingId(maintenanceToDelete.id as any);
-    const res = await deleteMaintenance(maintenanceToDelete.id);
-    setDeletingId(null);
-    setMaintenanceToDelete(null);
+    try {
+      const res = await deleteMaintenance(maintenanceToDelete.id);
+      setDeletingId(null);
+      setMaintenanceToDelete(null);
 
-    if (res.success) {
-      dispatch(showToast({ message: "Registro eliminado", type: "success" }));
-      setRefreshKey((p) => p + 1);
-    } else {
-      dispatch(showToast({ message: "Error al eliminar", type: "error" }));
+      if (res.success) {
+        dispatch(showToast({ message: "Registro eliminado", type: "success" }));
+        setRefreshKey((p) => p + 1);
+      } else {
+        dispatch(showToast({ message: res.messages?.[0] || "Error al eliminar", type: "error" }));
+      }
+    } catch (err: any) {
+      setDeletingId(null);
+      setMaintenanceToDelete(null);
+      dispatch(showToast({ message: err?.messages?.[0] || "Error al eliminar", type: "error" }));
     }
   };
 
@@ -111,17 +129,27 @@ const MaintenancesPage = () => {
         key: "title",
         label: "Mantenimiento",
         render: (row: Maintenance) => (
-          <div className="flex items-start gap-3">
-            <div className="mt-1 w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500 shrink-0 border border-orange-100">
+          <div
+            className="flex items-start gap-3 cursor-pointer"
+            onClick={() => setViewingMaintenance(row)}
+          >
+            <div
+              className="mt-1 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border"
+              style={{
+                backgroundColor: row.categoryRel?.color ? `${row.categoryRel.color}18` : "#fff7ed",
+                color: row.categoryRel?.color || "#f97316",
+                borderColor: row.categoryRel?.color ? `${row.categoryRel.color}40` : "#fed7aa",
+              }}
+            >
               <FaWrench size={12} />
             </div>
             <div>
-              <p className="font-black text-slate-800 uppercase text-[11px] tracking-tight line-clamp-1">
+              <p className="font-black text-slate-800 uppercase text-[11px] tracking-tight line-clamp-1 hover:text-sky-600 transition-colors">
                 {row.title}
               </p>
               <div className="flex gap-2 items-center mt-0.5">
                 <ITBadget
-                  label={row.category || "GENERAL"}
+                  label={row.categoryRel?.name || row.category || "GENERAL"}
                   color="warning"
                   variant="outlined"
                   className="!text-[8px] !px-1.5 !py-0.5 !h-auto"
@@ -167,7 +195,7 @@ const MaintenancesPage = () => {
         label: "ESTADO",
         render: (row: Maintenance) => (
           <ITBadget
-            color={row.status === "ATTENDED" ? "primary" : "danger"}
+            color={row.status === "ATTENDED" ? "success" : "danger"}
             size="small"
           >
             {row.status === "ATTENDED" ? "ATENDIDA" : "PENDIENTE"}
@@ -178,7 +206,7 @@ const MaintenancesPage = () => {
         key: "actions",
         label: "CONTROL",
         render: (row: Maintenance) => (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-1.5 md:gap-2">
             <ITButton
               onClick={() => setViewingMaintenance(row)}
               variant="outlined"
@@ -223,7 +251,7 @@ const MaintenancesPage = () => {
   );
 
   return (
-    <div className="p-6   min-h-screen font-sans">
+    <div className="p-4 md:p-6 min-h-screen font-sans">
       <ModuleHeader
         title="Gestión de Mantenimientos"
         subtitle="Monitoreo y resolución de desperfectos en instalaciones"
@@ -247,15 +275,17 @@ const MaintenancesPage = () => {
           />
         }
       />
-      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
-        <ITDataTable<Maintenance & Record<string, unknown>>
-          key={`${refreshKey}-${guardsCatalog?.length || 0}`}
-          fetchData={memoizedFetch as any}
-          columns={columns as any}
-          externalFilters={externalFilters as any}
-          defaultItemsPerPage={10}
-          title=""
-        />
+      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
+        <div className="min-w-[650px]">
+          <ITDataTable<Maintenance & Record<string, unknown>>
+            key={`${refreshKey}-${guardsCatalog?.length || 0}`}
+            fetchData={memoizedFetch as any}
+            columns={columns as any}
+            externalFilters={externalFilters as any}
+            defaultItemsPerPage={10}
+            title=""
+          />
+        </div>
       </div>{" "}
       {/* DETAIL MODAL - Versión Modularizada */}
       <MaintenanceDetailDialog

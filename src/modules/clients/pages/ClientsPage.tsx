@@ -142,8 +142,8 @@ const ClientsPage = () => {
               type: "string",
               sortable: true,
               render: (row: Client) => (
-                <div className="flex flex-col">
-                  <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 hover:text-sky-600 cursor-pointer transition-colors block">
+                <div className="flex flex-col cursor-pointer" onClick={() => navigate(`/clients/${row.id}`)}>
+                  <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 hover:text-sky-600 transition-colors">
                     {row.name}
                   </ITText>
                   <div className="flex items-center gap-1.5">

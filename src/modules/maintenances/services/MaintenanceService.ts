@@ -24,6 +24,12 @@ export interface Maintenance {
     lastName: string;
     username: string;
   };
+  categoryRel?: {
+    id: string;
+    name: string;
+    icon?: string | null;
+    color?: string | null;
+  };
   client?: {
     name: string;
   };

@@ -276,9 +276,9 @@ export const ViewAssignmentsModal = ({
                           .flatMap((k) => k.media || [])
                           .map((m) => ({
                             type: m.type || "IMAGE",
-                            url: m.url.startsWith("http")
+                            url: m.url?.startsWith("http")
                               ? m.url
-                              : `${API_BASE_URL}${m.url.replace("/api/v1", "")}`,
+                              : `${API_BASE_URL}${m.url?.replace("/api/v1", "")}`,
                           }))}
                         gridSize={280}
                       />

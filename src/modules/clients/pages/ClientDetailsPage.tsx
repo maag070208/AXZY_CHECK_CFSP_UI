@@ -12,6 +12,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ClientGuardsTab } from "../components/details/ClientGuardsTab";
 import { ClientLocationsTab } from "../components/details/ClientLocationsTab";
 import { ClientZonesTab } from "../components/details/ClientZonesTab";
+import { Zone } from "../../zones/services/ZonesService";
 import { Client, getClientById } from "../services/ClientsService";
 
 const ClientDetailsPage = () => {
@@ -19,6 +20,19 @@ const ClientDetailsPage = () => {
   const navigate = useNavigate();
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("locations");
+  const [tabKey, setTabKey] = useState(0);
+
+  const handleSelectZone = (zone: Zone) => {
+    setSelectedZoneId(zone.id);
+    setActiveTab("locations");
+    setTabKey((prev) => prev + 1);
+  };
+
+  const handleClearZoneSelection = () => {
+    setSelectedZoneId(null);
+  };
 
   const fetchClient = useCallback(async () => {
     if (!id) return;
@@ -44,13 +58,19 @@ const ClientDetailsPage = () => {
       id: "locations",
       label: "Ubicaciones",
       icon: <FaSearchLocation />,
-      content: <ClientLocationsTab clientId={id!} />,
+      content: (
+        <ClientLocationsTab
+          clientId={id!}
+          selectedZoneId={selectedZoneId}
+          onCreateFromZone={handleClearZoneSelection}
+        />
+      ),
     },
     {
       id: "zones",
       label: "Zonas / Recurrentes",
       icon: <FaMapMarkedAlt />,
-      content: <ClientZonesTab clientId={id!} />,
+      content: <ClientZonesTab clientId={id!} onSelectZone={handleSelectZone} />,
     },
     {
       id: "guards",
@@ -138,7 +158,13 @@ const ClientDetailsPage = () => {
         }
       />
 
-      <ITTabs items={tabs} variant="line" defaultActiveId="locations" />
+      <ITTabs
+        key={tabKey}
+        items={tabs}
+        variant="line"
+        defaultActiveId={activeTab}
+        onChange={(tabId) => setActiveTab(tabId)}
+      />
     </div>
   );
 };

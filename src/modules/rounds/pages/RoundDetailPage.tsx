@@ -1,6 +1,6 @@
 import { ITMediaGrid } from "@app/core/components/ITMediaGrid";
 import { showToast } from "@app/core/store/toast/toast.slice";
-import { ITButton, ITLoader } from "@axzydev/axzy_ui_system";
+import { ITButton, ITLoader, useITTheme } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -12,6 +12,7 @@ import {
   FaClock,
   FaExclamationTriangle,
   FaFileAlt,
+  FaFilePdf,
   FaMapMarkedAlt,
   FaPlay,
   FaQrcode,
@@ -31,6 +32,9 @@ const RoundDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { colors } = useITTheme();
+  const primary = colors.primary || "#10b981";
+  const primaryLight = primary + "15";
 
   const user = useSelector((state: any) => state.auth);
   const isResident = user?.role === "RESDN";
@@ -265,17 +269,17 @@ const RoundDetailPage = () => {
     `Ronda #${data.round.id}`;
 
   return (
-    <div className="min-h-screen   pb-20">
+    <div className="min-h-screen pb-20" style={{ "--p": primary, "--pl": primaryLight } as React.CSSProperties}>
       <div className="bg-white border-b border-slate-100 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-slate-50 group-hover:bg-sky-500 group-hover:text-white flex items-center justify-center transition-all text-slate-400 border border-slate-100 group-hover:border-sky-400 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-slate-50 group-hover:bg-[--p] group-hover:text-white flex items-center justify-center transition-all text-slate-400 border border-slate-100 shadow-sm">
               <FaArrowLeft size={14} />
             </div>
-            <span className="text-[10px] text-slate-400 group-hover:text-sky-600 transition-colors font-light">
+            <span className="text-[10px] text-slate-400 group-hover:text-[--p] transition-colors font-light">
               Volver
             </span>
           </button>
@@ -293,6 +297,7 @@ const RoundDetailPage = () => {
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               <div className="flex items-center gap-1">
+                <FaFilePdf size={14} className="text-white" />
                 <span className="text-[10px]">Exportar PDF</span>
               </div>
             </ITButton>
@@ -307,15 +312,15 @@ const RoundDetailPage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6 md:space-y-10">
         {/* Header Content */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-[--pl] text-[--p] flex items-center justify-center border border-[--pl] shadow-sm">
                 <FaRoute size={20} />
               </div>
-              <h1 className="text-3xl md:text-4xl font-medium text-slate-800">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-medium text-slate-800">
                 {title}
               </h1>
             </div>
@@ -373,10 +378,10 @@ const RoundDetailPage = () => {
 
         {/* Visual Route Visualizer */}
         {metrics && (
-          <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-10">
+            <div className="bg-white rounded-[24px] md:rounded-[40px] p-6 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-6 md:space-y-10">
             <div className="flex flex-wrap items-center justify-between gap-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-[--pl] text-[--p] flex items-center justify-center border border-[--pl] shadow-sm">
                   <FaMapMarkedAlt size={22} />
                 </div>
                 <div>
@@ -394,7 +399,7 @@ const RoundDetailPage = () => {
                 className="px-5 whitespace-nowrap shadow shadow-slate-100"
               >
                 <div className="flex items-center gap-1">
-                  <FaMapMarkedAlt size={14} className="text-sky-500" />
+                  <FaMapMarkedAlt size={14} className="text-white" />
                   <span className="text-[10px]">Trazar en Google Maps</span>
                 </div>
               </ITButton>
@@ -408,7 +413,7 @@ const RoundDetailPage = () => {
                       <div className="flex flex-col items-center mx-4">
                         <div className="w-16 h-1 bg-slate-100 rounded-full relative overflow-hidden">
                           {node.diffMs > 0 && (
-                            <div className="absolute inset-0 bg-sky-500/20" />
+                            <div className="absolute inset-0 bg-[--pl]0/20" />
                           )}
                         </div>
                           {!isResident &&
@@ -423,7 +428,7 @@ const RoundDetailPage = () => {
                     <div className="flex flex-col items-center w-32 group">
                       <div
                         className={`w-16 h-16 rounded-[24px] flex items-center justify-center shadow-xl transition-all duration-500 group-hover:scale-110 border-4 border-white
-                          ${node.status === "START" ? "bg-sky-500 text-white shadow-sky-200" : ""}
+                          ${node.status === "START" ? "bg-[--p] text-white shadow-emerald-200" : ""}
                           ${node.status === "END" ? "bg-slate-800 text-white shadow-slate-300" : ""}
                           ${node.status === "SUCCESS" ? "bg-emerald-500 text-white shadow-emerald-200" : ""}
                           ${node.status === "DUPLICATE" ? "bg-rose-500 text-white shadow-rose-200" : ""}
@@ -480,7 +485,7 @@ const RoundDetailPage = () => {
               >
                 <TimelineIcon type={event.type} />
 
-                <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8 group overflow-hidden relative">
+                <div className="bg-white rounded-[20px] md:rounded-[32px] border border-slate-100 shadow-sm p-5 md:p-8 group overflow-hidden relative">
                   <div className="flex flex-col lg:flex-row justify-between gap-6 mb-8">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
@@ -586,44 +591,7 @@ const RoundDetailPage = () => {
                       )}
                     </div>
                   )}
-
-                  {event.type === "INCIDENT" && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                          <span className="text-[10px] font-medium text-rose-500 px-3 py-1 rounded-full border border-rose-200 bg-rose-50">
-                            INCIDENTE: {event.data?.category}
-                          </span>
-                        </div>
-                        <p className="text-sm text-slate-600 leading-relaxed">
-                          {event.data?.description}
-                        </p>
-                        {event.data?.media?.length > 0 && Array.isArray(event.data.media) && (
-                          <ITMediaGrid
-                            media={event.data.media.map((m: any) => ({
-                              ...m,
-                              url: m?.url?.startsWith("http")
-                                ? m.url
-                                : `${API_BASE_URL}${(m?.url || "").replace("/api/v1", "")}`,
-                            }))}
-                            gridSize={240}
-                          />
-                        )}
-                      </div>
-                      <div>
-                        {event.data?.latitude && (
-                          <div className="rounded-[24px] overflow-hidden border-2 border-rose-100 shadow-sm">
-                            <GoogleMapComponent
-                              lat={Number(event.data.latitude)}
-                              lng={Number(event.data.longitude)}
-                              height="300px"
-                              zoom={18}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                  
                 </div>
               </div>
             ))}
@@ -652,13 +620,13 @@ const HeaderMetric = ({ icon, label, value }: any) => (
 
 const MetricCard = ({ icon, color, label, value, subValue }: any) => {
   const colors: any = {
-    indigo: "from-sky-500 to-sky-600",
+    indigo: "from-[--p] to-emerald-600",
     emerald: "from-emerald-500 to-emerald-600",
     amber: "from-amber-500 to-amber-600",
   };
 
   return (
-    <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
+    <div className="bg-white rounded-[24px] md:rounded-[32px] p-5 md:p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
       <div className="space-y-4">
         <div
           className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${colors[color]} flex items-center justify-center text-white shadow-sm`}
@@ -684,19 +652,14 @@ const MetricCard = ({ icon, color, label, value, subValue }: any) => {
 const TimelineIcon = ({ type }: { type: string }) => {
   const styles: any = {
     START: {
-      bg: "bg-sky-500",
+      bg: "bg-[--pl]0",
       icon: <FaPlay className="ml-1" />,
-      border: "border-sky-100",
+      border: "border-[--pl]",
     },
     SCAN: {
       bg: "bg-emerald-500",
       icon: <FaQrcode />,
       border: "border-emerald-100",
-    },
-    INCIDENT: {
-      bg: "bg-rose-500",
-      icon: <FaExclamationTriangle />,
-      border: "border-rose-100",
     },
     END: {
       bg: "bg-slate-800",

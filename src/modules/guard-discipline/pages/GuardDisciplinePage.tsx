@@ -9,6 +9,7 @@ import {
   ITLoader,
   ITSearchSelect,
   ITTripleFilter,
+  isLightColor,
 } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
@@ -246,14 +247,19 @@ const GuardDisciplinePage = () => {
             <div className="flex gap-1.5 mt-1">
               {row.category && (
                 <span
-                    className="text-[9px] font-light px-1.5 py-0.5 rounded-full"
-                    style={{ backgroundColor: row.category.color || "#F1F5F9", color: "#475569" }}
-                  >
-                    {row.category.name}
-                  </span>
-                )}
+                  className="text-[9px] font-medium px-1.5 py-0.5 rounded-full"
+                  style={{
+                    backgroundColor: row.category.color || "#F1F5F9",
+                    color: row.category.color
+                      ? isLightColor(row.category.color) ? "#1e293b" : "#ffffff"
+                      : "#475569",
+                  }}
+                >
+                  {row.category.name}
+                </span>
+              )}
                 {row.type && (
-                  <span className="text-[9px] font-light px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                  <span className="text-[9px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
                   {row.type.name}
                 </span>
               )}
@@ -304,23 +310,12 @@ const GuardDisciplinePage = () => {
             <ITButton
               onClick={() => handleOpenDetail(row)}
               color="secondary"
-              variant="ghost"
+              variant="outlined"
               size="small"
               title="Ver detalle"
             >
               <FaEye size={14} />
             </ITButton>
-            {row.status === "PENDING" && (
-              <ITButton
-                onClick={() => handleOpenDetail(row)}
-                color="success"
-                variant="outlined"
-                size="small"
-                title="Resolver"
-              >
-                <FaGavel size={14} />
-              </ITButton>
-            )}
             {row.status === "PENDING" && (
               <ITButton
                 onClick={() => {
@@ -420,7 +415,14 @@ const GuardDisciplinePage = () => {
                 placeholder="SELECCIONAR GUARDIA..."
                 options={(guards || []).map((g: any) => ({ label: g.value, value: g.id }))}
                 value={form.guardId}
-                onChange={(val) => setForm((p: any) => ({ ...p, guardId: val }))}
+                onChange={(val) => {
+                  const guard = (guards || []).find((g: any) => g.id === val);
+                  setForm((p: any) => ({
+                    ...p,
+                    guardId: val,
+                    clientId: guard?.clientId || p.clientId,
+                  }));
+                }}
               />
             </div>
 
@@ -494,14 +496,14 @@ const GuardDisciplinePage = () => {
               </label>
             </div>
 
-            {!isResident && (
+            {!isResident && form.guardId && (
               <div className="space-y-3">
-                <ITSearchSelect
-                  placeholder="SELECCIONAR CLIENTE..."
-                  options={(clients || []).map((c: any) => ({ label: c.name, value: c.id }))}
-                  value={form.clientId}
-                  onChange={(val) => setForm((p: any) => ({ ...p, clientId: val }))}
-                />
+                <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-xl border border-slate-100">
+                  <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Cliente:</span>
+                  <span className="text-[11px] font-medium text-slate-700">
+                    {clients?.find((c: any) => c.id === form.clientId)?.name || "Sin cliente asignado"}
+                  </span>
+                </div>
               </div>
             )}
           </div>

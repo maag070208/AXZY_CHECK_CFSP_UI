@@ -200,12 +200,12 @@ const GuardsPage = () => {
         render: (row: User) => (
           <div className="flex flex-col">
             <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block">
-              {row.assignmentLogs?.length || 0} Tareas
+              {row.assignments?.length || 0} Tareas
             </ITText>
             <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest block">
-                CONTROL DIARIO
+                ASIGNACIONES ACTIVAS
               </ITText>
             </div>
           </div>
@@ -215,7 +215,7 @@ const GuardsPage = () => {
         key: "actions",
         label: "CONTROL",
         render: (row: User) => (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-1.5 md:gap-2">
             {!isClient && (
               <>
                 <ITButton
@@ -274,7 +274,7 @@ const GuardsPage = () => {
   );
 
   return (
-    <div className="p-6   min-h-screen font-sans">
+    <div className="p-4 md:p-6 min-h-screen font-sans">
       <ModuleHeader
         title="Directorio de Guardias"
         subtitle="Gestión de personal operativo, asignaciones y controles de turno"
@@ -299,15 +299,17 @@ const GuardsPage = () => {
         }
       />
 
-      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
-        <ITDataTable<User & Record<string, unknown>>
-          key={refreshKey}
-          fetchData={memoizedFetch as any}
-          columns={columns as any}
-          externalFilters={externalFilters}
-          defaultItemsPerPage={10}
-          title=""
-        />
+      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
+        <div className="min-w-[700px]">
+          <ITDataTable<User & Record<string, unknown>>
+            key={refreshKey}
+            fetchData={memoizedFetch as any}
+            columns={columns as any}
+            externalFilters={externalFilters}
+            defaultItemsPerPage={10}
+            title=""
+          />
+        </div>
       </div>
 
       {/* CLIENT REASSIGN DIALOG */}

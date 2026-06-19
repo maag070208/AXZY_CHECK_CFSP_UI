@@ -68,19 +68,27 @@ const IncidentsPage = () => {
   const confirmResolve = async () => {
     if (!incidentToResolveId) return;
     setResolvingId(incidentToResolveId);
-    const res = await resolveIncident(incidentToResolveId as any);
-    setResolvingId(null);
-    setIncidentToResolveId(null);
+    try {
+      const res = await resolveIncident(incidentToResolveId as any);
+      setResolvingId(null);
+      setIncidentToResolveId(null);
 
-    if (res.success) {
-      setRefreshKey((p) => p + 1);
-      if (viewingIncident?.id === (incidentToResolveId as any)) {
-        setViewingIncident(null);
+      if (res.success) {
+        setRefreshKey((p) => p + 1);
+        if (viewingIncident?.id === (incidentToResolveId as any)) {
+          setViewingIncident(null);
+        }
+        dispatch(showToast({ message: "Incidencia resuelta", type: "success" }));
+      } else {
+        dispatch(
+          showToast({ message: res.messages?.[0] || "Error al resolver incidencia", type: "error" }),
+        );
       }
-      dispatch(showToast({ message: "Incidencia resuelta", type: "success" }));
-    } else {
+    } catch (err: any) {
+      setResolvingId(null);
+      setIncidentToResolveId(null);
       dispatch(
-        showToast({ message: "Error al resolver incidencia", type: "error" }),
+        showToast({ message: err?.messages?.[0] || "Error al resolver incidencia", type: "error" }),
       );
     }
   };
@@ -88,15 +96,21 @@ const IncidentsPage = () => {
   const confirmDelete = async () => {
     if (!incidentToDelete) return;
     setDeletingId(incidentToDelete.id as any);
-    const res = await deleteIncident(incidentToDelete.id);
-    setDeletingId(null);
-    setIncidentToDelete(null);
+    try {
+      const res = await deleteIncident(incidentToDelete.id);
+      setDeletingId(null);
+      setIncidentToDelete(null);
 
-    if (res.success) {
-      dispatch(showToast({ message: "Reporte eliminado", type: "success" }));
-      setRefreshKey((p) => p + 1);
-    } else {
-      dispatch(showToast({ message: "Error al eliminar", type: "error" }));
+      if (res.success) {
+        dispatch(showToast({ message: "Reporte eliminado", type: "success" }));
+        setRefreshKey((p) => p + 1);
+      } else {
+        dispatch(showToast({ message: res.messages?.[0] || "Error al eliminar", type: "error" }));
+      }
+    } catch (err: any) {
+      setDeletingId(null);
+      setIncidentToDelete(null);
+      dispatch(showToast({ message: err?.messages?.[0] || "Error al eliminar", type: "error" }));
     }
   };
 
@@ -106,12 +120,22 @@ const IncidentsPage = () => {
         key: "title",
         label: "Incidencia",
         render: (row: Incident) => (
-          <div className="flex items-start gap-3">
-            <div className="mt-1 w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-rose-500 shrink-0 border border-rose-100">
+          <div
+            className="flex items-start gap-3 cursor-pointer"
+            onClick={() => setViewingIncident(row)}
+          >
+            <div
+              className="mt-1 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border"
+              style={{
+                backgroundColor: row.category?.color ? `${row.category.color}18` : "#fff1f2",
+                color: row.category?.color || "#f43f5e",
+                borderColor: row.category?.color ? `${row.category.color}40` : "#fecdd3",
+              }}
+            >
               <FaExclamationTriangle size={12} />
             </div>
             <div>
-              <p className="font-black text-slate-800 uppercase text-[11px] tracking-tight line-clamp-1">
+              <p className="font-black text-slate-800 uppercase text-[11px] tracking-tight line-clamp-1 hover:text-sky-600 transition-colors">
                 {row.title}
               </p>
               <div className="flex gap-2 items-center mt-0.5">
@@ -176,7 +200,7 @@ const IncidentsPage = () => {
         key: "actions",
         label: "CONTROL",
         render: (row: Incident) => (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-1.5 md:gap-2">
             <ITButton
               onClick={() => setViewingIncident(row)}
               variant="outlined"
@@ -222,7 +246,7 @@ const IncidentsPage = () => {
   );
 
   return (
-    <div className="p-6   min-h-screen font-sans">
+    <div className="p-4 md:p-6 min-h-screen font-sans">
       <ModuleHeader
         title="Gestión de Incidencias"
         subtitle="Monitoreo y respuesta inmediata a reportes de seguridad"
@@ -247,15 +271,17 @@ const IncidentsPage = () => {
         }
       />
 
-      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
-        <ITDataTable<Incident & Record<string, unknown>>
-          key={`${refreshKey}-${guardsCatalog?.length || 0}`}
-          fetchData={memoizedFetch as any}
-          columns={columns as any}
-          externalFilters={externalFilters as any}
-          defaultItemsPerPage={10}
-          title=""
-        />
+      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
+        <div className="min-w-[700px]">
+          <ITDataTable<Incident & Record<string, unknown>>
+            key={`${refreshKey}-${guardsCatalog?.length || 0}`}
+            fetchData={memoizedFetch as any}
+            columns={columns as any}
+            externalFilters={externalFilters as any}
+            defaultItemsPerPage={10}
+            title=""
+          />
+        </div>
       </div>
 
       {/* DETAIL MODAL - Versión Modularizada */}

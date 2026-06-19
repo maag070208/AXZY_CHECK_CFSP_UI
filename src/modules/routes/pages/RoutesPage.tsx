@@ -10,10 +10,11 @@ import {
   ITLoader,
   ITSearchSelect,
   ITText,
+  useITTheme,
 } from "@axzydev/axzy_ui_system";
 import { post } from "@app/core/axios/axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaBuilding, FaEdit, FaPrint, FaRoute, FaTrash } from "react-icons/fa";
+import { FaBuilding, FaEdit, FaPrint, FaQrcode, FaRoute, FaTrash } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { deleteRoute, getPaginatedRoutes } from "../services/RoutesService";
@@ -21,6 +22,8 @@ import { deleteRoute, getPaginatedRoutes } from "../services/RoutesService";
 const RoutesPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { colors } = useITTheme();
+  const primary = colors.primary || "#10b981";
   const [refreshKey, setRefreshKey] = useState(0);
   const [routeToDeleteId, setRouteToDeleteId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -57,14 +60,20 @@ const RoutesPage = () => {
   const confirmDelete = async () => {
     if (!routeToDeleteId || isDeleting) return;
     setIsDeleting(true);
-    const res = await deleteRoute(String(routeToDeleteId));
-    setIsDeleting(false);
-    setRouteToDeleteId(null);
-    if (res.success) {
-      dispatch(showToast({ message: "Ruta eliminada", type: "success" }));
-      refreshTable();
-    } else {
-      dispatch(showToast({ message: "Error al eliminar", type: "error" }));
+    try {
+      const res = await deleteRoute(String(routeToDeleteId));
+      setIsDeleting(false);
+      setRouteToDeleteId(null);
+      if (res.success) {
+        dispatch(showToast({ message: "Ruta eliminada", type: "success" }));
+        refreshTable();
+      } else {
+        dispatch(showToast({ message: res.messages?.[0] || "Error al eliminar", type: "error" }));
+      }
+    } catch (err: any) {
+      setIsDeleting(false);
+      setRouteToDeleteId(null);
+      dispatch(showToast({ message: err?.messages?.[0] || "Error al eliminar", type: "error" }));
     }
   };
 
@@ -120,10 +129,13 @@ const RoutesPage = () => {
       label: "Cliente / Entidad",
       type: "string",
       render: (row: any) => (
-        <div className="flex flex-col">
+        <div
+          className="flex flex-col cursor-pointer"
+          onClick={() => handleEdit(row)}
+        >
           <div className="flex items-center gap-2 mb-1">
             <FaBuilding className="text-slate-400 text-[10px]" />
-            <ITText className="font-black text-slate-700 uppercase text-[10px] tracking-widest">
+            <ITText className="font-black text-slate-700 uppercase text-[10px] tracking-widest hover:text-[--p] transition-colors">
               {row.recurringLocations?.[0]?.location?.client?.name ||
                 "Sin Cliente"}
             </ITText>
@@ -141,8 +153,11 @@ const RoutesPage = () => {
       label: "Ruta / Referencia",
       type: "string",
       render: (row: any) => (
-        <div className="flex flex-col">
-          <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block">
+        <div
+          className="flex flex-col cursor-pointer"
+          onClick={() => handleEdit(row)}
+        >
+          <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block hover:text-[--p] transition-colors">
             {row.title}
           </ITText>
           <div className="flex items-center gap-1.5">
@@ -159,7 +174,10 @@ const RoutesPage = () => {
       label: "PUNTOS DE CONTROL",
       type: "string",
       render: (row: any) => (
-        <div className="flex flex-col">
+        <div
+          className="flex flex-col cursor-pointer"
+          onClick={() => handleEdit(row)}
+        >
           <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block">
             {row.recurringLocations?.length || 0} Puntos QR
           </ITText>
@@ -188,17 +206,15 @@ const RoutesPage = () => {
       label: "CONTROL",
       type: "actions",
       render: (row: any) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center flex-wrap gap-1.5 md:gap-2">
           <ITButton
             onClick={() => handlePrintRouteQRs(row)}
-            variant="outlined"
             size="small"
-            color="secondary"
+            variant="outlined"
+            color="success"
+            title="Individual QR"
           >
-            <div className="flex items-center gap-1">
-              <FaPrint size={14} />
-              <span className="text-[10px]">QRs</span>
-            </div>
+            <FaQrcode size={14} />
           </ITButton>
           <ITButton
             onClick={() => handleEdit(row)}
@@ -224,7 +240,7 @@ const RoutesPage = () => {
   ];
 
   return (
-    <div className="p-4 md:p-8   min-h-screen">
+    <div className="p-4 md:p-8 min-h-screen" style={{ "--p": primary } as React.CSSProperties}>
       <ModuleHeader
         title="Gestión de Rutas"
         subtitle="Configuración de recorridos y puntos de control para rondines"
@@ -262,15 +278,17 @@ const RoutesPage = () => {
         createLabel="Nueva Ruta"
       />
 
-      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
-        <ITDataTable
-          key={refreshKey}
-          columns={columns as any}
-          fetchData={memoizedFetch as any}
-          externalFilters={externalFilters}
-          defaultItemsPerPage={10}
-          title=""
-        />
+      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
+        <div className="min-w-[650px]">
+          <ITDataTable
+            key={refreshKey}
+            columns={columns as any}
+            fetchData={memoizedFetch as any}
+            externalFilters={externalFilters}
+            defaultItemsPerPage={10}
+            title=""
+          />
+        </div>
       </div>
 
       {/* DELETE ROUTE DIALOG */}

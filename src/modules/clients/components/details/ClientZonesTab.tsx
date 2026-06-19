@@ -19,9 +19,10 @@ import {
 
 interface Props {
   clientId: string;
+  onSelectZone?: (zone: Zone) => void;
 }
 
-export const ClientZonesTab = ({ clientId }: Props) => {
+export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
   const dispatch = useDispatch();
   const [refreshKey, setRefreshKey] = useState(0);
   const [newZoneName, setNewZoneName] = useState("");
@@ -138,8 +139,11 @@ export const ClientZonesTab = ({ clientId }: Props) => {
       label: "ZONA / RECURRENTE",
       type: "string",
       render: (row: Zone) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-slate-700 text-sm">
+        <div
+          className="flex flex-col cursor-pointer"
+          onClick={() => onSelectZone?.(row)}
+        >
+          <span className="font-medium text-slate-700 text-sm hover:text-sky-600 transition-colors">
             {row.name}
           </span>
           <div className="flex items-center gap-1.5">
@@ -201,7 +205,14 @@ export const ClientZonesTab = ({ clientId }: Props) => {
       </div>
 
       <div className="flex items-end gap-3 mb-8 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-        <div className="flex-1">
+        <div
+          className="flex-1"
+          onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === "Enter" && newZoneName.trim()) {
+              handleCreate();
+            }
+          }}
+        >
           <ITInput
             label="Registrar Nueva Zona / Recurrente"
             placeholder="Ej: PLANTA BAJA, NIVEL 1, SÓTANO..."
@@ -215,12 +226,11 @@ export const ClientZonesTab = ({ clientId }: Props) => {
           onClick={handleCreate}
           disabled={creating || !newZoneName.trim()}
           color={newZoneName.trim() ? "success" : "primary"}
-          size="small"
-          className="px-5 whitespace-nowrap shadow shadow-slate-100 mb-0.5"
+          className="px-5 whitespace-nowrap shadow shadow-slate-100"
         >
           <div className="flex items-center gap-1">
             <FaPlus size={14} />
-            <span className="text-[10px]">{creating ? "Registrando..." : "Registrar"}</span>
+            <span>{creating ? "Registrando..." : "Registrar"}</span>
           </div>
         </ITButton>
       </div>

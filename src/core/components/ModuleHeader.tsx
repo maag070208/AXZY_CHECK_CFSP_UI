@@ -48,20 +48,20 @@ export const ModuleHeader = ({
   showClearFilters,
 }: ModuleHeaderProps) => {
   return (
-    <div className="flex flex-col gap-6 mb-8">
+    <div className="flex flex-col gap-4 md:gap-6 mb-6 md:mb-8">
       {/* Contenedor Superior: Icono + Títulos */}
-      <div className="flex items-center gap-4">
-        <ITButton variant="rounded" color="primary" className="h-12 w-14">
+      <div className="flex items-center gap-3 md:gap-4">
+        <ITButton variant="rounded" color="primary" className="h-12 w-14 shrink-0">
           <div className="flex items-center justify-center">
             <Icon size={28} />
           </div>
         </ITButton>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 racking-tight">
+        <div className="min-w-0">
+          <h1 className="text-lg md:text-2xl font-bold text-slate-800 tracking-tight truncate">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-slate-500 text-sm mt-0.5">{subtitle}</p>
+            <p className="text-slate-500 text-xs md:text-sm mt-0.5 line-clamp-1">{subtitle}</p>
           )}
         </div>
       </div>
@@ -74,14 +74,14 @@ export const ModuleHeader = ({
         dateRange ||
         onRefresh ||
         onCreate) && (
-        <div className="w-full pt-4 border-t border-slate-100 dark:border-slate-800 md:border-none md:pt-0">
-          <div className="flex flex-wrap items-center justify-end gap-4 w-full">
+        <div className="w-full pt-3 md:pt-4 border-t border-slate-100 dark:border-slate-800 md:border-none md:pt-0">
+          <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full">
             {/* 1. Buscador de Cliente (filter) */}
-            {filter && <div className="w-full md:w-72">{filter}</div>}
+            {filter && <div className="w-full md:w-64 lg:w-72">{filter}</div>}
 
             {/* 2. Buscador de Texto (search) */}
             {search && (
-              <div className="w-full md:w-80 relative group">
+              <div className="flex-1 min-w-[160px] md:flex-none md:w-64 lg:w-80 relative group">
                 <ITInput
                   placeholder={search.placeholder || "Buscar..."}
                   name="search"
@@ -103,7 +103,7 @@ export const ModuleHeader = ({
 
             {/* 3. Filtro Fecha (dateRange) */}
             {dateRange && (
-              <div className="w-full md:w-80">
+              <div className="w-full md:w-64 lg:w-80">
                 <ITDatePicker
                   label=""
                   name="dateRange"
@@ -122,44 +122,48 @@ export const ModuleHeader = ({
 
             {/* 4. Triple Filtro (extraFilter) */}
             {extraFilter && (
-              <div className="w-full md:w-auto">{extraFilter}</div>
+              <div className="md:w-auto">{extraFilter}</div>
             )}
 
-            {/* 5. Refrescar */}
-            {onRefresh && (
-              <ITButton
-                onClick={onRefresh}
-                variant="outlined"
-                color="secondary"
-              >
-                <FaSync className={refreshKey % 2 === 0 ? "" : "rotate-180"} />
-              </ITButton>
-            )}
+            {/* Group refresh + clear + create + actions */}
+            <div className="flex flex-wrap items-center gap-2 md:gap-3 md:ml-auto w-full md:w-auto">
+              {onRefresh && (
+                <ITButton
+                  onClick={onRefresh}
+                  variant="outlined"
+                  color="secondary"
+                  size="small"
+                  className="w-full md:w-auto"
+                >
+                  <div className="flex items-center gap-1.5 justify-center">
+                    <FaSync className={refreshKey % 2 === 0 ? "" : "rotate-180"} size={14} />
+                    <span className="md:hidden text-xs">Refrescar</span>
+                  </div>
+                </ITButton>
+              )}
 
-            {/* 6. Limpiar Filtros */}
-            {showClearFilters && onClearFilters && (
-              <ITButton
-                onClick={onClearFilters}
-                variant="filled"
-                color="error"
-                size="small"
-                title="Limpiar Filtros"
-              >
-                <FaFilter size={12} />
-              </ITButton>
-            )}
+              {showClearFilters && onClearFilters && (
+                <ITButton
+                  onClick={onClearFilters}
+                  variant="filled"
+                  color="error"
+                  size="small"
+                >
+                  <FaFilter size={12} />
+                </ITButton>
+              )}
 
-            {/* 7. Nuevo */}
-            {onCreate && (
-              <ITButton onClick={onCreate} color="primary">
-                <div className="flex items-center gap-2">
-                  <FaPlus size={12} />
-                  <span className="whitespace-nowrap">{createLabel}</span>
-                </div>
-              </ITButton>
-            )}
+              {onCreate && (
+                <ITButton onClick={onCreate} color="primary" size="small" className="w-full md:w-auto">
+                  <div className="flex items-center gap-1.5 justify-center">
+                    <FaPlus size={12} />
+                    <span className="whitespace-nowrap text-xs md:text-sm">{createLabel}</span>
+                  </div>
+                </ITButton>
+              )}
 
-            {actions}
+              {actions}
+            </div>
           </div>
         </div>
       )}

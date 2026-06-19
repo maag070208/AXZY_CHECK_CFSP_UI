@@ -96,6 +96,13 @@ const LocationsPage = () => {
           }),
         );
       }
+    } catch (err: any) {
+      dispatch(
+        showToast({
+          message: err?.messages?.[0] || "Error al crear ubicación",
+          type: "error",
+        }),
+      );
     } finally {
       dispatch(hideLoader());
     }
@@ -112,7 +119,21 @@ const LocationsPage = () => {
         );
         setEditingLocation(null);
         setRefreshKey((prev) => prev + 1);
+      } else {
+        dispatch(
+          showToast({
+            message: res?.messages?.join(", ") || "Error al actualizar",
+            type: "error",
+          }),
+        );
       }
+    } catch (err: any) {
+      dispatch(
+        showToast({
+          message: err?.messages?.[0] || "Error al actualizar ubicación",
+          type: "error",
+        }),
+      );
     } finally {
       dispatch(hideLoader());
     }

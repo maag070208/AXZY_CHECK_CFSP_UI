@@ -30,6 +30,8 @@ export interface Incident {
   category: {
     id: string;
     name: string;
+    icon?: string | null;
+    color?: string | null;
   };
   type: {
     id: string;
