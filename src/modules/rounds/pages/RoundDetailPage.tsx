@@ -1,5 +1,6 @@
 import { ITMediaGrid } from "@app/core/components/ITMediaGrid";
 import { showToast } from "@app/core/store/toast/toast.slice";
+import store from "@app/core/store/store";
 import { ITButton, ITLoader, useITTheme } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
@@ -285,7 +286,7 @@ const RoundDetailPage = () => {
           <div className="flex items-center gap-3">
             <ITButton
               onClick={() => {
-                const token = localStorage.getItem("token");
+                const token = store.getState().auth.token;
                 window.open(
                   `${import.meta.env.VITE_BASE_URL}/rounds/${id}/report?token=${token}`,
                   "_blank",
