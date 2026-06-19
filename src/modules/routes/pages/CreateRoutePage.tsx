@@ -13,6 +13,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import {
   FaArrowLeft,
+  FaBuilding,
   FaCheck,
   FaChevronDown,
   FaChevronRight,
@@ -20,6 +21,7 @@ import {
   FaClipboardCheck,
   FaCopy,
   FaInfoCircle,
+  FaLayerGroup,
   FaMapMarkerAlt,
   FaPlus,
   FaRoute,
@@ -27,8 +29,6 @@ import {
   FaTrash,
   FaUserFriends,
   FaUsers,
-  FaBuilding,
-  FaLayerGroup,
 } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
@@ -37,8 +37,8 @@ import {
   Location,
 } from "../../locations/service/locations.service";
 import { CreateUserWizard } from "../../users/components/CreateUserWizard";
-import { getZonesByClient } from "../../zones/services/ZonesService";
 import { getUsers, User } from "../../users/services/UserService";
+import { getZonesByClient } from "../../zones/services/ZonesService";
 import {
   createRoute,
   getRouteById,
@@ -54,7 +54,6 @@ const CreateRoutePage = () => {
   const { colors } = useITTheme();
   const primary = colors.primary || "#10b981";
   const primaryLight = primary + "15";
-  const primaryLighter = primary + "08";
 
   const [currentStep, setCurrentStep] = useState(0);
   const [title, setTitle] = useState("");

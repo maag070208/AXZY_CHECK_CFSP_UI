@@ -1,8 +1,8 @@
-import { ITBadget, ITButton, ITDialog, ITInput, isLightColor } from "@axzydev/axzy_ui_system";
+import { ITBadget, ITButton, ITDialog, ITInput } from "@axzydev/axzy_ui_system";
 import { ITMediaGrid } from "@core/components/ITMediaGrid";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { FaCheck, FaExclamationTriangle, FaFileAlt, FaGavel, FaTimes, FaTrash, FaUser, FaCalendarAlt, FaClock, FaBuilding, FaTag, FaFolderOpen } from "react-icons/fa";
+import { FaBuilding, FaCalendarAlt, FaCheck, FaClock, FaExclamationTriangle, FaFileAlt, FaFolderOpen, FaGavel, FaTag, FaTimes, FaTrash, FaUser } from "react-icons/fa";
 import { IGuardDiscipline } from "../services/GuardDisciplineService";
 
 interface GuardDisciplineDetailDialogProps {

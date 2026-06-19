@@ -416,7 +416,7 @@ const GuardDisciplinePage = () => {
                 options={(guards || []).map((g: any) => ({ label: g.value, value: g.id }))}
                 value={form.guardId}
                 onChange={(val) => {
-                  const guard = (guards || []).find((g: any) => g.id === val);
+                  const guard = (guards || []).find((g: any) => g.id === val) as any;
                   setForm((p: any) => ({
                     ...p,
                     guardId: val,

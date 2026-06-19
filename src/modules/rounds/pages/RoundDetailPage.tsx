@@ -26,8 +26,6 @@ import { GoogleMapComponent } from "../../../core/components/GoogleMapComponent"
 import { getRoutesList } from "../../routes/services/RoutesService";
 import { getRoundDetail, IRoundDetail } from "../services/RoundsService";
 
-const API_BASE_URL = "http://localhost:4444";
-
 const RoundDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
