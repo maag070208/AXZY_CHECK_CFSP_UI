@@ -2,7 +2,7 @@
   "name": "check_ui",
   "private": true,
   "license": "MIT",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "type": "module",
   "scripts": {
     "dev": "vite --port 5002 --strictPort --host 127.0.0.1",
@@ -25,6 +25,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react-scroll-sync": "^0.9.0",
     "@vis.gl/react-google-maps": "^1.7.1",
+    "ably": "^2.23.0",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
     "chart.js": "^4.5.1",
@@ -47,8 +48,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
-    "@playwright/test": "^1.60.0",
     "@originjs/vite-plugin-federation": "^1.4.1",
+    "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

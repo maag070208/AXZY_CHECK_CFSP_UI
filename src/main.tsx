@@ -11,6 +11,7 @@ import { HashRouter } from "react-router-dom";
 import App from "./App.tsx";
 import "./index.css";
 import ToastProvider from "./providers/toast.provider.tsx";
+import NotificationProvider from "./providers/notification.provider.tsx";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -45,6 +46,7 @@ createRoot(document.getElementById("root")!).render(
     <Provider store={store}>
       <ITThemeProvider theme={customTheme} showFab={false}>
         <ToastProvider>
+          <NotificationProvider />
           <HashRouter>
             <App />
           </HashRouter>

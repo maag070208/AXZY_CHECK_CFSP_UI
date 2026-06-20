@@ -62,7 +62,7 @@ const LoginPage = () => {
             <img src={Logo} alt="Logo" className="h-12 w-auto object-contain" />
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            AXZY Check <span className="text-emerald-600">Web</span>
+            Fansal Check <span className="text-emerald-600">Web</span>
           </h1>
           <p className="text-slate-400 text-sm mt-1 font-medium">
             Control Administrativo y Operativo

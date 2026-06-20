@@ -101,7 +101,7 @@ export const useNavigationItems = (): any[] => {
           label: "Prenómina",
           action: () => navigate("/guard-logs"),
           isActive: isRouteActive("/guard-logs"),
-          roles: ROLES.ADMIN_SHIFT_RESDN,
+          roles: ROLES.ADMIN_SHIFT_LIDER,
         },
         {
           id: "guard-discipline",
