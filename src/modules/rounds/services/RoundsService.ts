@@ -37,6 +37,9 @@ export interface IRound {
       name: string;
       locations?: any[];
   };
+  _count?: {
+    kardexEntries: number;
+  };
 }
 
 export interface IRoundEvent {

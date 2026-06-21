@@ -110,6 +110,13 @@ export const useNavigationItems = (): any[] => {
           isActive: isRouteActive("/guard-discipline"),
           roles: ROLES.ADMIN_SHIFT_RESDN,
         },
+        {
+          id: "notifications",
+          label: "Notificaciones",
+          action: () => navigate("/notifications"),
+          isActive: isRouteActive("/notifications"),
+          roles: ROLES.ADMIN_SHIFT_LIDER,
+        },
       ],
     },
     {

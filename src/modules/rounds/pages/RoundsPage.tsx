@@ -139,24 +139,49 @@ const RoundsPage = () => {
     }
   };
 
-  const columns = useMemo(
-    () => [
+const columns = useMemo(
+  () => {
+    const getBg = (row: IRound) => {
+      const c = row._count?.kardexEntries || 0;
+      if (c === 0) return "#fef2f2"; // rojo suave
+      if (row.status === "COMPLETED") return "#ecfdf5"; // verde suave
+      return "#fffbeb"; // amarillo suave
+    };
+
+    const getDot = (row: IRound) => {
+      const c = row._count?.kardexEntries || 0;
+      if (c === 0) return "bg-red-500";
+      if (row.status === "COMPLETED") return "bg-emerald-500";
+      return "bg-amber-400";
+    };
+
+    const getStatus = (row: IRound): { color: any; label: string } => {
+      const c = row._count?.kardexEntries || 0;
+      if (c === 0) return { color: "error", label: "SIN ACTIVIDAD" };
+      if (row.status === "COMPLETED") return { color: "success", label: "COMPLETADA" };
+      return { color: "warning", label: "EN CURSO" };
+    };
+
+    return [
       {
         key: "recurringConfiguration",
         label: "RUTA / REFERENCIA",
         render: (row: IRound) => (
-          <div className="flex flex-col">
-            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
-              {row.recurringConfiguration?.title ||
-                routesMap[row.recurringConfigurationId] ||
-                "Ronda General"}
+          <div
+            style={{
+              backgroundColor: getBg(row),
+              padding: '13px 16px',
+              height: '100%',
+              width: '100%',
+            }}
+          >
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block">
+              {row.recurringConfiguration?.title || routesMap[row.recurringConfigurationId] || "Ronda General"}
             </span>
             <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
-                {row.recurringConfiguration?.client?.name ||
-                  row.client?.name ||
-                  "SIN CLIENTE ASIGNADO"}
+              <div className={`w-1.5 h-1.5 rounded-full ${getDot(row)}`} />
+              <span className="text-slate-500 text-[9px] font-black uppercase tracking-widest">
+                {row.recurringConfiguration?.client?.name || row.client?.name || "SIN CLIENTE ASIGNADO"}
               </span>
             </div>
           </div>
@@ -166,15 +191,20 @@ const RoundsPage = () => {
         key: "guard",
         label: "PERSONAL OPERATIVO",
         render: (row: IRound) => (
-          <div className="flex flex-col">
-            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+          <div
+            style={{
+              backgroundColor: getBg(row),
+              padding: '13px 16px',
+              height: '100%',
+              width: '100%',
+            }}
+          >
+            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block">
               {row.guard.name} {row.guard.lastName}
             </span>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
-                @{row.guard.name || "S/U"}
-              </span>
+              <span className="text-slate-500 text-[9px] font-black uppercase tracking-widest">@{row.guard.name || "S/U"}</span>
             </div>
           </div>
         ),
@@ -184,52 +214,32 @@ const RoundsPage = () => {
         label: "CRONOLOGÍA",
         render: (row: IRound) => {
           const isActive = !row.endTime;
-          const startDate = dayjs(row.startTime);
-          const endDate = row.endTime ? dayjs(row.endTime) : null;
-
           return (
-            <div className="flex flex-col gap-1.5">
-              {/* INICIO - destacado */}
-              <div className="flex items-center gap-2">
-                <div className="w-5 text-center">
-                  <span className="text-[10px] font-black text-sky-500">
-                    ▶
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[12px] font-mono font-bold text-slate-800">
-                    {startDate.format("DD MMM · HH:mm:ss")}
-                  </span>
-                </div>
+            <div
+              style={{
+                backgroundColor: getBg(row),
+                padding: '13px 16px',
+                height: '100%',
+                width: '100%',
+              }}
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-black text-slate-500">▶</span>
+                <span className="font-mono font-bold text-slate-800 text-[11px]">{dayjs(row.startTime).format("DD MMM · HH:mm")}</span>
               </div>
-
-              {/* FIN / EN PROCESO - dinámico */}
-              <div className="flex items-center gap-2">
-                <div className="w-5 text-center">
-                  {isActive ? (
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-200" />
-                  ) : (
-                    <span className="text-[10px] text-slate-400">■</span>
-                  )}
-                </div>
-                <div>
-                  <span
-                    className={`text-[10px] font-semibold uppercase tracking-wide ${
-                      isActive ? "text-emerald-600" : "text-slate-500"
-                    }`}
-                  >
-                    {isActive ? "EN PROCESO" : ""}
+              <div className="flex items-center gap-1.5 mt-1">
+                {isActive ? (
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                ) : (
+                  <span className="text-[10px] text-slate-400">■</span>
+                )}
+                {isActive ? (
+                  <span className="text-[10px] text-emerald-600 font-semibold uppercase">En curso</span>
+                ) : (
+                  <span className="font-mono font-bold text-slate-500 text-[11px]">
+                    {row.endTime ? dayjs(row.endTime).format("DD MMM · HH:mm") : ""}
                   </span>
-                  <div
-                    className={`text-[12px] font-mono font-bold ${
-                      isActive ? "text-emerald-600" : "text-slate-500"
-                    }`}
-                  >
-                    {isActive
-                      ? "— en curso —"
-                      : endDate?.format("DD MMM · HH:mm:ss")}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           );
@@ -238,57 +248,84 @@ const RoundsPage = () => {
       {
         key: "status",
         label: "ESTADO",
-        render: (row: IRound) => (
-          <ITBadget
-            size="small"
-            color={row.status === "COMPLETED" ? "success" : "warning"}
-          >
-            {row.status === "COMPLETED" ? "FINALIZADA" : "EN CURSO"}
-          </ITBadget>
-        ),
+        className: "!p-0", // Quita el padding del td
+        render: (row: IRound) => {
+          const s = getStatus(row);
+          const bgColor = getBg(row);
+          return (
+            <div
+              style={{
+                backgroundColor: bgColor,
+                height: '100%',
+                minHeight: '100%',
+                width: '100%',
+                padding: '22px 16px',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <ITBadget size="small" color={s.color}>{s.label}</ITBadget>
+            </div>
+          );
+        },
       },
       {
         key: "actions",
         label: "CONTROL",
-        render: (row: IRound) => (
-          <div className="flex items-center gap-2">
-            <ITButton
-              onClick={() => navigate(`/rounds/${row.id}`)}
-              variant="outlined"
-              size="small"
-              title="Detalles"
+        className: "!p-0", // Quita el padding del td
+        render: (row: IRound) => {
+          const bgColor = getBg(row);
+          return (
+            <div
+              style={{
+                backgroundColor: bgColor,
+                height: '100%',
+                minHeight: '100%',
+                width: '100%',
+                padding: '20px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
             >
-              <FaEye size={14} />
-            </ITButton>
-            {row.status === "IN_PROGRESS" && !isResident && (
               <ITButton
-                onClick={() => setRoundToFinishId(row.id)}
+                onClick={() => navigate(`/rounds/${row.id}`)}
                 variant="outlined"
                 size="small"
-                color="error"
-                title="Finalizar"
+                title="Detalles"
               >
-                <FaStop size={14} />
+                <FaEye size={14} />
               </ITButton>
-            )}
-            {row.status === "COMPLETED" && (
-              <ITButton
-                onClick={() => setRoundToDeleteId(row.id)}
-                variant="outlined"
-                size="small"
-                color="error"
-                title="Eliminar"
-              >
-                <FaTrash size={14} />
-              </ITButton>
-            )}
-          </div>
-        ),
+              {row.status === "IN_PROGRESS" && !isResident && (
+                <ITButton
+                  onClick={() => setRoundToFinishId(row.id)}
+                  variant="outlined"
+                  size="small"
+                  color="error"
+                  title="Finalizar"
+                >
+                  <FaStop size={14} />
+                </ITButton>
+              )}
+              {row.status === "COMPLETED" && (
+                <ITButton
+                  onClick={() => setRoundToDeleteId(row.id)}
+                  variant="outlined"
+                  size="small"
+                  color="error"
+                  title="Eliminar"
+                >
+                  <FaTrash size={14} />
+                </ITButton>
+              )}
+            </div>
+          );
+        },
       },
-    ],
-    [navigate, routesMap, isResident],
-  );
-
+    ];
+  },
+  [navigate, routesMap, isResident],
+);
   return (
     <div className="p-6   min-h-screen font-sans">
       <ModuleHeader
@@ -343,7 +380,7 @@ const RoundsPage = () => {
         refreshKey={refreshKey}
       />
 
-      <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mt-6">
+      <div className="rounds-table bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mt-6">
         <ITDataTable<IRound & Record<string, unknown>>
           key={refreshKey}
           columns={columns as any}

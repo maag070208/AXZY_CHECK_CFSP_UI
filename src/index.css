@@ -23,3 +23,7 @@
 body {
   background-color: #f6fbf4;
 }
+.rounds-table td {
+  padding: 0px 0px !important;
+  vertical-align: middle !important;
+}

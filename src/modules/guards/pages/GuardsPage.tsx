@@ -14,6 +14,7 @@ import {
 } from "@axzydev/axzy_ui_system";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  FaBell,
   FaClipboardList,
   FaClock,
   FaEye,
@@ -29,6 +30,7 @@ import {
 } from "../../users/services/UserService";
 import { AssignmentModal } from "../components/AssignmentModal";
 import { ViewAssignmentsModal } from "../components/ViewAssignmentsModal";
+import { NotificationSender } from "../components/NotificationSender";
 
 const GuardsPage = () => {
   const dispatch = useDispatch();
@@ -42,6 +44,7 @@ const GuardsPage = () => {
   const [guardToToggle, setGuardToToggle] = useState<User | null>(null);
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const [changingClientUser, setChangingClientUser] = useState<User | null>(
     null,
@@ -286,6 +289,19 @@ const GuardsPage = () => {
         }}
         onRefresh={refreshTable}
         refreshKey={refreshKey}
+        actions={
+          !isClient && (
+            <ITButton
+              onClick={() => setIsNotificationOpen(true)}
+              variant="outlined"
+              color="warning"
+              size="small"
+              title="Enviar Notificación"
+            >
+              <FaBell size={14} />
+            </ITButton>
+          )
+        }
         extraFilter={
           <ITTripleFilter
             value={activeFilter}
@@ -546,6 +562,10 @@ const GuardsPage = () => {
           />
         </>
       )}
+      <NotificationSender
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+      />
     </div>
   );
 };

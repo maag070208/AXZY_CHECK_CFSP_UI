@@ -27,6 +27,7 @@ import SettingsPage from "@app/modules/settings/pages/SettingsPage";
 import ReportsPage from "./modules/reports/pages/ReportsPage";
 import GuardDisciplinePage from "./modules/guard-discipline/pages/GuardDisciplinePage";
 import GuardLogsPage from "./modules/guard-logs/pages/GuardLogsPage";
+import NotificationsPage from "./modules/notifications/pages/NotificationsPage";
 
 
 function App() {
@@ -103,6 +104,7 @@ function App() {
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/guard-logs" element={<GuardLogsPage />} />
           <Route path="/guard-discipline" element={<GuardDisciplinePage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
 
         </Route>
         <Route path="*" element={<Navigate to="/home" />} />
