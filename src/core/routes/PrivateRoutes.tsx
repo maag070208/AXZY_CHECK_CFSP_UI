@@ -4,6 +4,7 @@ import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import { NAVBAR_LOGO, useNavigationItems } from "../constants/navbar.constants";
 import { isAuthenticated } from "../store/auth/auth.slice";
 import { AppState } from "../store/store";
+import WatermarkFullPage from "../../watermark";
 
 export const PrivateRoutes = () => {
   const isAuth = useSelector(isAuthenticated);
@@ -32,7 +33,9 @@ export const PrivateRoutes = () => {
         navigationItems: navigationItems,
       }}
     >
-      <Outlet />
+      <WatermarkFullPage>
+        <Outlet />
+      </WatermarkFullPage>
     </ITLayout>
   ) : (
     <Navigate to="/login" />

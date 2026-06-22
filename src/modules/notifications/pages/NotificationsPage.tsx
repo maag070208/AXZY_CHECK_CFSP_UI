@@ -1,5 +1,5 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { post } from "@app/core/axios/axios";
+import { ModuleHeader } from "@app/core/components/ModuleHeader";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITBadget,
@@ -14,7 +14,7 @@ import {
 } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
-import { FaBell, FaCalendarAlt, FaEdit, FaPaperPlane, FaPlus, FaTrash } from "react-icons/fa";
+import { FaBell, FaCalendarAlt, FaEdit, FaPaperPlane, FaTrash } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import {
   ScheduledNotification,
@@ -318,7 +318,6 @@ const NotificationsPage = () => {
               <ITInput
                 label="Fecha y hora de envío"
                 name="scheduledAt"
-                type="datetime-local"
                 value={form.scheduledAt}
                 onChange={(e: any) => setForm((p) => ({ ...p, scheduledAt: e.target.value }))}
                 onBlur={() => {}}
@@ -327,7 +326,6 @@ const NotificationsPage = () => {
               <ITInput
                 label="Hora de envío"
                 name="timeOfDay"
-                type="time"
                 value={form.timeOfDay}
                 onChange={(e: any) => setForm((p) => ({ ...p, timeOfDay: e.target.value }))}
                 onBlur={() => {}}

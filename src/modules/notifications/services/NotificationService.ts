@@ -1,4 +1,4 @@
-import { get, post, put, remove } from "@app/core/axios/axios";
+import { post, put, remove } from "@app/core/axios/axios";
 
 export interface ScheduledNotification {
   id: string;
