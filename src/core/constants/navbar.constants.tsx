@@ -7,6 +7,7 @@ import {
   FaCogs,
   FaHome,
   FaUserShield,
+  FaBell,
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -80,7 +81,8 @@ export const useNavigationItems = (): any[] => {
         isRouteActive("/guards") ||
         isRouteActive("/guard-logs") ||
         isRouteActive("/guard-discipline") ||
-        isRouteActive("/schedules"),
+        isRouteActive("/schedules") ||
+        isRouteActive("/panic-alerts"),
       subitems: [
         {
           id: "guards",
@@ -109,6 +111,14 @@ export const useNavigationItems = (): any[] => {
           action: () => navigate("/guard-discipline"),
           isActive: isRouteActive("/guard-discipline"),
           roles: ROLES.ADMIN_SHIFT_RESDN,
+        },
+        {
+          id: "panic-alerts",
+          label: "Alertas de Pánico",
+          action: () => navigate("/panic-alerts"),
+          isActive: isRouteActive("/panic-alerts"),
+          roles: ROLES.ADMIN_SHIFT_LIDER,
+          icon: <FaBell />,
         },
         {
           id: "notifications",
@@ -248,7 +258,7 @@ export const Navbar = () => {
 };
 
 export const NAVBAR_LOGO = () => (
-  <img src={LOGO} className="h-[60px] hidden md:flex" />
+  <img src={LOGO} className="h-[40px] hidden md:flex" />
 );
 
 export const SIDEBAR_LOGO = () => (

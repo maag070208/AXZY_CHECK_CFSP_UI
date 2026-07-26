@@ -80,8 +80,8 @@ describe("HomePage (Pruebas del Panel de Control)", () => {
     render(<HomePage />);
 
     // Should render Tab buttons for Admin
-    const analyticsBtn = await screen.findByRole("button", { name: /Security Analytics/i });
-    const detailBtn = await screen.findByRole("button", { name: /Detalle Operativo/i });
+    const analyticsBtn = await screen.findByRole("button", { name: /Analytics/i });
+    const detailBtn = await screen.findByRole("button", { name: /Detalle/i });
 
     expect(analyticsBtn).toBeInTheDocument();
     expect(detailBtn).toBeInTheDocument();

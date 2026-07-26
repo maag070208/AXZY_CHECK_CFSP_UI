@@ -28,6 +28,7 @@ import ReportsPage from "./modules/reports/pages/ReportsPage";
 import GuardDisciplinePage from "./modules/guard-discipline/pages/GuardDisciplinePage";
 import GuardLogsPage from "./modules/guard-logs/pages/GuardLogsPage";
 import NotificationsPage from "./modules/notifications/pages/NotificationsPage";
+import PanicAlertsPage from "./modules/panic-alerts/pages/PanicAlertsPage";
 
 
 function App() {
@@ -105,6 +106,7 @@ function App() {
           <Route path="/guard-logs" element={<GuardLogsPage />} />
           <Route path="/guard-discipline" element={<GuardDisciplinePage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/panic-alerts" element={<PanicAlertsPage />} />
 
         </Route>
         <Route path="*" element={<Navigate to="/home" />} />

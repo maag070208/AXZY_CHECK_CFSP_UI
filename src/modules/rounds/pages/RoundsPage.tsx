@@ -248,7 +248,6 @@ const columns = useMemo(
       {
         key: "status",
         label: "ESTADO",
-        className: "!p-0", // Quita el padding del td
         render: (row: IRound) => {
           const s = getStatus(row);
           const bgColor = getBg(row);
@@ -272,7 +271,6 @@ const columns = useMemo(
       {
         key: "actions",
         label: "CONTROL",
-        className: "!p-0", // Quita el padding del td
         render: (row: IRound) => {
           const bgColor = getBg(row);
           return (

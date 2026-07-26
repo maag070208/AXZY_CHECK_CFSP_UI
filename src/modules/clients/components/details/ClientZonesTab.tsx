@@ -29,6 +29,8 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
   const [creating, setCreating] = useState(false);
   const [editingZone, setEditingZone] = useState<Zone | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [zoneToDelete, setZoneToDelete] = useState<Zone | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const memoizedFetch = useCallback(
     (params: any) => {
@@ -102,18 +104,15 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (
-      !window.confirm(
-        "¿Estás seguro de eliminar esta zona? Esto podría afectar a las ubicaciones asociadas.",
-      )
-    )
-      return;
+  const handleDelete = async () => {
+    if (!zoneToDelete || isDeleting) return;
+    setIsDeleting(true);
     try {
-      const res = await deleteZone(id);
+      const res = await deleteZone(zoneToDelete.id);
       if (res.success) {
         setRefreshKey((prev) => prev + 1);
         dispatch(showToast({ message: "Zona eliminada", type: "success" }));
+        setZoneToDelete(null);
       } else {
         dispatch(
           showToast({
@@ -130,6 +129,8 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
           type: "error",
         }),
       );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -173,7 +174,7 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
             size="small"
             variant="outlined"
             color="error"
-            onClick={() => handleDelete(row.id)}
+            onClick={() => setZoneToDelete(row)}
             title="Eliminar"
           >
             <FaTrash size={14} />
@@ -292,6 +293,53 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
                 className="px-5 whitespace-nowrap shadow shadow-sky-100"
               >
                 {updating ? "Guardando..." : "Guardar Cambios"}
+              </ITButton>
+            </div>
+          </div>
+        )}
+      </ITDialog>
+
+      <ITDialog
+        isOpen={!!zoneToDelete}
+        onClose={() => setZoneToDelete(null)}
+        title=""
+        className="!max-w-md !w-full"
+      >
+        {zoneToDelete && (
+          <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+            <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                  <FaTrash size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-medium text-slate-800">Eliminar Zona</h3>
+                  <p className="text-xs text-slate-400 font-light">{zoneToDelete.name}</p>
+                </div>
+              </div>
+            </div>
+            <div className="px-8 py-6">
+              <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+                ¿Estás seguro de eliminar esta zona? Esto podría afectar a las ubicaciones asociadas.
+              </p>
+            </div>
+            <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
+              <ITButton
+                variant="ghost"
+                onClick={() => setZoneToDelete(null)}
+                size="small"
+                className="px-5 whitespace-nowrap shadow shadow-slate-100"
+              >
+                Cancelar
+              </ITButton>
+              <ITButton
+                onClick={handleDelete}
+                disabled={isDeleting}
+                color="danger"
+                size="small"
+                className="px-5 whitespace-nowrap shadow shadow-rose-100"
+              >
+                {isDeleting ? "Eliminando..." : "Eliminar"}
               </ITButton>
             </div>
           </div>

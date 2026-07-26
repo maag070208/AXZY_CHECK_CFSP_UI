@@ -22,22 +22,22 @@ if (!localStorage.getItem("it-theme-dark-mode")) {
 }
 
 const customTheme = {
-  primary: "#10b981",
-  secondary: "#54634d",
-  danger: "#BA1A1A",
-  info: "#512bbb",
-  success: "#4ADE80",
+  primary: "#05537A",
+  secondary: "#64748B",
+  danger: "#DC2626",
+  info: "#0284C7",
+  success: "#16A34A",
   layout: {
-    sidebarBg: "#ffffff",
-    sidebarText: "#54634d",
-    navbarBg: "#ffffff",
-    navbarText: "#1B1B1F",
+    sidebarBg: "#FFFFFF",
+    sidebarText: "#334155",
+    navbarBg: "#FFFFFF",
+    navbarText: "#0F172A",
   },
   table: {
-    headerBg: "#ffffff",
-    headerText: "#1B1B1F",
-    rowBg: "#ffffff",
-    rowText: "#1B1B1F",
+    headerBg: "#F8FAFC",
+    headerText: "#0F172A",
+    rowBg: "#FFFFFF",
+    rowText: "#1E293B",
   },
 };
 

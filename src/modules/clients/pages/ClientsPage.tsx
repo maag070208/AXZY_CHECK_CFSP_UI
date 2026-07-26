@@ -23,6 +23,12 @@ import {
   getPaginatedClients,
 } from "../services/ClientsService";
 
+const getInitials = (name?: string | null) => {
+  if (!name) return "??";
+  const parts = name.trim().split(/\s+/).slice(0, 2);
+  return parts.map((p) => p[0]?.toUpperCase() || "").join("") || "??";
+};
+
 const ClientsPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -101,7 +107,7 @@ const ClientsPage = () => {
   };
 
   return (
-    <div className="p-6   min-h-screen">
+    <div className="p-6 min-h-screen font-sans">
       <ModuleHeader
         title="Directorio de Clientes"
         subtitle="Gestión de clientes y sus ubicaciones"
@@ -142,15 +148,23 @@ const ClientsPage = () => {
               type: "string",
               sortable: true,
               render: (row: Client) => (
-                <div className="flex flex-col cursor-pointer" onClick={() => navigate(`/clients/${row.id}`)}>
-                  <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 hover:text-sky-600 transition-colors">
-                    {row.name}
-                  </ITText>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                    <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
-                      ID: {row.id.substring(0, 8).toUpperCase()}
+                <div
+                  className="flex items-center gap-3 cursor-pointer group"
+                  onClick={() => navigate(`/clients/${row.id}`)}
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 font-black border border-slate-100 uppercase text-sm group-hover:bg-primary-50 group-hover:text-primary-600 group-hover:border-primary-100 transition-colors">
+                    {getInitials(row.name)}
+                  </div>
+                  <div className="min-w-0">
+                    <ITText className="font-black text-slate-800 uppercase text-[11px] tracking-tight line-clamp-1 group-hover:text-primary-600 transition-colors block">
+                      {row.name}
                     </ITText>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-primary-400 transition-colors" />
+                      <ITText className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">
+                        ID: {row.id.substring(0, 8).toUpperCase()}
+                      </ITText>
+                    </div>
                   </div>
                 </div>
               ),
@@ -161,12 +175,12 @@ const ClientsPage = () => {
               type: "string",
               render: (row: Client) => (
                 <div className="flex flex-col">
-                  <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+                  <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block">
                     {row.contactName || "SIN CONTACTO"}
                   </ITText>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary-400" />
+                    <ITText className="text-slate-400 text-[9px] font-black uppercase tracking-widest block">
                       TEL: {row.contactPhone || "N/A"}
                     </ITText>
                   </div>
@@ -178,7 +192,7 @@ const ClientsPage = () => {
               label: "ESTADO",
               type: "string",
               render: (row: Client) => (
-                <ITBadget color={row.active ? "primary" : "error"} size="small">
+                <ITBadget color={row.active ? "success" : "danger"} size="small">
                   {row.active ? "ACTIVO" : "INACTIVO"}
                 </ITBadget>
               ),
@@ -210,7 +224,7 @@ const ClientsPage = () => {
                     onClick={() => setClientToDeleteId(row.id)}
                     size="small"
                     variant="outlined"
-                    color="error"
+                    color="danger"
                     title="Eliminar"
                   >
                     <FaTrash size={14} />
@@ -222,7 +236,7 @@ const ClientsPage = () => {
         />
       </div>
 
-      {/* Modals matching the high-end style */}
+      {/* Create / Edit Modal */}
       <ITDialog
         isOpen={isCreateModalOpen || !!editingClient}
         onClose={() => {
@@ -242,50 +256,40 @@ const ClientsPage = () => {
         />
       </ITDialog>
 
-      {/* DELETE CLIENT DIALOG */}
+      {/* Delete confirmation dialog — aligned with DESIGN_STANDARDS §6 */}
       <ITDialog
         isOpen={!!clientToDeleteId}
         onClose={() => setClientToDeleteId(null)}
         title=""
         className="!max-w-md !w-full"
       >
-        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
-          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
-                <FaTrash size={18} />
-              </div>
-              <div>
-                <h3 className="text-base font-medium text-slate-800">Eliminar Cliente</h3>
-                <p className="text-xs text-slate-400 font-light">Cliente #{clientToDeleteId}</p>
-              </div>
-            </div>
+        <div className="p-10 text-center">
+          <div className="w-20 h-20 rounded-3xl bg-danger-50 text-danger-500 flex items-center justify-center mx-auto mb-8 border border-danger-100 shadow-sm">
+            <FaTrash size={28} />
           </div>
-
-          <div className="px-8 py-6">
-            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
-              Esta acción eliminará el cliente y todos sus datos asociados de forma permanente.
-            </p>
-          </div>
-
-          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
+          <ITText className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3 block">
+            ¿Eliminar Cliente?
+          </ITText>
+          <ITText className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto block">
+            Esta acción eliminará el cliente y todos sus datos asociados de
+            forma permanente.
+          </ITText>
+          <div className="flex gap-4 justify-center">
             <ITButton
               variant="ghost"
+              className="px-8 font-black text-[11px] uppercase tracking-widest text-slate-400"
               onClick={() => setClientToDeleteId(null)}
-              size="small"
-              className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
             </ITButton>
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
-              className="px-5 whitespace-nowrap shadow shadow-rose-100"
+              className="px-10 !rounded-2xl shadow-xl shadow-danger-200"
               onClick={confirmDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? <ITLoader size="sm" /> : "Eliminar"}
+              {isDeleting ? <ITLoader size="sm" /> : "CONFIRMAR ACCIÓN"}
             </ITButton>
           </div>
         </div>
