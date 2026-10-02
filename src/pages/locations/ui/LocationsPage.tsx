@@ -1,235 +1,63 @@
-import { post } from "@app/core/axios/axios";
-import { ModulePage } from "@app/core/components/ModulePage";
+import { ITSearchSelect } from "@axzydev/axzy_ui_system";
+import { useMemo } from "react";
+import { FaEdit, FaFilter, FaMapMarkedAlt, FaPrint, FaQrcode, FaSearchLocation, FaTrash } from "react-icons/fa";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
-import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
-import { AppState } from "@app/core/store/store";
-import { showToast } from "@app/core/store/toast/toast.slice";
-import {
-  ITButton,
-  ITDataTable,
-  ITDialog,
-  ITSearchSelect,
-} from "@axzydev/axzy_ui_system";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  FaEdit,
-  FaFilter,
-  FaMapMarkedAlt,
-  FaPrint,
-  FaQrcode,
-  FaSearchLocation,
-  FaTrash,
-} from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
-import { ZonesModal } from "../../zones/components/ZonesModal";
-import { BulkPrintModal } from "../components/BulkPrintModal";
-import { LocationForm } from "../components/LocationForm";
-import {
-  createLocation,
-  deleteLocation,
-  getPaginatedLocations,
-  Location,
-  updateLocation,
-} from "../service/locations.service";
+import type { Column } from "@axzydev/axzy_ui_system";
+import type { Location } from "@entities/location";
+import { ZonesModal } from "@features/manage-zones";
+import { PageShell, SURFACE, TONES } from "@shared/ui";
+import { ITButton, ITDataTable, ITDialog } from "@axzydev/axzy_ui_system";
+import { useLocationsDeps } from "../model/deps";
+import { useLocationsPage } from "../model/useLocationsPage";
+import { LocationForm } from "@features/manage-location";
+import { BulkPrintModal } from "@features/print-location-qrs";
 
+/** Ubicaciones. Sólo pinta: estado y casos de uso vienen de `useLocationsPage`. */
 const LocationsPage = () => {
-  const [searchParams] = useSearchParams();
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClientId, setSelectedClientId] = useState<string | number>(
-    searchParams.get("clientId") || "",
-  );
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isZonesModalOpen, setIsZonesModalOpen] = useState(false);
-  const [isBulkPrintModalOpen, setIsBulkPrintModalOpen] = useState(false);
-
-  useEffect(() => {
-    const cid = searchParams.get("clientId");
-    if (cid) {
-      setSelectedClientId(cid);
-    }
-  }, [searchParams]);
-
+  const vm = useLocationsPage(useLocationsDeps());
+  const {
+    refreshKey,
+    refresh,
+    searchTerm,
+    setSearchTerm,
+    selectedClientId,
+    setSelectedClientId,
+    isModalOpen,
+    setIsModalOpen,
+    isZonesModalOpen,
+    setIsZonesModalOpen,
+    isBulkPrintModalOpen,
+    setIsBulkPrintModalOpen,
+    editingLocation,
+    setEditingLocation,
+    locationToDelete,
+    setLocationToDelete,
+    externalFilters,
+    memoizedFetch,
+    handleCreate,
+    handleEdit,
+    confirmDelete,
+    handlePrintBulk,
+  } = vm;
   const { data: clients } = useCatalog("client");
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setRefreshKey((prev) => prev + 1);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm, selectedClientId]);
-
-  const dispatch = useDispatch();
-  const user = useSelector((state: AppState) => state.auth);
-
-  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
-  const [locationToDelete, setLocationToDelete] = useState<Location | null>(
-    null,
-  );
-
-  const memoizedFetch = useCallback((params: any) => {
-    return getPaginatedLocations(params);
-  }, []);
-
-  const externalFilters = useMemo(() => {
-    return { name: searchTerm, clientId: selectedClientId };
-  }, [searchTerm, selectedClientId]);
-
-  const handleCreate = async (data: any, keepOpen?: boolean) => {
-    dispatch(showLoader());
-    try {
-      const res = await createLocation(data);
-      if (res.success) {
-        dispatch(
-          showToast({ message: "Ubicación creada con éxito", type: "success" }),
-        );
-        if (!keepOpen) {
-          setIsModalOpen(false);
-        }
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        dispatch(
-          showToast({
-            message: res?.messages?.join(", ") || "Error al crear",
-            type: "error",
-          }),
-        );
-      }
-    } catch (err: any) {
-      dispatch(
-        showToast({
-          message: err?.messages?.[0] || "Error al crear ubicación",
-          type: "error",
-        }),
-      );
-    } finally {
-      dispatch(hideLoader());
-    }
-  };
-
-  const handleEdit = async (data: any) => {
-    if (!editingLocation) return;
-    dispatch(showLoader());
-    try {
-      const res = await updateLocation(editingLocation.id, data);
-      if (res.success) {
-        dispatch(
-          showToast({ message: "Ubicación actualizada", type: "success" }),
-        );
-        setEditingLocation(null);
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        dispatch(
-          showToast({
-            message: res?.messages?.join(", ") || "Error al actualizar",
-            type: "error",
-          }),
-        );
-      }
-    } catch (err: any) {
-      dispatch(
-        showToast({
-          message: err?.messages?.[0] || "Error al actualizar ubicación",
-          type: "error",
-        }),
-      );
-    } finally {
-      dispatch(hideLoader());
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!locationToDelete) return;
-    dispatch(showLoader());
-    try {
-      const res = await deleteLocation(locationToDelete.id);
-      setLocationToDelete(null);
-      if (res && res.success) {
-        dispatch(
-          showToast({ message: "Ubicación eliminada", type: "success" }),
-        );
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        dispatch(
-          showToast({
-            message: res?.messages?.join(", ") || "Error al eliminar",
-            type: "error",
-          }),
-        );
-      }
-    } catch (e: any) {
-      dispatch(
-        showToast({ message: e.message || "Error al eliminar", type: "error" }),
-      );
-    } finally {
-      dispatch(hideLoader());
-    }
-  };
-
-  const handlePrintQR = async (location: Location) => {
-    dispatch(showLoader());
-    try {
-      const res = await post<any>(
-        "/locations/print-qrs",
-        { ids: [location.id] },
-        { responseType: "blob" },
-      );
-      const blob = new Blob([res as any], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, "_blank");
-      dispatch(
-        showToast({ message: "PDF generado con éxito", type: "success" }),
-      );
-    } catch (e) {
-      dispatch(
-        showToast({ message: "Error al generar el PDF", type: "error" }),
-      );
-    } finally {
-      dispatch(hideLoader());
-    }
-  };
-
-  const handlePrintBulk = async (ids: string[]) => {
-    dispatch(showLoader());
-    try {
-      const res = await post<any>(
-        "/locations/print-qrs",
-        { ids },
-        { responseType: "blob" },
-      );
-      const blob = new Blob([res as any], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, "_blank");
-      dispatch(
-        showToast({ message: "PDF generado con éxito", type: "success" }),
-      );
-      setIsBulkPrintModalOpen(false);
-    } catch (e) {
-      dispatch(
-        showToast({ message: "Error al generar el PDF", type: "error" }),
-      );
-    } finally {
-      dispatch(hideLoader());
-    }
-  };
-
-  const columns = useMemo(
+  const columns = useMemo<Column<Location>[]>(
     () => [
       {
         key: "name",
-        label: "UBICACIÓN / IDENTIFICACIÓN",
         type: "string",
+        label: "Ubicación / Identificación",
         sortable: true,
-        render: (row: any) => (
+        truncate: true,
+        render: (row) => (
           <div className="flex flex-col">
-            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+            <span className={`mb-1 text-[11px] font-black uppercase tracking-tight ${SURFACE.strong}`}>
               {row.name}
             </span>
             <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
-                CLIENTE: {row.client?.name || row.clientName || "SIN ASIGNAR"}
+              <div className={`h-1.5 w-1.5 rounded-full ${TONES.neutral.dot}`} />
+              <span className={SURFACE.microLabel}>
+                Cliente: {row.client?.name || row.clientName || "Sin asignar"}
               </span>
             </div>
           </div>
@@ -237,30 +65,30 @@ const LocationsPage = () => {
       },
       {
         key: "zone",
-        label: "ZONA / RECURRENTE",
         type: "string",
-        render: (row: any) => (
+        label: "Zona / Recurrente",
+        truncate: true,
+        render: (row) => (
           <div className="flex flex-col">
-            <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
-              {row.zone?.name || "SIN ZONA"}
+            <span className={`mb-1 text-[11px] font-black uppercase tracking-tight ${SURFACE.strong}`}>
+              {row.zone?.name || "Sin zona"}
             </span>
             <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
-                PUNTO DE CONTROL
-              </span>
+              <div className={`h-1.5 w-1.5 rounded-full ${TONES.success.dot}`} />
+              <span className={SURFACE.microLabel}>Punto de control</span>
             </div>
           </div>
         ),
       },
       {
         key: "actions",
-        label: "ACCIONES",
         type: "actions",
-        actions: (row: Location) => (
+        label: "Acciones",
+        width: 160,
+        render: (row) => (
           <div className="flex items-center gap-2">
             <ITButton
-              onClick={() => handlePrintQR(row)}
+              onClick={() => vm.handlePrintQR(row)}
               size="sm"
               variant="outlined"
               color="success"
@@ -268,18 +96,22 @@ const LocationsPage = () => {
             >
               <FaQrcode size={14} />
             </ITButton>
-            {user?.role !== "OPERATOR" && (
+            {vm.canManage && (
               <>
                 <ITButton
-                  onClick={() => setEditingLocation(row)}
+                  onClick={() => {
+                    vm.setEditingLocation(row);
+                    vm.setIsModalOpen(true);
+                  }}
                   size="sm"
                   variant="outlined"
+                  color="secondary"
                   title="Editar"
                 >
                   <FaEdit size={14} />
                 </ITButton>
                 <ITButton
-                  onClick={() => setLocationToDelete(row)}
+                  onClick={() => vm.setLocationToDelete(row)}
                   size="sm"
                   variant="outlined"
                   color="error"
@@ -293,11 +125,12 @@ const LocationsPage = () => {
         ),
       },
     ],
-    [user],
+    [vm],
   );
 
+
   return (
-    <ModulePage
+    <PageShell
       title="Directorio de Ubicaciones"
       subtitle="Gestión y control de puntos QR para rondines y asistencia"
       icon={FaSearchLocation}
@@ -319,10 +152,10 @@ const LocationsPage = () => {
         placeholder: "BUSCAR UBICACIÓN...",
         icon: FaSearchLocation,
       }}
-      onRefresh={() => setRefreshKey((prev) => prev + 1)}
+      onRefresh={refresh}
       refreshKey={refreshKey}
       onCreate={
-        user?.role !== "OPERATOR" ? () => setIsModalOpen(true) : undefined
+        vm.canManage ? () => setIsModalOpen(true) : undefined
       }
       createLabel="Nueva Ubicación"
       actions={
@@ -510,7 +343,7 @@ const LocationsPage = () => {
           </div>
         </div>
       </ITDialog>
-    </ModulePage>
+    </PageShell>
   );
 };
 

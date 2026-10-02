@@ -1,18 +1,9 @@
-import { post } from "@app/core/axios/axios";
-import { showToast } from "@app/core/store/toast/toast.slice";
-import { BulkPrintModal } from "@app/modules/locations/components/BulkPrintModal";
-import { LocationForm } from "@app/modules/locations/components/LocationForm";
-import {
-  Location,
-  createLocation,
-  deleteLocation,
-  getPaginatedLocations,
-  updateLocation,
-} from "@app/modules/locations/service/locations.service";
+import { BulkPrintModal } from "@features/print-location-qrs";
+import type { Location } from "@entities/location";
+import { useClientLocationsTab } from "../model/useClientLocationsTab";
+import { LocationForm } from "@features/manage-location";
 import { ITButton, ITDataTable, ITDialog, ITLoader } from "@axzydev/axzy_ui_system";
-import { useCallback, useEffect, useState } from "react";
 import { FaEdit, FaMapMarkerAlt, FaPlus, FaQrcode, FaSync, FaTrash } from "react-icons/fa";
-import { useDispatch } from "react-redux";
 
 interface Props {
   clientId: string;
@@ -21,86 +12,26 @@ interface Props {
 }
 
 export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone }: Props) => {
-  const dispatch = useDispatch();
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isBulkPrintOpen, setIsBulkPrintOpen] = useState(false);
-  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
-  const [createInitialData, setCreateInitialData] = useState<any>(null);
-  const [locationToDelete, setLocationToDelete] = useState<Location | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    if (selectedZoneId) {
-      setCreateInitialData({
-        clientId: String(clientId),
-        zoneId: selectedZoneId,
-        name: "",
-        reference: "",
-      });
-      setIsCreateModalOpen(true);
-      onCreateFromZone?.();
-    }
-  }, [selectedZoneId]);
-
-  const memoizedFetch = useCallback(
-    (params: any) => {
-      return getPaginatedLocations({
-        ...params,
-        filters: { ...params.filters, clientId },
-      });
-    },
-    [clientId],
-  );
-
-  const handlePrintBulk = async (ids: string[]) => {
-    try {
-      const res = await post<any>(
-        "/locations/print-qrs",
-        { ids },
-        { responseType: "blob" },
-      );
-      const blob = new Blob([res as any], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, "_blank");
-      dispatch(showToast({ message: "PDF de QRs generado", type: "success" }));
-      setIsBulkPrintOpen(false);
-    } catch (error) {
-      dispatch(
-        showToast({ message: "Error al generar el PDF", type: "error" }),
-      );
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!locationToDelete || isDeleting) return;
-    setIsDeleting(true);
-    try {
-      const res = await deleteLocation(locationToDelete.id);
-      if (res.success) {
-        dispatch(showToast({ message: "Ubicación eliminada", type: "success" }));
-        setRefreshKey((prev) => prev + 1);
-        setLocationToDelete(null);
-      } else {
-        dispatch(
-          showToast({
-            message: res.messages?.[0] || "Error al eliminar",
-            type: "error",
-          }),
-        );
-      }
-    } catch (err: any) {
-      dispatch(
-        showToast({
-          message: err?.messages?.[0] || "Error al eliminar ubicación",
-          type: "error",
-        }),
-      );
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
+  const {
+    refreshKey,
+    handleCreate,
+    handleUpdate,
+    setRefreshKey,
+    isCreateModalOpen,
+    setIsCreateModalOpen,
+    editingLocation,
+    setEditingLocation,
+    locationToDelete,
+    setLocationToDelete,
+    isDeleting,
+    isBulkPrintOpen,
+    setIsBulkPrintOpen,
+    createInitialData,
+    setCreateInitialData,
+    memoizedFetch,
+    confirmDelete,
+    handlePrintBulk,
+  } = useClientLocationsTab({ clientId, selectedZoneId, onCreateFromZone });
   const columns = [
     {
       key: "name",
@@ -259,38 +190,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
                   reference: "",
                 }
               }
-              onSubmit={async (data, keepOpen) => {
-                try {
-                  const res = await createLocation(data);
-                  if (res.success) {
-                    if (!keepOpen) {
-                      setIsCreateModalOpen(false);
-                      setCreateInitialData(null);
-                    }
-                    setRefreshKey((prev) => prev + 1);
-                    dispatch(
-                      showToast({
-                        message: "Ubicación creada con éxito",
-                        type: "success",
-                      }),
-                    );
-                  } else {
-                    dispatch(
-                      showToast({
-                        message: res.messages?.[0] || "Error al crear",
-                        type: "error",
-                      }),
-                    );
-                  }
-                } catch (err: any) {
-                  dispatch(
-                    showToast({
-                      message: err?.messages?.[0] || "Error al crear ubicación",
-                      type: "error",
-                    }),
-                  );
-                }
-              }}
+              onSubmit={handleCreate}
               onCancel={() => {
                 setIsCreateModalOpen(false);
                 setCreateInitialData(null);
@@ -321,35 +221,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
           {editingLocation && (
             <LocationForm
               initialData={editingLocation}
-              onSubmit={async (data) => {
-                try {
-                  const res = await updateLocation(editingLocation.id, data);
-                  if (res.success) {
-                    setEditingLocation(null);
-                    setRefreshKey((prev) => prev + 1);
-                    dispatch(
-                      showToast({
-                        message: "Ubicación actualizada",
-                        type: "success",
-                      }),
-                    );
-                  } else {
-                    dispatch(
-                      showToast({
-                        message: res.messages?.[0] || "Error al actualizar",
-                        type: "error",
-                      }),
-                    );
-                  }
-                } catch (err: any) {
-                  dispatch(
-                    showToast({
-                      message: err?.messages?.[0] || "Error al actualizar ubicación",
-                      type: "error",
-                    }),
-                  );
-                }
-              }}
+              onSubmit={handleUpdate}
               onCancel={() => setEditingLocation(null)}
             />
           )}

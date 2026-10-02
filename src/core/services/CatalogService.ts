@@ -10,11 +10,3 @@ export const getCatalogOptions = async (key: CatalogOptionsType) => {
     }
 };
 
-export const getCatalogBusinessLineServiceOptions = async (id: number) => {
-    try {
-        const res = await get<any>(`/catalog/business-line-service/${id}`);
-        return res;
-    } catch (error: any) {
-        return { success: false, data: [], messages: error.messages || ["Error fetching business line service catalog"] };
-    }
-};

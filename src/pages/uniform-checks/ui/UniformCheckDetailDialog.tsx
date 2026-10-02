@@ -4,9 +4,9 @@ import { FaUserCheck } from "react-icons/fa";
 import { answersToMap, ChecklistGrid } from "@app/core/components/ChecklistGrid";
 import { ScoreRing } from "@app/core/components/ScoreRing";
 import { SectionTitle } from "@app/core/components/SectionTitle";
-import { IUniformCatalog, IUniformCheck } from "@app/core/types/supervision.types";
+import { IUniformCatalog, IUniformCheck } from "@entities/supervision";
 import { formatDateTime, formatShiftDate, fullName, initials } from "@app/core/utils/supervision.utils";
-import { getUniformCatalog } from "../services/UniformChecksService";
+import { getUniformCatalog } from "@entities/supervision";
 
 interface UniformCheckDetailDialogProps {
   check: IUniformCheck | null;
@@ -20,7 +20,7 @@ export const UniformCheckDetailDialog = ({ check, onClose }: UniformCheckDetailD
   useEffect(() => {
     if (!check || catalog) return;
     getUniformCatalog()
-      .then((res) => res.success && setCatalog(res.data))
+      .then((res) => { if (res.success && res.data) setCatalog(res.data); })
       .catch(() => setCatalog(null));
   }, [check, catalog]);
 

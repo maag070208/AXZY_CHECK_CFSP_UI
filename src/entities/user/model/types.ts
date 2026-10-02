@@ -72,7 +72,8 @@ export type UpdateUserDto = {
   shiftStart?: string;
   shiftEnd?: string;
   scheduleId?: string;
-  clientId?: string;
+  /** `null` desasigna al guardia del cliente. */
+  clientId?: string | null;
   active?: boolean;
 };
 
@@ -89,11 +90,8 @@ export const userName = (user: Pick<User, "name" | "lastName">): string =>
 export const userInitials = (user: Pick<User, "name" | "lastName">): string =>
   `${user.name?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase();
 
-/**
- * Etiqueta y color semántico de cada rol operativo. Los valores vienen de la
- * tabla de roles del backend.
- */
-export const ROLE_META: Record<string, { label: string; badge: "primary" | "warning" | "info" | "secondary" | "purple" }> = {
+/** Etiqueta y badge por rol. Interno: se consume vía `roleLabel`/`roleBadge`. */
+const ROLE_META: Record<string, { label: string; badge: "primary" | "warning" | "info" | "secondary" | "purple" }> = {
   ADMIN: { label: "Administrador", badge: "primary" },
   LIDER: { label: "Líder", badge: "purple" },
   SHIFT: { label: "Jefe de turno", badge: "warning" },

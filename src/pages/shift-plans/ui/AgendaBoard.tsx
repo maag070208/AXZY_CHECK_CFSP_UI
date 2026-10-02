@@ -9,14 +9,15 @@ import {
   ITText,
 } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { FaChevronLeft, FaChevronRight, FaClipboardCheck, FaSync, FaTshirt } from "react-icons/fa";
-import { useSelector } from "react-redux";
+
 import { useNavigate } from "react-router-dom";
+import { useAgendaBoard, type AgendaStatusFilter } from "../model/useAgendaBoard";
 import { ScoreRing } from "@app/core/components/ScoreRing";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
-import { AppState } from "@app/core/store/store";
-import { AgendaStatus, IAgenda, IAgendaItem, IAgendaSummary } from "@app/core/types/supervision.types";
+
+import { type IAgendaItem, type IAgendaSummary } from "@entities/supervision";
 import {
   AGENDA_STATUS_META,
   describeSummary,
@@ -25,25 +26,10 @@ import {
   fullName,
   todayShiftDate,
 } from "@app/core/utils/supervision.utils";
-import { getAgenda } from "../services/ShiftPlansService";
 
-type StatusFilter = "all" | "pending" | "overdue" | "done";
 
-const FILTER_STATUSES: Record<StatusFilter, AgendaStatus[] | null> = {
-  all: null,
-  pending: ["UPCOMING", "IN_WINDOW", "OVERDUE"],
-  overdue: ["OVERDUE", "MISSED"],
-  done: ["DONE"],
-};
 
-const REFRESH_MS = 60_000;
 
-interface ShiftGroup {
-  key: string;
-  item: IAgendaItem;
-  handover: IAgendaItem | null;
-  uniforms: IAgendaItem[];
-}
 
 interface AgendaBoardProps {
   canRegister: boolean;
@@ -60,74 +46,27 @@ interface AgendaBoardProps {
 export const AgendaBoard = ({ canRegister, isClient, reloadKey, onConfigure }: AgendaBoardProps) => {
   const navigate = useNavigate();
   const { data: clients } = useCatalog("client");
-  const activityEvents = useSelector((state: AppState) => state.activity.events);
-
-  const [date, setDate] = useState(todayShiftDate());
-  const [clientId, setClientId] = useState("");
-  const [filter, setFilter] = useState<StatusFilter>("all");
-  const [agenda, setAgenda] = useState<IAgenda | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(
-    async (silent = false) => {
-      if (!silent) setLoading(true);
-      setError(null);
-      try {
-        const res = await getAgenda(date, clientId || undefined);
-        if (res.success) setAgenda(res.data);
-        else setError(res.messages?.[0] ?? "No se pudo cargar la agenda");
-      } catch (err: any) {
-        setError(err?.messages?.[0] ?? "No se pudo cargar la agenda");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [date, clientId],
-  );
-
-  useEffect(() => {
-    void load();
-  }, [load, reloadKey]);
-
-  // Refresca al llegar un registro en vivo y, de respaldo, cada minuto
-  // (los estados cambian con la hora aunque nadie registre nada).
-  const lastEventRef = useRef<string | null>(null);
-  useEffect(() => {
-    const latest = activityEvents[0];
-    if (!latest || latest.id === lastEventRef.current) return;
-    lastEventRef.current = latest.id;
-    if (latest.type === "shift_handover" || latest.type === "uniform_check") void load(true);
-  }, [activityEvents, load]);
-
-  useEffect(() => {
-    const id = window.setInterval(() => void load(true), REFRESH_MS);
-    return () => window.clearInterval(id);
-  }, [load]);
-
-  const groupsByClient = useMemo(() => {
-    const allowed = FILTER_STATUSES[filter];
-    const items = (agenda?.items ?? []).filter((i) => !allowed || allowed.includes(i.status));
-    const byClient = new Map<string, Map<string, ShiftGroup>>();
-    for (const item of items) {
-      const shifts = byClient.get(item.client.name) ?? new Map<string, ShiftGroup>();
-      const key = `${item.planId}:${item.shiftDate}`;
-      const group = shifts.get(key) ?? { key, item, handover: null, uniforms: [] };
-      if (item.type === "HANDOVER") group.handover = item;
-      else group.uniforms.push(item);
-      shifts.set(key, group);
-      byClient.set(item.client.name, shifts);
-    }
-    return [...byClient.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([client, shifts]) => ({ client, shifts: [...shifts.values()] }));
-  }, [agenda, filter]);
+  const {
+    date,
+    setDate,
+    clientId,
+    setClientId,
+    filter,
+    setFilter,
+    agenda,
+    groupsByClient,
+    loading,
+    error,
+    reload,
+  } = useAgendaBoard({ reloadKey });
 
   const shiftDay = (delta: number) => setDate((d) => dayjs(d).add(delta, "day").format("YYYY-MM-DD"));
 
   const registerHandover = (i: IAgendaItem) =>
     navigate(`/shift-handovers/new?clientId=${i.client.id}&scheduleId=${i.schedule.id}&shiftDate=${i.shiftDate}`);
-  const reviewUniform = (i: IAgendaItem) => navigate(`/uniforms?nuevo=1&guardId=${i.guard?.id}&shiftDate=${i.shiftDate}`);
+  const reviewUniform = (i: IAgendaItem) =>
+    navigate(`/uniforms?nuevo=1&guardId=${i.guard?.id}&shiftDate=${i.shiftDate}`);
+
 
   return (
     <div className="space-y-5">
@@ -173,7 +112,7 @@ export const AgendaBoard = ({ canRegister, isClient, reloadKey, onConfigure }: A
           <ITSegmentedControl
             size="sm"
             value={filter}
-            onChange={(v) => setFilter(v as StatusFilter)}
+            onChange={(v) => setFilter(v as AgendaStatusFilter)}
             options={[
               { value: "all", label: "Todo" },
               { value: "pending", label: "Pendientes" },
@@ -181,7 +120,7 @@ export const AgendaBoard = ({ canRegister, isClient, reloadKey, onConfigure }: A
               { value: "done", label: "Realizados" },
             ]}
           />
-          <ITButton variant="outlined" color="secondary" size="sm" onClick={() => load()} title="Refrescar">
+          <ITButton variant="outlined" color="secondary" size="sm" onClick={() => reload()} title="Refrescar">
             <FaSync size={11} className={loading ? "animate-spin" : ""} />
           </ITButton>
         </div>
@@ -200,7 +139,7 @@ export const AgendaBoard = ({ canRegister, isClient, reloadKey, onConfigure }: A
           <ITSkeleton variant="rectangular" height={120} className="rounded-2xl" />
         </div>
       ) : error ? (
-        <ITEmptyState title="No se pudo cargar la agenda" description={error} action={<ITButton label="Reintentar" onClick={() => load()} />} />
+        <ITEmptyState title="No se pudo cargar la agenda" description={error} action={<ITButton label="Reintentar" onClick={() => reload()} />} />
       ) : agenda && agenda.items.length === 0 ? (
         <ITEmptyState
           icon={<FaClipboardCheck />}

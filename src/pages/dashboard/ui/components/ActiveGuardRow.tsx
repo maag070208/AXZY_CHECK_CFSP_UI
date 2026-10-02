@@ -1,6 +1,6 @@
 import { ITBadget, ITText } from "@axzydev/axzy_ui_system";
 import { ReactNode } from "react";
-import { IActiveGuard, OperationalRole } from "../services/DashboardService";
+import { IActiveGuard, OperationalRole } from "@entities/supervision";
 import { FaMapPin, FaRoute, FaUserTie, FaUserShield, FaTools } from "react-icons/fa";
 import { SemanticTone, TONES } from "@shared/ui";
 

@@ -2,7 +2,9 @@
 
 > ## ⚠️ Estado de este documento (leer antes de seguir)
 >
-> Quedó **desfasado respecto al código**. Las reglas vigentes son:
+> Las secciones 1-10 de abajo se conservan como **referencia de estilo**
+> (tipografía, densidades, patrones de tabla), pero varias nombran componentes
+> que ya no existen. Las reglas vigentes son:
 >
 > 1. **El shell de página es `PageShell`** (`src/shared/ui/PageShell.tsx`), no
 >    `ModuleHeader` — ese componente **no existe** en el repo (0 referencias).
@@ -21,13 +23,164 @@
 >    llama `Paginated<T>` y se convierte con `toTableResponse()` de `@shared/api`.
 >    El error de la sección 15 de este documento es la causa de los
 >    `fetchData={fn as any}` repartidos por el proyecto.
-> 6. La arquitectura objetivo es **FSD + MVVM**; la estructura
->    `modules/<x>/{pages,components,services}` está en retirada.
->
-> Lo que sigue se conserva como referencia de estilo (tipografía, densidades,
-> patrones de tabla). Ante cualquier duda, **manda el código**.
+> 6. **FSD + MVVM está completo** (§11). `src/modules/` ya no existe.
 
-## Reference: GuardsPage
+---
+
+## 11. Arquitectura FSD + MVVM (vigente)
+
+### Capas y regla de dependencias
+
+```
+app/  →  pages/  →  widgets/  →  features/  →  entities/  →  shared/
+```
+
+Un layer **sólo** puede importar de los que están a su izquierda. Además,
+**prohibido importar entre slices del mismo layer**: `entities/incident` no puede
+importar de `entities/user`.
+
+Esa regla la hace cumplir el build:
+
+```bash
+pnpm check:fsd     # node scripts/check-fsd-boundaries.mjs
+pnpm verify        # fronteras + tsc + vitest
+```
+
+El guardián **no es decorativo**: durante la migración detectó y corrigió tres
+diseños equivocados (ver §11.4).
+
+### Estructura de un slice
+
+```
+<layer>/<slice>/
+  model/    types.ts · deps.ts · use<Cosa>.ts (view-model) · *.test.ts
+  api/      <cosa>Api.ts        (sólo en entities)
+  ui/       <Cosa>Page.tsx · componentes locales
+  index.ts  barrel
+```
+
+**MVVM**: la vista (`ui/`) sólo renderiza. **Nunca llama a axios ni a la
+entidad directamente**: recibe el view-model de `model/`.
+
+### 11.1 Contrato HTTP
+
+Todo el acceso a datos pasa por `request` de `@shared/api`, que **nunca lanza**:
+siempre resuelve un `TResult`. Eso elimina los `try/catch` que exigía el cliente
+`core/axios` legacy, que sí lanzaba el `TResult` como excepción.
+
+```ts
+// entities/cliente/api/clientApi.ts
+export const fetchClientsTable = async (
+  params: ITDataTableFetchParams,
+): Promise<ITDataTableResponse<Client>> => {
+  const res = await post<Paginated<Client>>("/clients/datatable", params);
+  return toTableResponse<Client>(res);   // rows -> data, ceros si falla
+};
+```
+
+### 11.2 El backend es inconsistente: normaliza siempre
+
+`/kardex/datatable` devuelve `{ data, total }`; `/incidents`, `/maintenance`,
+`/clients`, `/zones`… devuelven `{ rows, total }`. `toTableResponse()` tolera
+ambas. **No escribas el adaptador a mano.**
+
+### 11.3 Verifica el endpoint contra la API antes de escribir la entidad
+
+No adivines la URL. Léela en `API/src/modules/<x>/<x>.routes.ts`.
+
+> Costó un bug real: se escribió `entities/route` con `/routes/*` cuando el
+> backend expone **`/recurring/*`**. `tsc` y los tests (que mockean) pasaban; lo
+> cazó la verificación visual contra la API local con un `404`.
+
+### 11.4 Los ids son UUID `String`, no `number`
+
+En `API/prisma/schema.prisma` **todos** los ids son
+`String @id @default(uuid())`. Se encontraron **siete** casos de tipos que decían
+`number` (y estaban tapados con `as any`):
+
+| Archivo | Campo |
+|---|---|
+| `entities/maintenance` | `Maintenance.id` |
+| `entities/user` | `User.id`, `userToDeleteId` |
+| `entities/settings` | `IncidentCategory.id`, `IncidentType.id` |
+| `entities/assignment` | `Assignment.id`, `guardId`, `locationId`, `assignedBy` |
+| `core/store/auth` | `auth.id`, `auth.clientId` |
+| `entities/route` | `routeToDeleteId`, `clientId` |
+| `entities/report` | `IGuardReportFilters.guardId` |
+
+**Ante la duda, mira el schema.**
+
+### 11.5 Nombres de campo que el backend cambia
+
+- Los puntos de control de una ruta vienen en **`recurringLocations`**, no
+  `locations`.
+- El nombre del punto de control embebido viene en **`locationName`**, no `name`.
+- `MediaItem` del UI system usa `"IMAGE" | "VIDEO"` en **mayúsculas**.
+
+### 11.6 Migrar una página grande: mover y parchear
+
+Con páginas de 300-1.000 líneas, reescribir el JSX es inviable. La receta:
+
+1. Mueve el archivo a `pages/<x>/ui/` con `git mv`.
+2. Escribe el view-model **exponiendo los mismos nombres** que el JSX ya usa.
+3. En la vista, reemplaza sólo el bloque de lógica
+   (`const dispatch = …` … último handler) por el destructuring del VM.
+4. Deja el JSX **intacto**.
+
+> ⚠️ **Cuándo NO usar automatización.** Si el bloque de lógica contiene un
+> `return (` interno (habitual: una función de `render` dentro del array de
+> columnas), un script que busque el punto de corte con `index("return (")`
+> acertará el sitio equivocado y **borrará cientos de líneas**.
+>
+> Para eso, **reemplazo por texto literal del bloque completo** (`edit` con el
+> código a la vista), no índices calculados. Si aun así usas índices, pon
+> `assert` de los **cuatro** límites: línea de inicio, línea de fin, y que el
+> bloque no contenga `return (`.
+>
+> Costó **cuatro intentos fallidos** en `ShiftPlansTab` antes de aplicar esto.
+
+### 11.7 Mover un componente compartido
+
+Si un componente lo usan **dos páginas distintas**, ponerlo en una de ellas crea
+un import entre slices de `pages`. Su sitio es `features/` (formularios, modales
+de gestión) o `widgets/` (paneles compuestos con datos propios).
+
+Ejemplos: `features/manage-location`, `features/manage-zones`,
+`features/print-location-qrs`, `widgets/today-compliance`.
+
+### 11.8 Decide la ruta en `app/`, no en la página
+
+Una página **no puede importar otra**. Si `/home` debe mostrar el dashboard para
+unos roles, esa elección va en `app/routing/` (ver `HomeRoute.tsx`), no en
+`pages/home`.
+
+### 11.9 Tests
+
+- View-models: `renderHook` con dependencias inyectadas (`deps.ts`). Es donde va
+  la cobertura.
+- **Mockea la entidad completa.** Si falta una export, `vi.mocked()` deja de
+  devolver un mock y falla con `mockResolvedValue is not a function`.
+- Un hook que use `useDispatch` necesita `<Provider store={makeStore()}>`.
+- Para mockear parcialmente un módulo, usa `importOriginal` y esparce el resto.
+- Usa `renderWithProviders` (`app/testing/`): store aislado + `MemoryRouter`.
+  El store singleton filtraba estado entre archivos y causaba fallos
+  intermitentes.
+
+### 11.10 Verificación obligatoria de cada cambio
+
+```bash
+pnpm verify                          # fronteras + tsc + tests
+node scripts/visual-check.mjs        # 8 rutas, claro y oscuro, contra la API
+THEME=dark node scripts/visual-check.mjs /home /reports
+```
+
+`visual-check` reporta errores de consola, HTTP ≥ 400 y el número real de filas
+distinguiendo el estado vacío. **`tsc` y los tests no sustituyen esta
+comprobación**: los tests mockean, la API no.
+
+---
+
+## Reference: GuardsPage (histórico)
 
 Todas las pantallas deben seguir el diseño de `GuardsPage.tsx` como referencia absoluta. Layout, tipografía, espaciado, bordes, sombras y comportamiento deben ser idénticos.
 

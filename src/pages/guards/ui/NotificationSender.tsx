@@ -1,6 +1,4 @@
-import { post } from "@app/core/axios/axios";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
-import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITButton,
   ITDialog,
@@ -9,57 +7,23 @@ import {
   ITSelect,
   ITSlideToggle,
 } from "@axzydev/axzy_ui_system";
-import { useState } from "react";
 import {
   FaBell,
   FaPaperPlane,
 } from "react-icons/fa";
-import { useDispatch } from "react-redux";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
+import { useNotificationSender } from "../model/useNotificationSender";
+
 export const NotificationSender = ({ isOpen, onClose }: Props) => {
-  const dispatch = useDispatch();
   const { data: guards } = useCatalog("guard");
-  const [sending, setSending] = useState(false);
-  const [form, setForm] = useState({
-    guardId: "",
-    title: "",
-    message: "",
-    type: "info" as "info" | "success" | "warning" | "error",
-    persistent: false,
-  });
+  const { form, setForm, sending, handleSend } = useNotificationSender({ onClose });
 
-  const handleSend = async () => {
-    if (!form.message.trim()) {
-      dispatch(showToast({ message: "El mensaje es requerido", type: "error" }));
-      return;
-    }
-    setSending(true);
-    try {
-      const res = await post("/notifications/send", {
-        title: form.title || undefined,
-        message: form.message,
-        type: form.type,
-        userId: form.guardId || undefined,
-        channel: "global",
-        persistent: form.persistent,
-      });
-      if ((res as any).success) {
-        dispatch(showToast({ message: "Notificación enviada", type: "success" }));
-        setForm({ guardId: "", title: "", message: "", type: "info", persistent: false });
-        onClose();
-      }
-    } catch (err: any) {
-      dispatch(showToast({ message: err?.messages?.[0] || "Error al enviar", type: "error" }));
-    } finally {
-      setSending(false);
-    }
-  };
-
+  
   return (
     <ITDialog
       isOpen={isOpen}
@@ -100,7 +64,7 @@ export const NotificationSender = ({ isOpen, onClose }: Props) => {
             label="Tipo de notificación"
             name="type"
             value={form.type}
-            onChange={(e: any) => setForm((p) => ({ ...p, type: e.target.value }))}
+            onChange={(e: any) => setForm((p) => ({ ...p, type: e.target.value as "info" | "success" | "warning" | "error" }))}
             options={[
               { label: "Informativa", value: "info" },
               { label: "Éxito", value: "success" },

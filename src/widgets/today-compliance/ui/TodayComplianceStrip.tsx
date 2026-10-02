@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { FaCalendarCheck, FaChevronRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { ScoreRing } from "@app/core/components/ScoreRing";
-import { AgendaItemType, IAgendaSummary } from "@app/core/types/supervision.types";
-import { getCurrentAgenda } from "../services/ShiftPlansService";
+import { AgendaItemType, IAgendaSummary } from "@entities/supervision";
+import { getCurrentAgenda } from "@entities/supervision";
 
 interface TodayComplianceStripProps {
   type: AgendaItemType;

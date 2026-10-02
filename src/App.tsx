@@ -1,39 +1,41 @@
-import LoginPage from "@app/modules/auth/pages/LoginPage";
-import RegisterPage from "@app/modules/auth/pages/RegisterPage";
+import LoginPage from "@pages/auth/ui/LoginPage";
+import RegisterPage from "@pages/auth/ui/RegisterPage";
 import { BrandLoader } from "@shared/ui";
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
 import { PrivateRoutes } from "./core/routes/PrivateRoutes";
 import { setAuth } from "./core/store/auth/auth.slice";
-import HomePage from "./modules/home/pages/HomePage";
 
-import LocationsPage from "./modules/locations/pages/LocationsPage";
-import ClientsPage from "./modules/clients/pages/ClientsPage";
-import ClientDetailsPage from "./modules/clients/pages/ClientDetailsPage";
 
-import { UsersPage } from "@pages/users";
-import { IncidentsPage } from "@pages/incidents";
-import { MaintenancesPage } from "@pages/maintenances";
-import { KardexPage } from "@pages/kardex";
-import RoundsPage from "./modules/rounds/pages/RoundsPage";
-import RoundDetailPage from "./modules/rounds/pages/RoundDetailPage";
-import SchedulesPage from "./modules/schedules/pages/SchedulesPage";
-import GuardsPage from "./modules/guards/pages/GuardsPage";
-import RoutesPage from "./modules/routes/pages/RoutesPage";
-import CreateRoutePage from "./modules/routes/pages/CreateRoutePage";
-import SettingsPage from "@app/modules/settings/pages/SettingsPage";
-import ReportsPage from "./modules/reports/pages/ReportsPage";
-import GuardDisciplinePage from "./modules/guard-discipline/pages/GuardDisciplinePage";
-import { GuardLogsPage } from "@pages/guard-logs";
-import { NotificationsPage } from "@pages/notifications";
-import { PanicAlertsPage } from "@pages/panic-alerts";
-import ShiftPlanningPage from "./modules/shift-plans/pages/ShiftPlanningPage";
-import ShiftHandoversPage from "./modules/shift-handovers/pages/ShiftHandoversPage";
-import NewShiftHandoverPage from "./modules/shift-handovers/pages/NewShiftHandoverPage";
-import UniformChecksPage from "./modules/uniform-checks/pages/UniformChecksPage";
 
+
+/** Rutas diferidas: cada página entra en su propio chunk. */
+const HomeRoute = lazy(() => import("./app/routing/HomeRoute").then((m) => ({ default: m.HomeRoute })));
+const LocationsPage = lazy(() => import("@pages/locations/ui/LocationsPage"));
+const ClientsPage = lazy(() => import("@pages/clients/ui/ClientsPage"));
+const ClientDetailsPage = lazy(() => import("@pages/clients/ui/ClientDetailsPage"));
+const UsersPage = lazy(() => import("@pages/users").then((m) => ({ default: m.UsersPage })));
+const IncidentsPage = lazy(() => import("@pages/incidents").then((m) => ({ default: m.IncidentsPage })));
+const MaintenancesPage = lazy(() => import("@pages/maintenances").then((m) => ({ default: m.MaintenancesPage })));
+const KardexPage = lazy(() => import("@pages/kardex").then((m) => ({ default: m.KardexPage })));
+const RoundsPage = lazy(() => import("@pages/rounds/ui/RoundsPage"));
+const RoundDetailPage = lazy(() => import("@pages/rounds/ui/RoundDetailPage"));
+const SchedulesPage = lazy(() => import("@pages/schedules/ui/SchedulesPage"));
+const GuardsPage = lazy(() => import("@pages/guards").then((m) => ({ default: m.GuardsPage })));
+const RoutesPage = lazy(() => import("@pages/routes/ui/RoutesPage"));
+const CreateRoutePage = lazy(() => import("@pages/routes/ui/CreateRoutePage"));
+const SettingsPage = lazy(() => import("@pages/settings/ui/SettingsPage"));
+const ReportsPage = lazy(() => import("@pages/reports"));
+const GuardDisciplinePage = lazy(() => import("@pages/guard-discipline"));
+const GuardLogsPage = lazy(() => import("@pages/guard-logs").then((m) => ({ default: m.GuardLogsPage })));
+const NotificationsPage = lazy(() => import("@pages/notifications").then((m) => ({ default: m.NotificationsPage })));
+const PanicAlertsPage = lazy(() => import("@pages/panic-alerts").then((m) => ({ default: m.PanicAlertsPage })));
+const ShiftPlanningPage = lazy(() => import("@pages/shift-plans"));
+const ShiftHandoversPage = lazy(() => import("@pages/shift-handovers"));
+const NewShiftHandoverPage = lazy(() => import("@pages/shift-handovers/ui/NewShiftHandoverPage"));
+const UniformChecksPage = lazy(() => import("@pages/uniform-checks"));
 
 function App() {
   const token = useSelector((state: any) => state.auth.token);
@@ -80,10 +82,11 @@ function App() {
 
   return (
     <>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route element={<PrivateRoutes />}>
-          <Route path="/home" element={<HomePage />} />
+      <Suspense fallback={<BrandLoader fullScreen size={120} label={null} />}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route element={<PrivateRoutes />}>
+          <Route path="/home" element={<HomeRoute />} />
           <Route path="/guards" element={<GuardsPage />} />
           
           <Route path="/locations" element={<LocationsPage />} />
@@ -115,6 +118,7 @@ function App() {
         </Route>
         <Route path="*" element={<Navigate to="/home" />} />
       </Routes>
+      </Suspense>
 
       {/* GLOBAL MODAL ACTION LOADER */}
       {loading && (

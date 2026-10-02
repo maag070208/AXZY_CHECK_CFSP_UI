@@ -128,19 +128,6 @@ export const TONES: Record<SemanticTone, ToneClasses> = {
   },
 };
 
-/** Color de `ITBadget`/`ITButton` equivalente a cada tono. */
-export const TONE_TO_IT_COLOR: Record<
-  SemanticTone,
-  "primary" | "success" | "danger" | "warning" | "info" | "purple" | "secondary"
-> = {
-  brand: "primary",
-  success: "success",
-  danger: "danger",
-  warning: "warning",
-  info: "info",
-  accent: "purple",
-  neutral: "secondary",
-};
 
 /** Superficies y estructura, para no repetir las mismas clases en cada panel. */
 export const SURFACE = {

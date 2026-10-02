@@ -1,41 +1,12 @@
 import { BRAND_MARK } from "@assets/brand";
-import { IAuthRegister } from "@core/types/auth.types";
 import { ITCard } from "@axzydev/axzy_ui_system";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import RegisterForm from "../components/RegisterForm";
-import { register } from "../services/AuthService";
-import { showToast } from "@app/core/store/toast/toast.slice";
+import RegisterForm from "./RegisterForm";
+import { useRegister } from "../model/useAuth";
 
 const RegisterPage = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const handleSubmit = async (values: IAuthRegister) => {
-    try {
-      const response = await register(values);
-
-      if (response?.success) {
-        dispatch(
-          showToast({
-            message: "Registro exitoso, por favor inicie sesión",
-            type: "success",
-            position: "top-right",
-          }),
-        );
-        navigate("/login");
-      }
-    } catch (error) {
-      console.error(error);
-      dispatch(
-        showToast({
-          message: "Error al registrarse",
-          type: "error",
-          position: "top-right",
-        }),
-      );
-    }
-  };
+  const { handleSubmit } = useRegister();
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center   relative overflow-hidden">

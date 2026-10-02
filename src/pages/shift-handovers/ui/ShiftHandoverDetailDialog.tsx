@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { FaCheckCircle, FaIdCard, FaTicketAlt, FaUserCheck } from "react-icons/fa";
 import { answersToMap, ChecklistGrid } from "@app/core/components/ChecklistGrid";
 import { SectionTitle } from "@app/core/components/SectionTitle";
-import { IChecklistItemDefinition, IShiftHandoverDetail } from "@app/core/types/supervision.types";
+import { IChecklistItemDefinition, IShiftHandoverDetail } from "@entities/supervision";
 import { formatDateTime, formatShiftDate, fullName } from "@app/core/utils/supervision.utils";
-import { getHandoverCatalog, getShiftHandover } from "../services/ShiftHandoversService";
+import { getHandoverCatalog, getShiftHandover } from "@entities/supervision";
 
 interface ShiftHandoverDetailDialogProps {
   handoverId: string | null;

@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@app/core/utils/test-utils";
 import RegisterPage from "./RegisterPage";
-import { register } from "../services/AuthService";
+import { register } from "../model/AuthService";
 import { vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
@@ -16,7 +16,7 @@ vi.mock("react-router-dom", async (importOriginal) => {
 });
 
 // Mock AuthService
-vi.mock("../services/AuthService", () => ({
+vi.mock("../model/AuthService", () => ({
   register: vi.fn(),
   login: vi.fn(),
 }));

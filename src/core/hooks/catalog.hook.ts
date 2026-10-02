@@ -99,29 +99,9 @@ export const useCatalog = (catalogType: CatalogOptionsType) => {
   };
 };
 
-// Utility function to clear all catalog cache
-export const clearCatalogCache = () => {
-  catalogCache.clear();
-};
 
 // Utility function to clear specific catalog cache
 export const clearSpecificCatalogCache = (catalogType: CatalogOptionsType) => {
   catalogCache.delete(catalogType);
 };
 
-export const getRenderOption = <T extends Record<string, any>>({
-  catalog,
-  row,
-  identifier,
-}: {
-  catalog: ICatalogItem[];
-  row: T;
-  identifier: keyof T;
-}): string | null => {
-  if (!row[identifier]) return null;
-
-  const item = catalog.find(
-    (item) => item.id.toString() === row[identifier].toString()
-  );
-  return item?.value || null;
-};

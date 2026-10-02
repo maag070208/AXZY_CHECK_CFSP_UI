@@ -1,5 +1,3 @@
-import { useCatalog } from "@app/core/hooks/catalog.hook";
-import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITButton,
   ITDialog,
@@ -7,18 +5,8 @@ import {
   ITSearchSelect,
   ITSelect,
 } from "@axzydev/axzy_ui_system";
-import { useCallback, useEffect, useState } from "react";
 import { FaMapMarkerAlt, FaPlus, FaPrint, FaSearch, FaTimes } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import { Zone, getZones } from "../../zones/services/ZonesService";
-import { Location, getPaginatedLocations } from "../service/locations.service";
-
-interface BulkPrintModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (ids: string[]) => void;
-  initialClientId?: string;
-}
+import { useBulkPrintModal, type BulkPrintModalProps } from "../model/useBulkPrintModal";
 
 export const BulkPrintModal = ({
   isOpen,
@@ -26,71 +14,12 @@ export const BulkPrintModal = ({
   onConfirm,
   initialClientId,
 }: BulkPrintModalProps) => {
-  const dispatch = useDispatch();
-  const [activeTab, setActiveTab] = useState<"SEARCH" | "SELECTED">("SEARCH");
-  const [clientId, setClientId] = useState(initialClientId || "");
-  const [bulkFilterZone, setBulkFilterZone] = useState<string>("");
-  const [bulkFilterSearch, setBulkFilterSearch] = useState<string>("");
-  const [allZones, setAllZones] = useState<Zone[]>([]);
-  const [locationsToChoose, setLocationsToChoose] = useState<Location[]>([]);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [selectedLocations, setSelectedLocations] = useState<Location[]>([]);
-  const [animateBadge, setAnimateBadge] = useState(false);
-
-  const { data: clients } = useCatalog("client");
-
-  useEffect(() => {
-    if (selectedIds.length > 0) {
-      setAnimateBadge(true);
-      const timer = setTimeout(() => setAnimateBadge(false), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedIds.length]);
-
-  const fetchBulkLocations = useCallback(async () => {
-    const res = await getPaginatedLocations({
-      page: 1,
-      limit: 1000,
-      filters: {
-        name: bulkFilterSearch || undefined,
-        zoneId: bulkFilterZone || undefined,
-        clientId: clientId || undefined,
-      },
-    });
-    if (res.data) {
-      setLocationsToChoose(res.data);
-    }
-  }, [bulkFilterSearch, bulkFilterZone, clientId]);
-
-  useEffect(() => {
-    if (isOpen) {
-      getZones().then((res) => {
-        if (res.success) setAllZones(res.data || []);
-      });
-      fetchBulkLocations();
-    }
-  }, [isOpen, fetchBulkLocations]);
-
-  useEffect(() => {
-    if (isOpen) {
-      const timer = setTimeout(fetchBulkLocations, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [bulkFilterSearch, bulkFilterZone, isOpen, fetchBulkLocations]);
-
-  const handleConfirm = () => {
-    if (selectedIds.length === 0) {
-      dispatch(
-        showToast({
-          message: "Selecciona al menos una ubicación",
-          type: "warning",
-        }),
-      );
-      return;
-    }
-    onConfirm(selectedIds);
-  };
-
+  const {
+    activeTab, setActiveTab, clients, clientId, setClientId,
+    bulkFilterZone, setBulkFilterZone, bulkFilterSearch, setBulkFilterSearch,
+    allZones, locationsToChoose, selectedIds, setSelectedIds, selectedLocations,
+    setSelectedLocations, animateBadge, handleConfirm,
+  } = useBulkPrintModal({ isOpen, onClose, onConfirm, initialClientId });
   return (
     <ITDialog
       isOpen={isOpen}

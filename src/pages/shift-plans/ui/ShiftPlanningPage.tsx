@@ -3,8 +3,8 @@ import { useState } from "react";
 import { FaCalendarAlt, FaCalendarCheck, FaSlidersH } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useSupervisionPermissions } from "@app/core/hooks/supervisionPermissions.hook";
-import { AgendaBoard } from "../components/AgendaBoard";
-import { ShiftPlansTab } from "../components/ShiftPlansTab";
+import { AgendaBoard } from "./AgendaBoard";
+import { ShiftPlansTab } from "./ShiftPlansTab";
 
 /**
  * Programación de entregas de turno y revisiones de uniforme:

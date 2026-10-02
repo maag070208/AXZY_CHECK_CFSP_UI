@@ -39,7 +39,6 @@ export default defineConfig({
       "@core": path.resolve(__dirname, "./src/core"),
       "@assets": path.resolve(__dirname, "./src/assets"),
       "@types": path.resolve(__dirname, "./src/core/types"),
-      "@modules": path.resolve(__dirname, "./src/modules"),
     },
   },
   test: {

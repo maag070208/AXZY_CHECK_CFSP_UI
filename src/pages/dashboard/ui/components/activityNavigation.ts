@@ -1,4 +1,4 @@
-import { IActivityItem } from "../services/DashboardService";
+import { IActivityItem } from "@entities/supervision";
 
 /**
  * Mapea un item de actividad a la URL de su página de detalle.

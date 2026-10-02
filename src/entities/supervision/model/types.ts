@@ -1,4 +1,12 @@
 /**
+ * Kernel de dominio de supervisión.
+ *
+ * Estos tipos los comparten dashboard, planes de turno, entregas de turno y
+ * uniformes: sus agregados se referencian entre sí (una agenda la consumen
+ * planes y entregas), así que viven en un único slice cohesivo en vez de
+ * duplicarse o de que un slice importe de otro.
+ */
+/**
  * Contratos de la API para programación de turnos, entregas de turno,
  * revisiones de uniforme y dashboard en vivo. Reflejan los DTOs de
  * `API/src/modules/{shift-plans,shift-handovers,uniform-checks,dashboard}`.

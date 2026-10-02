@@ -1,6 +1,3 @@
-import { ModulePage } from "@app/core/components/ModulePage";
-import { useCatalog } from "@app/core/hooks/catalog.hook";
-import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITBadget,
   ITButton,
@@ -9,164 +6,76 @@ import {
   ITLoader,
   ITSearchSelect,
   ITTripleFilter,
+  type Column,
 } from "@axzydev/axzy_ui_system";
+import { useMemo } from "react";
 import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaEye, FaRoute, FaStop, FaTrash, FaUser } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { getRoutesList } from "../../routes/services/RoutesService";
-import {
-  deleteRound,
-  endRound,
-  getPaginatedRounds,
-  IRound,
-} from "../services/RoundsService";
+import { useNavigate } from "react-router-dom";
+import { useCatalog } from "@app/core/hooks/catalog.hook";
+import type { Round } from "@entities/round";
+import { PageShell } from "@shared/ui";
+import { useRoundsDeps } from "../model/deps";
+import { roundVisualState, useRoundsPage } from "../model/useRoundsPage";
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
+/** Rondas. Sólo pinta. */
 const RoundsPage = () => {
-  const [searchParams] = useSearchParams();
-  const [selectedDate, setSelectedDate] = useState<any>([
-    dayjs().tz("America/Tijuana").toDate(),
-    dayjs().tz("America/Tijuana").toDate(),
-  ]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [selectedClientId, setSelectedClientId] = useState<string | number>(
-    searchParams.get("clientId") || "",
-  );
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [isFinishing, setIsFinishing] = useState(false);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const { data: clients } = useCatalog("client");
-  const user = useSelector((state: any) => state.auth);
-  const isResident = user?.role === "RESDN";
-
-  const [routesMap, setRoutesMap] = useState<Record<string, string>>({});
-  const [roundToFinishId, setRoundToFinishId] = useState<string | null>(null);
-  const [roundToDeleteId, setRoundToDeleteId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    getRoutesList().then((res) => {
-      if (res.success && res.data) {
-        const map: Record<string, string> = {};
-        res.data.forEach((r: any) => {
-          map[r.id] = r.title;
-        });
-        setRoutesMap(map);
-      }
-    });
-  }, []);
-
-  const externalFilters = useMemo(() => {
-    const filters: any = {};
-
-    if (Array.isArray(selectedDate) && selectedDate[0] && selectedDate[1]) {
-      filters.date = [
-        dayjs(selectedDate[0]).tz("America/Tijuana").startOf("day").format(),
-        dayjs(selectedDate[1]).tz("America/Tijuana").endOf("day").format(),
-      ];
-    }
-
-    if (searchTerm.trim()) {
-      filters.search = searchTerm.trim();
-    }
-
-    if (statusFilter !== "ALL") {
-      filters.status = statusFilter;
-    }
-
-    if (selectedClientId) {
-      filters.clientId = selectedClientId;
-    } else if (isResident && user?.clientId) {
-      filters.clientId = user.clientId;
-    }
-
-    return filters;
-  }, [
-    selectedDate,
-    searchTerm,
-    statusFilter,
-    selectedClientId,
+  const {
     isResident,
-    user?.clientId,
-  ]);
+    routesMap,
+    selectedDate,
+    setSelectedDate,
+    searchTerm,
+    setSearchTerm,
+    statusFilter,
+    setStatusFilter,
+    selectedClientId,
+    setSelectedClientId,
+    externalFilters,
+    memoizedFetch,
+    refreshKey,
+    refresh,
+    roundToFinishId,
+    setRoundToFinishId,
+    roundToDeleteId,
+    setRoundToDeleteId,
+    isFinishing,
+    isDeleting,
+    confirmDeleteRound,
+    handleEndRound,
+  } = useRoundsPage(useRoundsDeps());
 
-  const memoizedFetch = useCallback(
-    async (params: any) => {
-      const res = await getPaginatedRounds({
-        ...params,
-        filters: { ...params.filters, ...externalFilters },
-        sort: params.sort || { key: "startTime", direction: "desc" },
-      });
-      return res;
-    },
-    [externalFilters],
-  );
-
-  const confirmDeleteRound = async () => {
-    if (!roundToDeleteId || isDeleting) return;
-    setIsDeleting(true);
-    const res = await deleteRound(roundToDeleteId);
-    setIsDeleting(false);
-    setRoundToDeleteId(null);
-    if (res.success) {
-      dispatch(showToast({ message: "Ronda eliminada", type: "success" }));
-      setRefreshKey((prev) => prev + 1);
-    } else {
-      dispatch(showToast({ message: res.messages?.[0] || "Error al eliminar ronda", type: "error" }));
-    }
-  };
-
-  const handleEndRound = async () => {
-    if (!roundToFinishId || isFinishing) return;
-    setIsFinishing(true);
-    const res = await endRound(roundToFinishId);
-    setIsFinishing(false);
-    setRoundToFinishId(null);
-    if (res.success) {
-      dispatch(showToast({ message: "Ronda finalizada", type: "success" }));
-      setRefreshKey((prev) => prev + 1);
-    } else {
-      dispatch(showToast({ message: "Error al finalizar", type: "error" }));
-    }
-  };
-
-const columns = useMemo(
+const columns = useMemo<Column<Round>[]>(
   () => {
-    const getBg = (row: IRound) => {
+    const getBg = (row: Round) => {
       const c = row._count?.kardexEntries || 0;
-      if (c === 0) return "#fef2f2"; // rojo suave
-      if (row.status === "COMPLETED") return "#ecfdf5"; // verde suave
-      return "#fffbeb"; // amarillo suave
+      if (c === 0) return roundVisualState(row).row;
+      if (row.status === "COMPLETED") return roundVisualState(row).row;
+      return roundVisualState(row).row;
     };
 
-    const getDot = (row: IRound) => {
+    const getDot = (row: Round) => {
       const c = row._count?.kardexEntries || 0;
-      if (c === 0) return "bg-red-500";
-      if (row.status === "COMPLETED") return "bg-emerald-500";
-      return "bg-amber-400";
+      if (c === 0) return roundVisualState(row).dot;
+      if (row.status === "COMPLETED") return roundVisualState(row).dot;
+      return roundVisualState(row).dot;
     };
 
-    const getStatus = (row: IRound): { color: any; label: string } => {
+    const getStatus = (row: Round) => {
       const c = row._count?.kardexEntries || 0;
-      if (c === 0) return { color: "error", label: "SIN ACTIVIDAD" };
-      if (row.status === "COMPLETED") return { color: "success", label: "COMPLETADA" };
-      return { color: "warning", label: "EN CURSO" };
+      if (c === 0) return { color: roundVisualState(row).color, label: roundVisualState(row).label };
+      if (row.status === "COMPLETED") return { color: roundVisualState(row).color, label: roundVisualState(row).label };
+      return { color: roundVisualState(row).color, label: roundVisualState(row).label };
     };
 
     return [
       {
         key: "recurringConfiguration",
+        type: "string",
         label: "RUTA / REFERENCIA",
-        render: (row: IRound) => (
+        render: (row: Round) => (
           <div
             style={{
               backgroundColor: getBg(row),
@@ -189,8 +98,9 @@ const columns = useMemo(
       },
       {
         key: "guard",
+        type: "string",
         label: "PERSONAL OPERATIVO",
-        render: (row: IRound) => (
+        render: (row: Round) => (
           <div
             style={{
               backgroundColor: getBg(row),
@@ -211,8 +121,9 @@ const columns = useMemo(
       },
       {
         key: "times",
+        type: "string",
         label: "CRONOLOGÍA",
-        render: (row: IRound) => {
+        render: (row: Round) => {
           const isActive = !row.endTime;
           return (
             <div
@@ -247,8 +158,9 @@ const columns = useMemo(
       },
       {
         key: "status",
+        type: "string",
         label: "ESTADO",
-        render: (row: IRound) => {
+        render: (row: Round) => {
           const s = getStatus(row);
           const bgColor = getBg(row);
           return (
@@ -270,8 +182,9 @@ const columns = useMemo(
       },
       {
         key: "actions",
+        type: "string",
         label: "CONTROL",
-        render: (row: IRound) => {
+        render: (row: Round) => {
           const bgColor = getBg(row);
           return (
             <div
@@ -325,7 +238,7 @@ const columns = useMemo(
   [navigate, routesMap, isResident],
 );
   return (
-    <ModulePage
+    <PageShell
       title="Historial de Rondas"
       subtitle="Supervisión y cronología de recorridos operativos en tiempo real"
       icon={FaRoute}
@@ -339,8 +252,8 @@ const columns = useMemo(
             }))}
             value={selectedClientId}
             onChange={(val) => {
-              setSelectedClientId(val);
-              setRefreshKey((prev) => prev + 1);
+              setSelectedClientId(String(val));
+              refresh();
             }}
             className="w-full"
           />
@@ -355,8 +268,9 @@ const columns = useMemo(
       dateRange={{
         value: selectedDate as [Date | null, Date | null],
         onChange: (val) => {
-          setSelectedDate(val);
-          setRefreshKey((prev) => prev + 1);
+          // El picker de rango puede devolver nulos: se ignoran.
+          if (val[0] && val[1]) setSelectedDate([val[0], val[1]]);
+          refresh();
         },
       }}
       extraFilter={
@@ -364,7 +278,7 @@ const columns = useMemo(
           value={statusFilter}
           onChange={(val) => {
             setStatusFilter(val);
-            setRefreshKey((prev) => prev + 1);
+            refresh();
           }}
           options={[
             { label: "TODAS", value: "ALL" },
@@ -373,16 +287,16 @@ const columns = useMemo(
           ]}
         />
       }
-      onRefresh={() => setRefreshKey((prev) => prev + 1)}
+      onRefresh={refresh}
       refreshKey={refreshKey}
     >
 
       <div className="rounds-table bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mt-6">
-        <ITDataTable<IRound & Record<string, unknown>>
+        <ITDataTable<Round>
           key={refreshKey}
-          columns={columns as any}
-          fetchData={memoizedFetch as any}
-          externalFilters={externalFilters}
+          columns={columns}
+          fetchData={memoizedFetch}
+          externalFilters={externalFilters as never}
           defaultItemsPerPage={10}
           title=""
         />
@@ -485,7 +399,172 @@ const columns = useMemo(
           </div>
         </div>
       </ITDialog>
-    </ModulePage>
+    </PageShell>
+  );
+
+  return (
+    <PageShell
+      title="Historial de Rondas"
+      subtitle="Supervisión y cronología de recorridos operativos en tiempo real"
+      icon={FaRoute}
+      filter={
+        !isResident && (
+          <ITSearchSelect
+            placeholder="FILTRAR POR CLIENTE..."
+            options={(clients || []).map((c: any) => ({
+              label: c.name,
+              value: c.id,
+            }))}
+            value={selectedClientId}
+            onChange={(val) => {
+              setSelectedClientId(String(val));
+              refresh();
+            }}
+            className="w-full"
+          />
+        )
+      }
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR GUARDIA...",
+        icon: FaUser,
+      }}
+      dateRange={{
+        value: selectedDate as [Date | null, Date | null],
+        onChange: (val) => {
+          // El picker de rango puede devolver nulos: se ignoran.
+          if (val[0] && val[1]) setSelectedDate([val[0], val[1]]);
+          refresh();
+        },
+      }}
+      extraFilter={
+        <ITTripleFilter
+          value={statusFilter}
+          onChange={(val) => {
+            setStatusFilter(val);
+            refresh();
+          }}
+          options={[
+            { label: "TODAS", value: "ALL" },
+            { label: "ACTIVAS", value: "IN_PROGRESS" },
+            { label: "HISTORIAL", value: "COMPLETED" },
+          ]}
+        />
+      }
+      onRefresh={refresh}
+      refreshKey={refreshKey}
+    >
+
+      <div className="rounds-table bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mt-6">
+        <ITDataTable<Round>
+          key={refreshKey}
+          columns={columns}
+          fetchData={memoizedFetch}
+          externalFilters={externalFilters as never}
+          defaultItemsPerPage={10}
+          title=""
+        />
+      </div>
+
+      {/* FINISH ROUND DIALOG */}
+      <ITDialog
+        isOpen={!!roundToFinishId}
+        onClose={() => setRoundToFinishId(null)}
+        title=""
+        className="!max-w-md w-full!"
+      >
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                <FaStop size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Finalizar Recorrido</h3>
+                <p className="text-xs text-slate-400 font-light">Forzar cierre de ronda</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción cerrará la ronda actual de forma forzada. Los puntos pendientes quedarán registrados como incompletos.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
+            <ITButton
+              variant="ghost"
+              onClick={() => setRoundToFinishId(null)}
+              size="sm"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
+            >
+              Cancelar
+            </ITButton>
+            <ITButton
+              variant="filled"
+              color="primary"
+              size="sm"
+              className="px-5 whitespace-nowrap shadow shadow-amber-100"
+              onClick={handleEndRound}
+              disabled={isFinishing}
+            >
+              {isFinishing ? <ITLoader size="sm" color="white" /> : "Finalizar"}
+            </ITButton>
+          </div>
+        </div>
+      </ITDialog>
+
+      {/* DELETE ROUND DIALOG */}
+      <ITDialog
+        isOpen={!!roundToDeleteId}
+        onClose={() => setRoundToDeleteId(null)}
+        title=""
+        className="!max-w-md w-full!"
+      >
+        <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
+          <div className="px-8 pt-8 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                <FaTrash size={18} />
+              </div>
+              <div>
+                <h3 className="text-base font-medium text-slate-800">Eliminar Ronda</h3>
+                <p className="text-xs text-slate-400 font-light">Esta acción es permanente</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-8 py-6">
+            <p className="text-sm text-slate-500 font-light leading-relaxed text-center">
+              Esta acción eliminará el registro de la ronda y todo su historial asociado de forma permanente.
+            </p>
+          </div>
+
+          <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
+            <ITButton
+              variant="ghost"
+              onClick={() => setRoundToDeleteId(null)}
+              size="sm"
+              className="px-5 whitespace-nowrap shadow shadow-slate-100"
+            >
+              Cancelar
+            </ITButton>
+            <ITButton
+              variant="filled"
+              color="danger"
+              size="sm"
+              className="px-5 whitespace-nowrap shadow shadow-rose-100"
+              onClick={confirmDeleteRound}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <ITLoader size="sm" /> : "Eliminar"}
+            </ITButton>
+          </div>
+        </div>
+      </ITDialog>
+    </PageShell>
   );
 };
 

@@ -1,6 +1,4 @@
 import { ModulePage } from "@app/core/components/ModulePage";
-import { useCatalog } from "@app/core/hooks/catalog.hook";
-import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITBadget,
   ITButton,
@@ -14,11 +12,9 @@ import {
   ITStatCard,
   ITText,
   type Column,
-  type ITDataTableFetchParams,
-  type ITDataTableResponse,
 } from "@axzydev/axzy_ui_system";
+import type { ReactNode } from "react";
 import dayjs from "dayjs";
-import { type ReactNode, useCallback, useState } from "react";
 import {
   FaArrowRight,
   FaChartBar,
@@ -31,30 +27,13 @@ import {
   FaTrash,
   FaUserShield,
 } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import { AperturaCierreReportModal } from "../components/AperturaCierreReportModal";
-import { GuardPerformanceReportModal } from "../components/GuardPerformanceReportModal";
-import { IncidentsReportModal } from "../components/IncidentsReportModal";
-import {
-  deleteReportConfiguration,
-  getPaginatedReportConfigurations,
-} from "../services/ReportConfigurationsService";
-import { generateAdministrativeMatrixPDF } from "../services/ReportsService";
+import { AperturaCierreReportModal } from "./AperturaCierreReportModal";
+import { GuardPerformanceReportModal } from "./GuardPerformanceReportModal";
+import { IncidentsReportModal } from "./IncidentsReportModal";
+import type { ReportConfigRow } from "@entities/report";
+import { useReportsPage } from "../model/useReportsPage";
 
-type ReportConfiguration = {
-  startDate?: string;
-  endDate?: string;
-  recurringConfigurationIds?: string[];
-};
 
-type ReportConfigRow = {
-  id: string;
-  name: string;
-  reportType: string;
-  client?: { id: string; name: string } | null;
-  configuration: ReportConfiguration;
-  createdAt?: string;
-};
 
 /**
  * Tarjeta de un tipo de reporte dentro del catálogo.
@@ -125,153 +104,33 @@ const ReportTypeCard = ({
 );
 
 const ReportsPage = () => {
-  const dispatch = useDispatch();
-  const { data: clients } = useCatalog("client");
-
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClientId, setSelectedClientId] = useState<string | number>("");
-
-  const [aperturaCierreOpen, setAperturaCierreOpen] = useState(false);
-  const [incidentsOpen, setIncidentsOpen] = useState(false);
-  const [performanceOpen, setPerformanceOpen] = useState(false);
-  const [configToEdit, setConfigToEdit] = useState<ReportConfigRow | null>(null);
-  const [configToDelete, setConfigToDelete] = useState<ReportConfigRow | null>(
-    null,
-  );
-  const [isGenerating, setIsGenerating] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [savedCount, setSavedCount] = useState(0);
-
-  const fetchData = useCallback(
-    async (
-      params: ITDataTableFetchParams,
-    ): Promise<ITDataTableResponse<ReportConfigRow>> => {
-      const res = await getPaginatedReportConfigurations({
-        ...params,
-        searchTerm,
-        clientId: selectedClientId || undefined,
-      });
-
-      if (res.success) {
-        setSavedCount((prev) =>
-          prev === res.data.total ? prev : res.data.total,
-        );
-        return {
-          data: res.data.rows as ReportConfigRow[],
-          total: res.data.total,
-        };
-      }
-      return { data: [], total: 0 };
-    },
-    [searchTerm, selectedClientId],
-  );
-
-  const handleGenerateSavedReport = async (configRow: ReportConfigRow) => {
-    setIsGenerating(configRow.id);
-    try {
-      if (configRow.reportType === "ADMINISTRATIVE_MATRIX") {
-        const { recurringConfigurationIds = [], startDate, endDate } =
-          configRow.configuration;
-
-        if (!startDate || !endDate) {
-          dispatch(
-            showToast({
-              message: "La configuración no tiene un rango de fechas válido",
-              type: "error",
-            }),
-          );
-          return;
-        }
-
-        const response = await generateAdministrativeMatrixPDF({
-          recurringConfigurationIds,
-          startDate,
-          endDate,
-        });
-
-        const url = window.URL.createObjectURL(
-          new Blob([response as unknown as BlobPart], {
-            type: "application/pdf",
-          }),
-        );
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute(
-          "download",
-          `${configRow.name.replace(/\s+/g, "_")}_${dayjs().format("YYYYMMDD")}.pdf`,
-        );
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        dispatch(
-          showToast({
-            message: "Reporte generado con éxito",
-            type: "success",
-          }),
-        );
-      } else {
-        dispatch(
-          showToast({
-            message: "Tipo de reporte no soportado aún",
-            type: "info",
-          }),
-        );
-      }
-    } catch {
-      dispatch(
-        showToast({
-          message: "Error al generar reporte",
-          type: "error",
-        }),
-      );
-    } finally {
-      setIsGenerating(null);
-    }
-  };
-
-  const handleEdit = (row: ReportConfigRow) => {
-    if (row.reportType === "ADMINISTRATIVE_MATRIX") {
-      setConfigToEdit(row);
-      setAperturaCierreOpen(true);
-    } else {
-      dispatch(
-        showToast({
-          message: "Este tipo de reporte no se puede editar",
-          type: "info",
-        }),
-      );
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!configToDelete || isDeleting) return;
-    setIsDeleting(true);
-    const res = await deleteReportConfiguration(configToDelete.id);
-    setIsDeleting(false);
-    setConfigToDelete(null);
-
-    if (res.success) {
-      dispatch(
-        showToast({ message: "Configuración eliminada", type: "success" }),
-      );
-      setRefreshKey((prev) => prev + 1);
-    } else {
-      dispatch(
-        showToast({
-          message: res.messages?.[0] || "Error al eliminar configuración",
-          type: "error",
-        }),
-      );
-    }
-  };
-
-  const closeModal = () => {
-    setAperturaCierreOpen(false);
-    setConfigToEdit(null);
-    setRefreshKey((prev) => prev + 1);
-  };
+  const {
+    clients,
+    refreshKey,
+    searchTerm,
+    setSearchTerm,
+    selectedClientId,
+    setSelectedClientId,
+    refresh,
+    aperturaCierreOpen,
+    setAperturaCierreOpen,
+    incidentsOpen,
+    setIncidentsOpen,
+    performanceOpen,
+    setPerformanceOpen,
+    configToEdit,
+    setConfigToEdit,
+    configToDelete,
+    setConfigToDelete,
+    isGenerating,
+    isDeleting,
+    savedCount,
+    fetchData,
+    handleGenerateSavedReport,
+    handleEdit,
+    confirmDelete,
+    closeModal,
+  } = useReportsPage();
 
   const columns: Column<ReportConfigRow>[] = [
     {
@@ -380,7 +239,7 @@ const ReportsPage = () => {
             value: c.id,
           }))}
           value={selectedClientId}
-          onChange={(val: string | number) => setSelectedClientId(val)}
+          onChange={(val: string | number) => setSelectedClientId(String(val))}
         />
       }
       search={{
@@ -388,7 +247,7 @@ const ReportsPage = () => {
         onChange: setSearchTerm,
         placeholder: "BUSCAR CONFIGURACIÓN...",
       }}
-      onRefresh={() => setRefreshKey((prev) => prev + 1)}
+      onRefresh={refresh}
       refreshKey={refreshKey}
     >
       {/* RESUMEN */}

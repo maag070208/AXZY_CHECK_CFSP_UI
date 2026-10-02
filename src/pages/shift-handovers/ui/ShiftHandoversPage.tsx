@@ -4,82 +4,38 @@ import {
   ITButton,
   ITConfirmDialog,
   ITDataTable,
-  ITDataTableFetchParams,
   ITFlex,
   ITPage,
   ITText,
+  type ITDataTableFetchParams,
+  type ITDataTableResponse,
 } from "@axzydev/axzy_ui_system";
-import dayjs from "dayjs";
-import { useCallback, useMemo, useState } from "react";
 import { FaClipboardCheck, FaEye, FaPlus, FaTrash } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { useSupervisionPermissions } from "@app/core/hooks/supervisionPermissions.hook";
-import { showToast } from "@app/core/store/toast/toast.slice";
-import { IShiftHandoverListItem } from "@app/core/types/supervision.types";
+import { useMemo } from "react";
+import { type IShiftHandoverListItem } from "@entities/supervision";
 import { formatDateTime, formatShiftDate, fullName } from "@app/core/utils/supervision.utils";
-import { TodayComplianceStrip } from "@modules/shift-plans/components/TodayComplianceStrip";
-import { ShiftHandoverDetailDialog } from "../components/ShiftHandoverDetailDialog";
-import { deleteShiftHandover, getPaginatedShiftHandovers } from "../services/ShiftHandoversService";
-
-/** Traduce los filtros por columna de la tabla a los filtros de la API. */
-const toApiParams = (params: ITDataTableFetchParams): ITDataTableFetchParams => {
-  const f = params.filters ?? {};
-  const range = Array.isArray(f.shiftDate) ? (f.shiftDate as [Date | null, Date | null]) : [null, null];
-  return {
-    ...params,
-    filters: {
-      ...(f.search ? { search: String(f.search) } : {}),
-      ...(f.clientId ? { clientId: String(f.clientId) } : {}),
-      ...(range[0] ? { dateFrom: dayjs(range[0]).format("YYYY-MM-DD") } : {}),
-      ...(range[1] ? { dateTo: dayjs(range[1]).format("YYYY-MM-DD") } : {}),
-    },
-  };
-};
+import { TodayComplianceStrip } from "@widgets/today-compliance";
+import { ShiftHandoverDetailDialog } from "./ShiftHandoverDetailDialog";
+import { useShiftHandoversPage } from "../model/useShiftHandoversPage";
 
 const ShiftHandoversPage = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { canRegister, canManage, isClient } = useSupervisionPermissions();
   const { data: clients, loading: loadingClients } = useCatalog("client");
-
-  const [reloadKey, setReloadKey] = useState(0);
-  const [detailId, setDetailId] = useState<string | null>(searchParams.get("detalle"));
-  const [toDelete, setToDelete] = useState<IShiftHandoverListItem | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
-  const closeDetail = () => {
-    setDetailId(null);
-    if (searchParams.has("detalle")) setSearchParams({}, { replace: true });
-  };
-
-  const fetchData = useCallback(async (params: ITDataTableFetchParams) => {
-    const res = await getPaginatedShiftHandovers(toApiParams(params));
-    return res as unknown as { data: Record<string, unknown>[]; total: number };
-  }, []);
-
-  const confirmDelete = async () => {
-    if (!toDelete) return;
-    setDeleting(true);
-    try {
-      const res = await deleteShiftHandover(toDelete.id);
-      dispatch(
-        showToast(
-          res.success
-            ? { message: "Entrega eliminada", type: "success" }
-            : { message: res.messages?.[0] ?? "No se pudo eliminar", type: "error" },
-        ),
-      );
-      setReloadKey((k) => k + 1);
-    } catch (err: any) {
-      dispatch(showToast({ message: err?.messages?.[0] ?? "No se pudo eliminar", type: "error" }));
-    } finally {
-      setDeleting(false);
-      setToDelete(null);
-    }
-  };
+  const {
+    reloadKey,
+    detailId,
+    setDetailId,
+    closeDetail,
+    toDelete,
+    setToDelete,
+    deleting,
+    confirmDelete,
+    fetchData,
+  } = useShiftHandoversPage();
 
   const columns = useMemo<Column<IShiftHandoverListItem>[]>(
     () => [
@@ -201,7 +157,7 @@ const ShiftHandoversPage = () => {
 
       <ITDataTable
         columns={columns as unknown as Column<Record<string, unknown>>[]}
-        fetchData={fetchData}
+        fetchData={fetchData as unknown as (p: ITDataTableFetchParams) => Promise<ITDataTableResponse<Record<string, unknown>>>}
         reloadTrigger={reloadKey}
         layout="fixed"
         density="compact"

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { render, screen, waitFor } from "@app/core/utils/test-utils";
 import ClientDetailsPage from "./ClientDetailsPage";
-import * as clientsService from "../services/ClientsService";
+import * as clientsService from "@entities/client";
 import { vi } from "vitest";
 import "@testing-library/jest-dom";
 
@@ -16,19 +16,27 @@ vi.mock("react-router-dom", async (importOriginal) => {
   };
 });
 
-// Mock ClientsService
-vi.mock("../services/ClientsService", () => ({
+// La entidad se mockea completa: si falta una export, `vi.mocked()` deja de
+// devolver el mock y los tests fallan con "mockResolvedValue is not a function".
+vi.mock("@entities/client", () => ({
   getClientById: vi.fn(),
+  fetchClientsTable: vi.fn(),
+  createClient: vi.fn(),
+  updateClient: vi.fn(),
+  deleteClient: vi.fn(),
+  listClients: vi.fn(),
+  clientAddress: vi.fn(),
+  CLIENT_PHONE_REGEX: /^[0-9]{10}$/,
 }));
 
 // Mock sub-tabs
-vi.mock("../components/details/ClientLocationsTab", () => ({
+vi.mock("./ClientLocationsTab", () => ({
   ClientLocationsTab: () => <div data-testid="locations-tab">Ubicaciones Tab Mock</div>,
 }));
-vi.mock("../components/details/ClientZonesTab", () => ({
+vi.mock("./ClientZonesTab", () => ({
   ClientZonesTab: () => <div data-testid="zones-tab">Zonas Tab Mock</div>,
 }));
-vi.mock("../components/details/ClientGuardsTab", () => ({
+vi.mock("./ClientGuardsTab", () => ({
   ClientGuardsTab: () => <div data-testid="guards-tab">Guardias Tab Mock</div>,
 }));
 

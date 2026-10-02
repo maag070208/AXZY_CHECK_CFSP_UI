@@ -11,6 +11,8 @@
     "build": "tsc -b && vite build --mode development",
     "build:prod": "tsc -b && vite build --mode production",
     "test": "vitest run",
+    "check:fsd": "node scripts/check-fsd-boundaries.mjs",
+    "verify": "node scripts/check-fsd-boundaries.mjs && tsc -b && vitest run",
     "test:e2e:mock": "playwright test",
     "test:e2e:mock:ui": "playwright test --ui",
     "test:e2e:real": "USE_REAL_API=true playwright test",

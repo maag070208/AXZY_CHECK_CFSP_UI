@@ -9,13 +9,10 @@ import {
   ITTable,
   ITText,
 } from "@axzydev/axzy_ui_system";
-import { useCallback, useEffect, useState } from "react";
 import { FaCalendarPlus, FaEdit, FaExclamationTriangle, FaTrash } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import { showToast } from "@app/core/store/toast/toast.slice";
-import { IShiftPlan } from "@app/core/types/supervision.types";
+import type { IShiftPlan } from "@entities/supervision";
+import { useShiftPlansTab } from "../model/useShiftPlansTab";
 import { WEEKDAY_SHORT } from "@app/core/utils/supervision.utils";
-import { deleteShiftPlan, getShiftPlans, updateShiftPlan } from "../services/ShiftPlansService";
 import { ShiftPlanFormDialog } from "./ShiftPlanFormDialog";
 
 interface ShiftPlansTabProps {
@@ -32,61 +29,20 @@ const describeDays = (days: number[]): string => {
 
 /** Configuración: qué turnos de qué cliente exigen entrega y/o uniforme. */
 export const ShiftPlansTab = ({ canManage, onChanged }: ShiftPlansTabProps) => {
-  const dispatch = useDispatch();
-  const [plans, setPlans] = useState<IShiftPlan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<IShiftPlan | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
-  const [toDelete, setToDelete] = useState<IShiftPlan | null>(null);
-  const [busyId, setBusyId] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await getShiftPlans();
-      setPlans(res.success ? res.data : []);
-    } catch (err: any) {
-      dispatch(showToast({ message: err?.messages?.[0] ?? "No se pudo cargar la programación", type: "error" }));
-    } finally {
-      setLoading(false);
-    }
-  }, [dispatch]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const changed = () => {
-    void load();
-    onChanged();
-  };
-
-  const toggleActive = async (plan: IShiftPlan, active: boolean) => {
-    setBusyId(plan.id);
-    try {
-      await updateShiftPlan(plan.id, { active });
-      changed();
-    } catch (err: any) {
-      dispatch(showToast({ message: err?.messages?.[0] ?? "No se pudo actualizar", type: "error" }));
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!toDelete) return;
-    setBusyId(toDelete.id);
-    try {
-      await deleteShiftPlan(toDelete.id);
-      dispatch(showToast({ message: "Programación eliminada", type: "success" }));
-      changed();
-    } catch (err: any) {
-      dispatch(showToast({ message: err?.messages?.[0] ?? "No se pudo eliminar", type: "error" }));
-    } finally {
-      setBusyId(null);
-      setToDelete(null);
-    }
-  };
+  const {
+    plans,
+    loading,
+    editing,
+    formOpen,
+    setFormOpen,
+    setEditing,
+    toDelete,
+    setToDelete,
+    busyId,
+    toggleActive,
+    confirmDelete,
+    changed,
+  } = useShiftPlansTab({ onChanged });
 
 
   const columns: Column<IShiftPlan>[] = [
@@ -180,10 +136,6 @@ export const ShiftPlansTab = ({ canManage, onChanged }: ShiftPlansTabProps) => {
     },
   ];
 
-  const openCreate = () => {
-    setEditing(null);
-    setFormOpen(true);
-  };
 
   if (loading) {
     return (
@@ -200,7 +152,7 @@ export const ShiftPlansTab = ({ canManage, onChanged }: ShiftPlansTabProps) => {
           Define qué turnos de cada cliente deben registrar entrega y revisión de uniforme. La agenda se genera sola a partir de aquí.
         </ITText>
         {canManage && (
-          <ITButton color="primary" onClick={openCreate}>
+          <ITButton color="primary" onClick={() => { setEditing(null); setFormOpen(true); }}>
             <span className="flex items-center gap-1.5 whitespace-nowrap">
               <FaCalendarPlus size={12} /> Programar turno
             </span>
@@ -213,7 +165,7 @@ export const ShiftPlansTab = ({ canManage, onChanged }: ShiftPlansTabProps) => {
           icon={<FaCalendarPlus />}
           title="Sin turnos programados"
           description="Programa los turnos de tus clientes para generar la agenda de entregas y revisiones."
-          action={canManage ? <ITButton color="primary" label="Programar el primero" onClick={openCreate} /> : undefined}
+          action={canManage ? <ITButton color="primary" label="Programar el primero" onClick={() => { setEditing(null); setFormOpen(true); }} /> : undefined}
         />
       ) : (
         <ITTable

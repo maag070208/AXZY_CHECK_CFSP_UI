@@ -11,7 +11,7 @@ import {
   FaTshirt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { ILiveAlert, LiveAlertSeverity, LiveAlertType } from "@app/core/types/supervision.types";
+import { ILiveAlert, LiveAlertSeverity, LiveAlertType } from "@entities/supervision";
 import { timeAgo } from "@app/core/utils/supervision.utils";
 import { SURFACE, TONES } from "@shared/ui";
 

@@ -1,6 +1,6 @@
 import { ITDialog, ITFlex, ITText } from "@axzydev/axzy_ui_system";
 import { FaUserShield } from "react-icons/fa";
-import { AnalyticsTab } from "../../home/components/tabs/AnalyticsTab";
+import { AnalyticsTab } from "@pages/reports/ui/AnalyticsTab";
 
 interface Props {
   isOpen: boolean;

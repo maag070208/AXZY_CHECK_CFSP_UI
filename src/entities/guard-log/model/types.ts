@@ -32,8 +32,8 @@ export type GuardLoginLog = {
 
 export type GuardLogStatusFilter = "ALL" | "OPEN" | "CLOSED";
 
-/** Fecha en la zona de operación. */
-export const toOperationsTime = (iso: string) => dayjs(iso).tz(OPERATIONS_TIMEZONE);
+/** Fecha en la zona de operación (uso interno). */
+const toOperationsTime = (iso: string) => dayjs(iso).tz(OPERATIONS_TIMEZONE);
 
 /** "06 oct 2026" en la zona de operación. */
 export const formatLogDate = (iso: string): string => toOperationsTime(iso).format("DD MMM YYYY");
@@ -59,5 +59,3 @@ export const formatLogDuration = (log: Pick<GuardLoginLog, "loginAt" | "logoutAt
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 };
 
-/** ¿El turno sigue abierto? */
-export const isLogOpen = (log: Pick<GuardLoginLog, "logoutAt">): boolean => !log.logoutAt;

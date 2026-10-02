@@ -1,6 +1,3 @@
-import { ModulePage } from "@app/core/components/ModulePage";
-import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
-import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITBadget,
   ITButton,
@@ -12,147 +9,55 @@ import {
   ITSlideToggle,
   ITTripleFilter,
 } from "@axzydev/axzy_ui_system";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { FaClock, FaEdit, FaTrash, FaUser } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import {
-  Schedule,
-  createSchedule,
-  deleteSchedule,
-  getPaginatedSchedules,
-  getUsersBySchedule,
-  updateSchedule,
-} from "../SchedulesService";
+import type { Schedule } from "@entities/schedule";
+import { PageShell } from "@shared/ui";
+import { useSchedulesDeps } from "../model/deps";
+import { useSchedulesPage } from "../model/useSchedulesPage";
 
+/** Horarios. Sólo pinta: el estado vive en `useSchedulesPage`. */
 const SchedulesPage = () => {
-  const dispatch = useDispatch();
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
-  const [scheduleToDeleteId, setScheduleToDeleteId] = useState<string | null>(
-    null,
-  );
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [viewingUsers, setViewingUsers] = useState(false);
-  const [selectedScheduleUsers, setSelectedScheduleUsers] = useState<any[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [viewingScheduleName, setViewingScheduleName] = useState("");
-
-  // Form State
-  const [name, setName] = useState("");
-  const [startTime, setStartTime] = useState("07:00");
-  const [endTime, setEndTime] = useState("15:00");
-  const [active, setActive] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-
-  const externalFilters = useMemo(() => {
-    const f: Record<string, string | number | boolean> = {};
-    if (searchTerm.trim()) f.name = searchTerm.trim();
-    if (statusFilter === "ACTIVE") f.active = true;
-    if (statusFilter === "INACTIVE") f.active = false;
-    return f;
-  }, [searchTerm, statusFilter]);
-
-  const memoizedFetch = useCallback(
-    (params: any) => {
-      return getPaginatedSchedules({ ...params, ...externalFilters });
-    },
-    [externalFilters],
-  );
-
-  const openModal = (schedule?: Schedule) => {
-    if (schedule) {
-      setEditingSchedule(schedule);
-      setName(schedule.name);
-      setStartTime(schedule.startTime);
-      setEndTime(schedule.endTime);
-      setActive(schedule.active);
-    } else {
-      setEditingSchedule(null);
-      setName("");
-      setStartTime("07:00");
-      setEndTime("15:00");
-      setActive(true);
-    }
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => setIsModalOpen(false);
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    dispatch(showLoader());
-    try {
-      const data = { name, startTime, endTime, active };
-      const res: any = editingSchedule
-        ? await updateSchedule(editingSchedule.id, data)
-        : await createSchedule(data);
-
-      if (res.success) {
-        dispatch(
-          showToast({
-            message: `Horario ${editingSchedule ? "actualizado" : "creado"}`,
-            type: "success",
-          }),
-        );
-        closeModal();
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        dispatch(
-          showToast({ message: res.messages?.[0] || "Error", type: "error" }),
-        );
-      }
-    } finally {
-      setIsSaving(false);
-      dispatch(hideLoader());
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!scheduleToDeleteId) return;
-    dispatch(showLoader());
-    try {
-      const res: any = await deleteSchedule(scheduleToDeleteId);
-      if (res.success) {
-        dispatch(
-          showToast({
-            message: "Horario eliminado con éxito",
-            type: "success",
-          }),
-        );
-        setRefreshKey((prev) => prev + 1);
-      } else {
-        dispatch(
-          showToast({ message: res.messages?.[0] || "Error", type: "error" }),
-        );
-      }
-    } finally {
-      setScheduleToDeleteId(null);
-      dispatch(hideLoader());
-    }
-  };
-
-  const viewUsers = async (schedule: Schedule) => {
-    setViewingScheduleName(schedule.name);
-    setViewingUsers(true);
-    setLoadingUsers(true);
-    try {
-      const users = await getUsersBySchedule(schedule.id);
-      setSelectedScheduleUsers(users);
-    } catch (error) {
-      dispatch(
-        showToast({ message: "Error al cargar usuarios", type: "error" }),
-      );
-    } finally {
-      setLoadingUsers(false);
-    }
-  };
+  const {
+    refreshKey,
+    refresh,
+    searchTerm,
+    setSearchTerm,
+    statusFilter,
+    setStatusFilter,
+    externalFilters,
+    memoizedFetch,
+    isModalOpen,
+    openModal,
+    closeModal,
+    editingSchedule,
+    isSaving,
+    handleSave,
+    name,
+    setName,
+    startTime,
+    setStartTime,
+    endTime,
+    setEndTime,
+    active,
+    setActive,
+    scheduleToDeleteId,
+    setScheduleToDeleteId,
+    confirmDelete,
+    isDeleting,
+    viewingUsers,
+    setViewingUsers,
+    selectedScheduleUsers,
+    viewingScheduleName,
+    loadingUsers,
+    viewUsers,
+  } = useSchedulesPage(useSchedulesDeps());
 
   const columns = useMemo(
     () => [
       {
         key: "name",
+        type: "string",
         label: "TURNO / HORARIO",
         render: (row: Schedule) => (
           <div className="flex flex-col">
@@ -170,6 +75,7 @@ const SchedulesPage = () => {
       },
       {
         key: "startTime",
+        type: "string",
         label: "ENTRADA",
         render: (row: Schedule) => (
           <div className="flex flex-col">
@@ -187,6 +93,7 @@ const SchedulesPage = () => {
       },
       {
         key: "endTime",
+        type: "string",
         label: "SALIDA",
         render: (row: Schedule) => (
           <div className="flex flex-col">
@@ -204,6 +111,7 @@ const SchedulesPage = () => {
       },
       {
         key: "users_count",
+        type: "string",
         label: "PERSONAL",
         render: (row: any) => (
           <div className="flex flex-col">
@@ -233,6 +141,7 @@ const SchedulesPage = () => {
       },
       {
         key: "actions",
+        type: "actions",
         label: "CONTROL",
         render: (row: Schedule) => (
           <div className="flex items-center flex-wrap gap-1.5 md:gap-2">
@@ -261,7 +170,7 @@ const SchedulesPage = () => {
   );
 
   return (
-    <ModulePage
+    <PageShell
       title="Directorio de Horarios"
       subtitle="Gestión de turnos operativos y controles de asistencia"
       icon={FaClock}
@@ -270,7 +179,7 @@ const SchedulesPage = () => {
         onChange: setSearchTerm,
         placeholder: "BUSCAR HORARIO...",
       }}
-      onRefresh={() => setRefreshKey((p) => p + 1)}
+      onRefresh={refresh}
       refreshKey={refreshKey}
       onCreate={() => openModal()}
       createLabel="Nuevo Horario"
@@ -430,6 +339,7 @@ const SchedulesPage = () => {
               size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
+              disabled={isDeleting}
             >
               Eliminar
             </ITButton>
@@ -519,7 +429,7 @@ const SchedulesPage = () => {
           </div>
         </div>
       </ITDialog>
-    </ModulePage>
+    </PageShell>
   );
 };
 

@@ -3,9 +3,11 @@ import {
   AgendaStatus,
   IAgendaSummary,
   IPersonSummary,
-} from "@app/core/types/supervision.types";
+} from "@entities/supervision";
 
-export const SHIFT_DATE_FORMAT = "YYYY-MM-DD";
+
+/** Formato de fecha de turno (uso interno). */
+const SHIFT_DATE_FORMAT = "YYYY-MM-DD";
 
 /** Etiqueta y color de badge para cada estado de la agenda. */
 export const AGENDA_STATUS_META: Record<

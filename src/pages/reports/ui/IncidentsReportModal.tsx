@@ -10,8 +10,7 @@ import {
   ITStatCard,
   ITText,
 } from "@axzydev/axzy_ui_system";
-import dayjs from "dayjs";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import {
   FaAlignLeft,
   FaCheckCircle,
@@ -19,16 +18,14 @@ import {
   FaSync,
   FaUserShield,
 } from "react-icons/fa";
-import {
-  getIncidentReport,
-  type IIncidentReport,
-} from "../services/ReportsService";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   initialClientId?: string;
 }
+
+import { useIncidentsReportModal } from "../model/useIncidentsReportModal";
 
 const BAR_COLORS = [
   "bg-sky-500",
@@ -105,33 +102,7 @@ export const IncidentsReportModal = ({
   onClose,
   initialClientId,
 }: Props) => {
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
-    dayjs().startOf("month").toDate(),
-    dayjs().toDate(),
-  ]);
-  const [data, setData] = useState<IIncidentReport | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const fetchReport = useCallback(async () => {
-    if (!dateRange[0] || !dateRange[1]) return;
-    setLoading(true);
-    try {
-      const res = await getIncidentReport({
-        startDate: dayjs(dateRange[0]).format("YYYY-MM-DD"),
-        endDate: dayjs(dateRange[1]).format("YYYY-MM-DD"),
-        clientId: initialClientId,
-      });
-      setData(res.success ? res.data : null);
-    } finally {
-      setLoading(false);
-    }
-  }, [dateRange, initialClientId]);
-
-  useEffect(() => {
-    if (isOpen) fetchReport();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
-
+  const { dateRange, setDateRange, data, loading, fetchReport } = useIncidentsReportModal({ isOpen, initialClientId });
   return (
     <ITDialog
       isOpen={isOpen}

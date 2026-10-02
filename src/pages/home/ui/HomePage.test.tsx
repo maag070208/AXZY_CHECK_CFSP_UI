@@ -1,5 +1,5 @@
 import { screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { setAuth } from "@app/core/store/auth/auth.slice";
 import { makeStore } from "@core/store/store";
 import { renderWithProviders } from "../../../app/testing/renderWithProviders";
@@ -25,39 +25,40 @@ vi.mock("react-jwt", () => ({
   isExpired: vi.fn(() => false),
 }));
 
-// El monitoreo en vivo hace peticiones y usa mapas: se prueba por separado.
-vi.mock("@modules/dashboard/pages/DashboardPage", () => ({
-  default: () => <div data-testid="live-dashboard">Monitoreo en vivo</div>,
-}));
-
 /**
- * Cada caso monta su propio store (`renderWithProviders` lo crea), así que el
- * estado de sesión ya no se filtra entre tests ni hay que resetearlo a mano.
+ * Accesos rápidos por rol.
+ *
+ * Qué rol entra al monitoreo en vivo ya no se decide aquí, sino en
+ * `app/routing/HomeRoute` (una página no puede importar otra): esos casos
+ * viven en `HomeRoute.test.tsx`.
  */
-describe("HomePage (Inicio por rol)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it.each(["fake-admin-token", "fake-shift-token", "fake-client-token"])(
-    "los roles de supervisión ven el monitoreo en vivo (%s)",
-    (token) => {
-      const store = makeStore();
-      store.dispatch(setAuth(token));
-      renderWithProviders(<HomePage />, { store });
-
-      expect(screen.getByTestId("live-dashboard")).toBeInTheDocument();
-    },
-  );
-
-  it("un guardia ve accesos rápidos a sus módulos y no el monitoreo", () => {
+describe("HomePage (accesos rápidos)", () => {
+  it("un guardia ve sus módulos permitidos", () => {
     const store = makeStore();
     store.dispatch(setAuth("fake-guard-token"));
     renderWithProviders(<HomePage />, { store });
 
-    expect(screen.queryByTestId("live-dashboard")).not.toBeInTheDocument();
     expect(screen.getByText(/^Recorridos$/i)).toBeInTheDocument();
     expect(screen.getByText(/^Incidencias$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Mantenimiento$/i)).toBeInTheDocument();
+  });
+
+  it("un administrador no ve los accesos de guardia", () => {
+    const store = makeStore();
+    store.dispatch(setAuth("fake-admin-token"));
+    renderWithProviders(<HomePage />, { store });
+
+    expect(screen.queryByText(/^Recorridos$/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Clientes$/i)).not.toBeInTheDocument();
+  });
+
+  it("cada tarjeta navega a su módulo", () => {
+    const store = makeStore();
+    store.dispatch(setAuth("fake-guard-token"));
+    renderWithProviders(<HomePage />, { store });
+
+    screen.getByText(/^Recorridos$/i).closest("button")?.click();
+
+    expect(mockNavigate).toHaveBeenCalledWith("/rounds");
   });
 });

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ITCard, ITDatePicker, ITButton, ITBadget } from "@axzydev/axzy_ui_system";
 import { FaSync, FaExclamationTriangle, FaQrcode, FaTimesCircle, FaChartLine } from 'react-icons/fa';
 import { Chart, registerables } from 'chart.js';
-import * as ReportService from '../../services/ReportService';
+import * as ReportService from '@entities/report';
 import dayjs from 'dayjs';
 
 Chart.register(...registerables);

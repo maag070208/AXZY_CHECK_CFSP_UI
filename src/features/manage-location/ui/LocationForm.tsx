@@ -8,7 +8,7 @@ import {
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";
 import * as Yup from "yup";
-import { getZonesByClient, Zone } from "../../zones/services/ZonesService";
+import { getZonesByClient, type Zone } from "@entities/zone";
 
 interface Props {
   onSubmit: (data: any, keepOpen?: boolean) => void;
@@ -89,7 +89,7 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
     if (formik.values.clientId) {
       setLoadingZones(true);
       getZonesByClient(String(formik.values.clientId))
-        .then((data) => setZones(data))
+        .then((res) => setZones(res.success && Array.isArray(res.data) ? res.data : []))
         .finally(() => setLoadingZones(false));
     } else {
       setZones([]);

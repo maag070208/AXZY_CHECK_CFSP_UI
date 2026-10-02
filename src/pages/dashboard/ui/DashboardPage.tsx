@@ -20,23 +20,23 @@ import { useNavigate } from "react-router-dom";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { useSupervisionPermissions } from "@app/core/hooks/supervisionPermissions.hook";
 import { AppState } from "@app/core/store/store";
-import { ILiveDashboard } from "@app/core/types/supervision.types";
-import { ActiveGuardRow } from "../components/ActiveGuardRow";
-import { ActiveRoundsPanel } from "../components/ActiveRoundsPanel";
-import { ActivityItemRow } from "../components/ActivityItemRow";
-import { CompliancePanel } from "../components/CompliancePanel";
-import { LiveAlertsPanel } from "../components/LiveAlertsPanel";
-import { LiveControls } from "../components/LiveControls";
-import { LiveMap } from "../components/LiveMap";
-import { Panel } from "../components/Panel";
-import { StatusStrip } from "../components/StatusStrip";
+import { ILiveDashboard } from "@entities/supervision";
+import { ActiveGuardRow } from "./components/ActiveGuardRow";
+import { ActiveRoundsPanel } from "./components/ActiveRoundsPanel";
+import { ActivityItemRow } from "./components/ActivityItemRow";
+import { CompliancePanel } from "./components/CompliancePanel";
+import { LiveAlertsPanel } from "./components/LiveAlertsPanel";
+import { LiveControls } from "./components/LiveControls";
+import { LiveMap } from "./components/LiveMap";
+import { Panel } from "./components/Panel";
+import { StatusStrip } from "./components/StatusStrip";
 import {
   getDashboardActiveGuards,
   getDashboardRecentActivity,
   getLiveDashboard,
   IActiveGuard,
   IActivityItem,
-} from "../services/DashboardService";
+} from "@entities/supervision";
 
 /** Respaldo por si Ably no entrega eventos: los estados también cambian con la hora. */
 const POLL_MS = 60_000;

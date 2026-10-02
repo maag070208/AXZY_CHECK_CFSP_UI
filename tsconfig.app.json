@@ -13,7 +13,6 @@
       "@app/*": ["src/*"],
       "@core/*": ["src/core/*"],
       "@assets/*": ["src/assets/*"],
-      "@modules/*": ["src/modules/*"],
     },
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2020",

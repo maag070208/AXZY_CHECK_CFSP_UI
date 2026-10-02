@@ -1,6 +1,6 @@
 import { ITText } from "@axzydev/axzy_ui_system";
 import { FaCheck, FaTimes } from "react-icons/fa";
-import { IChecklistAnswer, IChecklistItemDefinition } from "@app/core/types/supervision.types";
+import { IChecklistAnswer, IChecklistItemDefinition } from "@entities/supervision";
 
 interface ChecklistGridProps {
   catalog: IChecklistItemDefinition[];

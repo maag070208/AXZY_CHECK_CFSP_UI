@@ -1,5 +1,5 @@
 import { AppState } from "@app/core/store/store";
-import { BRAND_LOGO_HORIZONTAL } from "@assets/brand";
+import { BRAND_LOGO_TILE } from "@assets/brand";
 import {
   FaBook,
   FaBuilding,
@@ -270,5 +270,5 @@ export const useNavigationItems = (): any[] => {
 // ------------- MARCA -----------------
 /** Lockup horizontal: símbolo + "CheckApp" (barra superior en escritorio). */
 export const NAVBAR_LOGO = () => (
-  <img src={BRAND_LOGO_HORIZONTAL} alt="CheckApp" className="hidden h-9 w-auto md:block" />
+  <img src={BRAND_LOGO_TILE} alt="CheckApp" className="hidden h-10 w-auto md:block" />
 );

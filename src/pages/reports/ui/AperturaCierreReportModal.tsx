@@ -1,5 +1,3 @@
-import { post } from "@app/core/axios/axios";
-import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITButton,
   ITDatePicker,
@@ -8,188 +6,35 @@ import {
   ITLoader,
   ITSearchSelect,
 } from "@axzydev/axzy_ui_system";
-import dayjs from "dayjs";
-import { useEffect, useState } from "react";
 import { FaCheckCircle, FaFileAlt } from "react-icons/fa";
-import { useDispatch } from "react-redux";
 import {
-  createReportConfiguration,
-  updateReportConfiguration,
-} from "../services/ReportConfigurationsService";
-import { getRecurringConfigurationsList } from "../services/ReportsService";
-
-interface Props {
-  isOpen: boolean;
-  onClose: () => void;
-  configToEdit?: any;
-}
+  useAperturaCierreReportModal,
+  type AperturaCierreReportModalProps,
+} from "../model/useAperturaCierreReportModal";
 
 export const AperturaCierreReportModal = ({
   isOpen,
   onClose,
+  onSaved,
+  initialClientId,
   configToEdit,
-}: Props) => {
-  const dispatch = useDispatch();
-
-  const [loadingConfig, setLoadingConfig] = useState(true);
-  const [configurations, setConfigurations] = useState<any[]>([]);
-  const [selectedConfigIds, setSelectedConfigIds] = useState<string[]>([]);
-
-  const [name, setName] = useState("");
-  const [clients, setClients] = useState<any[]>([]);
-  const [selectedClientId, setSelectedClientId] = useState<string>("");
-
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
-    dayjs().startOf("month").toDate(),
-    dayjs().endOf("month").toDate(),
-  ]);
-
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    setLoadingConfig(true);
-    post("/clients/datatable", { page: 1, limit: 1000 }).then((res: any) => {
-      if (res.success && res.data) {
-        setClients(res.data.rows || []);
-      }
-    });
-
-    getRecurringConfigurationsList()
-      .then((res) => {
-        if (res.success && res.data) {
-          setConfigurations(res.data as any);
-        }
-      })
-      .finally(() => setLoadingConfig(false));
-
-    if (configToEdit) {
-      setName(configToEdit.name || "");
-      setSelectedClientId(configToEdit.clientId || "");
-      setSelectedConfigIds(
-        configToEdit.configuration?.recurringConfigurationIds || [],
-      );
-      if (
-        configToEdit.configuration?.startDate &&
-        configToEdit.configuration?.endDate
-      ) {
-        setDateRange([
-          dayjs(configToEdit.configuration.startDate).toDate(),
-          dayjs(configToEdit.configuration.endDate).toDate(),
-        ]);
-      } else {
-        setDateRange([
-          dayjs().startOf("month").toDate(),
-          dayjs().endOf("month").toDate(),
-        ]);
-      }
-    } else {
-      setName("");
-      setSelectedClientId("");
-      setSelectedConfigIds([]);
-      setDateRange([
-        dayjs().startOf("month").toDate(),
-        dayjs().endOf("month").toDate(),
-      ]);
-    }
-  }, [isOpen, configToEdit]);
-
-  const filteredConfigurations = selectedClientId
-    ? configurations.filter(
-        (c) =>
-          c.clientId === selectedClientId || c.client?.id === selectedClientId,
-      )
-    : [];
-
-  const toggleConfig = (id: string) => {
-    setSelectedConfigIds((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
-    );
-  };
-
-  const handleSave = async () => {
-    if (!name.trim()) {
-      dispatch(
-        showToast({
-          message: "Debe ingresar un nombre para la configuración",
-          type: "error",
-        }),
-      );
-      return;
-    }
-    if (selectedConfigIds.length === 0) {
-      dispatch(
-        showToast({
-          message: "Debe seleccionar al menos una ronda",
-          type: "error",
-        }),
-      );
-      return;
-    }
-    const startDateStr = dateRange[0]
-      ? dayjs(dateRange[0]).format("YYYY-MM-DD")
-      : null;
-    const endDateStr = dateRange[1]
-      ? dayjs(dateRange[1]).format("YYYY-MM-DD")
-      : null;
-
-    if (!startDateStr || !endDateStr) {
-      dispatch(
-        showToast({
-          message: "Fechas inválidas",
-          type: "error",
-        }),
-      );
-      return;
-    }
-
-    const payload = {
-      name,
-      reportType: "ADMINISTRATIVE_MATRIX",
-      clientId: selectedClientId || null,
-      configuration: {
-        recurringConfigurationIds: selectedConfigIds,
-        startDate: startDateStr,
-        endDate: endDateStr,
-      },
-      active: true,
-    };
-
-    setIsGenerating(true);
-    try {
-      const response = configToEdit
-        ? await updateReportConfiguration(configToEdit.id, payload)
-        : await createReportConfiguration(payload);
-
-      if (response.success) {
-        dispatch(
-          showToast({
-            message: "Configuración guardada con éxito",
-            type: "success",
-          }),
-        );
-        onClose();
-      } else {
-        dispatch(
-          showToast({
-            message: "Error al guardar configuración",
-            type: "error",
-          }),
-        );
-      }
-    } catch (error) {
-      dispatch(
-        showToast({
-          message: "Error de red al guardar configuración",
-          type: "error",
-        }),
-      );
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
+}: AperturaCierreReportModalProps) => {
+  const {
+    clients,
+    filteredConfigurations,
+    clearConfigSelection,
+    dateRange,
+    setDateRange,
+    handleSave,
+    isGenerating,
+    loadingConfig,
+    name,
+    setName,
+    selectedClientId,
+    setSelectedClientId,
+    selectedConfigIds,
+    toggleConfig,
+  } = useAperturaCierreReportModal({ isOpen, onClose, onSaved, initialClientId, configToEdit });
   return (
     <ITDialog
       isOpen={isOpen}
@@ -268,8 +113,8 @@ export const AperturaCierreReportModal = ({
                 }))}
                 value={selectedClientId}
                 onChange={(val) => {
-                  setSelectedClientId(val as any);
-                  setSelectedConfigIds([]); // Reset selection when client changes
+                  setSelectedClientId(String(val));
+                  clearConfigSelection(); // Al cambiar de cliente se limpia la selección
                 }}
               />
             </div>

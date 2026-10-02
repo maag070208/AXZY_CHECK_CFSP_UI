@@ -5,7 +5,6 @@ import {
   ITLoader,
   ITTable,
 } from "@axzydev/axzy_ui_system";
-import { useEffect, useState } from "react";
 import {
   FaArrowLeft,
   FaCalendarAlt,
@@ -21,15 +20,10 @@ import {
   FaTrash,
   FaUserShield,
 } from "react-icons/fa";
-import {
-  getAllAssignmentsByGuard,
-  updateAssignmentStatus,
-  deleteAssignment,
-} from "../service/guards.service";
-import { Assignment, AssignmentStatus } from "../types/guards.types";
+import { AssignmentStatus } from "@entities/assignment";
+import { useViewAssignmentsModal, type ViewAssignmentsModalProps } from "../model/useViewAssignmentsModal";
 import dayjs from "dayjs";
 import { ITMediaGrid } from "@app/core/components/ITMediaGrid";
-import type { User } from "@entities/user";
 
 // Fallback for API Base URL if constant is missing
 const API_BASE_URL = "http://localhost:4444";
@@ -47,16 +41,6 @@ interface KardexEntry {
   [key: string]: unknown;
 }
 
-interface Props {
-  isOpen: boolean;
-  onClose: () => void;
-  guardId: string | number;
-  guardName: string;
-  guard: User;
-  onReassignClient: () => void;
-  onReassignSchedule: () => void;
-  isClient?: boolean;
-}
 
 const statusTranslations: Record<AssignmentStatus, string> = {
   [AssignmentStatus.PENDING]: "PENDIENTE",
@@ -78,74 +62,21 @@ export const ViewAssignmentsModal = ({
   onReassignClient,
   onReassignSchedule,
   isClient,
-}: Props) => {
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [approvingId, setApprovingId] = useState<number | null>(null);
-  const [selectedAssignment, setSelectedAssignment] =
-    useState<Assignment | null>(null);
-  const [assignmentToDeleteId, setAssignmentToDeleteId] = useState<string | number | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const fetchAssignments = async () => {
-    setLoading(true);
-    const res = await getAllAssignmentsByGuard(guardId);
-    if (res.success && res.data) {
-      setAssignments(res.data);
-      if (selectedAssignment) {
-        const updated = res.data.find((a) => a.id === selectedAssignment.id);
-        if (updated) setSelectedAssignment(updated);
-      }
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchAssignments();
-    } else {
-      setSelectedAssignment(null);
-    }
-  }, [isOpen, guardId]);
-
-  const confirmDeleteAssignment = async () => {
-    if (!assignmentToDeleteId || isDeleting) return;
-    setIsDeleting(true);
-    const res = await deleteAssignment(assignmentToDeleteId);
-    setIsDeleting(false);
-    setAssignmentToDeleteId(null);
-    if (res.success) {
-      setAssignments((prev) => prev.filter((a) => a.id !== assignmentToDeleteId));
-      if (selectedAssignment?.id === assignmentToDeleteId) setSelectedAssignment(null);
-    }
-  };
-
-  const handleApprove = async (id: number) => {
-    setApprovingId(id);
-    const res = await updateAssignmentStatus(id, AssignmentStatus.REVIEWED);
-    if (res.success) {
-      await fetchAssignments();
-    }
-    setApprovingId(null);
-  };
-
-  const getStatusColor = (status: AssignmentStatus) => {
-    switch (status) {
-      case AssignmentStatus.REVIEWED:
-        return "success";
-      case AssignmentStatus.PENDING:
-        return "warning";
-      case AssignmentStatus.ANOMALY:
-        return "danger";
-      case AssignmentStatus.CHECKING:
-        return "primary";
-      case AssignmentStatus.UNDER_REVIEW:
-        return "success";
-      default:
-        return "secondary";
-    }
-  };
-
+}: ViewAssignmentsModalProps) => {
+  const {
+    assignments,
+    loading,
+    selectedAssignment,
+    setSelectedAssignment,
+    assignmentToDeleteId,
+    setAssignmentToDeleteId,
+    isDeleting,
+    approvingId,
+    fetchAssignments,
+    handleApprove,
+    confirmDeleteAssignment,
+    getStatusColor,
+  } = useViewAssignmentsModal({ isOpen, onClose, guardId, guardName, guard, onReassignClient, onReassignSchedule, isClient });
   return (
     <ITDialog
       isOpen={isOpen}
@@ -269,7 +200,7 @@ export const ViewAssignmentsModal = ({
                     </h5>
 
                     {selectedAssignment.kardex?.flatMap(
-                      (k: KardexEntry) => k.media || [],
+                      (k) => (k as KardexEntry).media || [],
                     ).length ? (
                       <ITMediaGrid
                         media={(selectedAssignment.kardex as KardexEntry[])

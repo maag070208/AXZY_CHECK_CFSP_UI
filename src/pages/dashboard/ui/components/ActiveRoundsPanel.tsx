@@ -2,7 +2,7 @@ import { ITBadget, ITProgress, ITText } from "@axzydev/axzy_ui_system";
 import { useState } from "react";
 import { FaClock, FaMapMarkerAlt, FaRoute } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { ILiveRound, LiveRoundState } from "@app/core/types/supervision.types";
+import { ILiveRound, LiveRoundState } from "@entities/supervision";
 import { formatMinutes, fullName, timeAgo } from "@app/core/utils/supervision.utils";
 import { SURFACE, TONES } from "@shared/ui";
 

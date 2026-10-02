@@ -1,5 +1,3 @@
-import { AppState } from "@app/core/store/store";
-import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITButton,
   ITDialog,
@@ -7,22 +5,8 @@ import {
   ITLoader,
   ITSearchSelect,
 } from "@axzydev/axzy_ui_system";
-import { useEffect, useState } from "react";
 import { FaClipboardList, FaPlus, FaTrash } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  getLocationsByGuard,
-  Location,
-} from "../../locations/service/locations.service";
-import { createAssignment } from "../service/guards.service";
-
-interface Props {
-  isOpen: boolean;
-  onClose: () => void;
-  guardId: string | number;
-  guardName: string;
-  onSuccess: () => void;
-}
+import { useAssignmentModal, type AssignmentModalProps } from "../model/useAssignmentModal";
 
 export const AssignmentModal = ({
   isOpen,
@@ -30,123 +14,22 @@ export const AssignmentModal = ({
   guardId,
   guardName,
   onSuccess,
-}: Props) => {
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [selectedLocationId, setSelectedLocationId] = useState<
-    string | undefined
-  >(undefined);
-  const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [loadingLocations, setLoadingLocations] = useState(false);
-
-  const [tasks, setTasks] = useState<
-    { description: string; reqPhoto: boolean }[]
-  >([]);
-  const [tempTaskDesc, setTempTaskDesc] = useState("");
-
-  const dispatch = useDispatch();
-  const currentUser = useSelector((state: AppState) => state.auth);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchData();
-      setSelectedLocationId(undefined);
-      setNotes("");
-      setTasks([]);
-      setTempTaskDesc("");
-    }
-  }, [isOpen]);
-
-  const fetchData = async () => {
-    setLoadingLocations(true);
-    const res = await getLocationsByGuard(String(guardId));
-    if (res.success && res.data) {
-      setLocations(res.data);
-    }
-    setLoadingLocations(false);
-  };
-
-  const addTask = () => {
-    if (!tempTaskDesc.trim()) return;
-    setTasks([...tasks, { description: tempTaskDesc, reqPhoto: false }]);
-    setTempTaskDesc("");
-  };
-
-  const removeTask = (index: number) => {
-    setTasks(tasks.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async () => {
-    if (!selectedLocationId) {
-      dispatch(
-        showToast({ message: "Selecciona una ubicación", type: "error" }),
-      );
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const res = await createAssignment({
-        guardId,
-        locationId: selectedLocationId,
-        assignedBy: currentUser.id || 1,
-        notes,
-        tasks: tasks.length > 0 ? tasks : undefined,
-      });
-
-      if (res.success) {
-        dispatch(
-          showToast({
-            message: "Asignación creada correctamente",
-            type: "success",
-          }),
-        );
-        onSuccess();
-      } else {
-        dispatch(
-          showToast({
-            message: res.messages?.[0] || "Error al crear asignación",
-            type: "error",
-          }),
-        );
-      }
-    } catch (error: unknown) {
-      const errMsg =
-        error instanceof Error ? error.message : "Error al crear asignación";
-      dispatch(
-        showToast({
-          message: errMsg,
-          type: "error",
-        }),
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const locationOptions = locations.map((loc) => {
-    const cleanAisle =
-      loc.aisle && loc.aisle !== "null" && loc.aisle !== "undefined"
-        ? loc.aisle
-        : null;
-    const cleanNumber =
-      loc.number && loc.number !== "null" && loc.number !== "undefined"
-        ? loc.number
-        : null;
-
-    const details = [
-      cleanAisle ? `Pasillo ${cleanAisle}` : null,
-      cleanNumber ? `No. ${cleanNumber}` : null,
-    ]
-      .filter(Boolean)
-      .join(" - ");
-
-    return {
-      label: details ? `${loc.name} (${details})` : loc.name,
-      value: loc.id,
-    };
-  });
-
+}: AssignmentModalProps) => {
+  const {
+    loadingLocations,
+    locationOptions,
+    selectedLocationId,
+    setSelectedLocationId,
+    notes,
+    setNotes,
+    tasks,
+    tempTaskDesc,
+    setTempTaskDesc,
+    addTask,
+    removeTask,
+    submitting,
+    handleSubmit,
+  } = useAssignmentModal({ isOpen, guardId, onClose, guardName, onSuccess });
   return (
     <ITDialog
       isOpen={isOpen}

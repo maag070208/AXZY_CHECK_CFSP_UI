@@ -2,11 +2,11 @@ import { createSlice } from "@reduxjs/toolkit";
 import { decodeToken, isExpired } from "react-jwt";
 
 interface AuthState {
-  id: number | null;
+  id: string | null;
   name: string | null;
   email: string | null;
   role: string | null;
-  clientId: number | null;
+  clientId: string | null;
   token: string | null;
 }
 

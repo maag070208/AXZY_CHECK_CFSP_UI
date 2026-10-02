@@ -78,18 +78,6 @@ export const FormDialog = ({
   </ITDialog>
 );
 
-/** Encabezado de sección dentro de un formulario: barra de acento + etiqueta. */
-export const DialogSection = ({ title, children }: { title: string; children: ReactNode }) => (
-  <section className="space-y-4">
-    <div className="flex items-center gap-2.5">
-      <span className="h-4 w-1.5 rounded-full bg-primary-500" />
-      <ITText as="h4" className={`${SURFACE.microLabel} m-0`}>
-        {title}
-      </ITText>
-    </div>
-    {children}
-  </section>
-);
 
 /** Etiqueta de campo estándar. */
 export const FieldLabel = ({ children, required = false }: { children: ReactNode; required?: boolean }) => (

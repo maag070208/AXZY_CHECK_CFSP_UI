@@ -1,99 +1,14 @@
-import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
-import { showToast } from "@app/core/store/toast/toast.slice";
-import { TResult } from "@app/core/types/TResult";
 import { ITButton, ITInput, ITSlideToggle } from "@axzydev/axzy_ui_system";
-import { useFormik } from "formik";
 import React from "react";
-import { useDispatch } from "react-redux";
-import * as Yup from "yup";
-import {
-  Client,
-  ClientCreate,
-  ClientUpdate,
-  createClient,
-  updateClient,
-} from "../services/ClientsService";
 import { FaBuilding, FaEdit } from "react-icons/fa";
+import { useCreateClientWizard, type CreateClientWizardProps } from "../model/useCreateClientWizard";
 
-interface Props {
-  clientToEdit?: Client;
-  onCancel: () => void;
-  onSuccess: () => void;
-}
-
-export const CreateClientWizard: React.FC<Props> = ({
+export const CreateClientWizard: React.FC<CreateClientWizardProps> = ({
   clientToEdit,
   onCancel,
   onSuccess,
 }) => {
-  const isEditing = !!clientToEdit;
-  const dispatch = useDispatch();
-
-  const formik = useFormik<ClientCreate & { active: boolean }>({
-    enableReinitialize: true,
-    initialValues: {
-      name: clientToEdit?.name || "",
-      address: clientToEdit?.address || "",
-      rfc: clientToEdit?.rfc || "",
-      contactName: clientToEdit?.contactName || "",
-      contactPhone: clientToEdit?.contactPhone || "",
-      appUsername: "",
-      appPassword: "",
-      active: clientToEdit ? clientToEdit.active : true,
-    },
-    validationSchema: Yup.object({
-      name: Yup.string().required("El nombre es requerido"),
-      address: Yup.string(),
-      rfc: Yup.string(),
-      contactName: Yup.string(),
-      contactPhone: Yup.string()
-        .matches(/^[0-9]+$/, "Solo números")
-        .min(10, "Mínimo 10 dígitos")
-        .max(10, "Máximo 10 dígitos"),
-      appUsername: Yup.string().min(4, "Mínimo 4 caracteres"),
-      appPassword: Yup.string().min(6, "Mínimo 6 caracteres"),
-    }),
-    onSubmit: async (values) => {
-      dispatch(showLoader());
-      try {
-        const payload: ClientCreate & { active: boolean } = {
-          ...values,
-          appUsername: values.appUsername || undefined,
-          appPassword: values.appPassword || undefined,
-        };
-
-        const res =
-          isEditing && clientToEdit
-            ? await updateClient(clientToEdit.id, payload as ClientUpdate)
-            : await createClient(payload);
-
-        if (res.success) {
-          dispatch(
-            showToast({
-              message: `Cliente ${isEditing ? "actualizado" : "creado"} con éxito`,
-              type: "success",
-            }),
-          );
-          onSuccess();
-        } else {
-          dispatch(
-            showToast({ message: res.messages?.[0] || "Error", type: "error" }),
-          );
-        }
-      } catch (error) {
-        const result = error as TResult<void>;
-        dispatch(
-          showToast({
-            message: result?.messages?.[0] || "Error inesperado",
-            type: "error",
-          }),
-        );
-      } finally {
-        dispatch(hideLoader());
-      }
-    },
-  });
-
+  const { isEditing, formik } = useCreateClientWizard({ clientToEdit, onCancel, onSuccess });
   return (
     <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
       {/* Custom Header */}

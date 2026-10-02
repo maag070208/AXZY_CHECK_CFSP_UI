@@ -1,8 +1,3 @@
-import { post } from "@app/core/axios/axios";
-import { ModulePage } from "@app/core/components/ModulePage";
-import { useCatalog } from "@app/core/hooks/catalog.hook";
-import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
-import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITBadget,
   ITButton,
@@ -11,117 +6,39 @@ import {
   ITLoader,
   ITSearchSelect,
   ITText,
-  useITTheme,
 } from "@axzydev/axzy_ui_system";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaBuilding, FaEdit, FaQrcode, FaRoute, FaTrash } from "react-icons/fa";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { deleteRoute, getPaginatedRoutes } from "../services/RoutesService";
+import { useCatalog } from "@app/core/hooks/catalog.hook";
+import type { Route } from "@entities/route";
+import { PageShell } from "@shared/ui";
+import { useRoutesDeps } from "../model/deps";
+import { useRoutesPage } from "../model/useRoutesPage";
 
+/** Rutas. Sólo pinta: el estado vive en `useRoutesPage`. */
 const RoutesPage = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { colors } = useITTheme();
-  const primary = colors.primary || "#10b981";
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [routeToDeleteId, setRouteToDeleteId] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClientId, setSelectedClientId] = useState<string | number>("");
-
   const { data: clients } = useCatalog("client");
+  const {
+    refreshKey,
+    refreshTable,
+    searchTerm,
+    setSearchTerm,
+    selectedClientId,
+    setSelectedClientId,
+    externalFilters,
+    memoizedFetch,
+    routeToDeleteId,
+    setRouteToDeleteId,
+    isDeleting,
+    handleDelete,
+    confirmDelete,
+    handlePrintRouteQRs,
+  } = useRoutesPage(useRoutesDeps());
 
-  // Debounce search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setRefreshKey((prev) => prev + 1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  const externalFilters = useMemo(() => {
-    return {
-      title: searchTerm,
-      clientId: selectedClientId,
-    };
-  }, [searchTerm, selectedClientId]);
-
-  const memoizedFetch = useCallback((params: any) => {
-    return getPaginatedRoutes(params);
-  }, []);
-
-  const refreshTable = () => setRefreshKey((prev) => prev + 1);
-
-  const handleDelete = (id: number) => {
-    setRouteToDeleteId(id);
-  };
-
-  const confirmDelete = async () => {
-    if (!routeToDeleteId || isDeleting) return;
-    setIsDeleting(true);
-    try {
-      const res = await deleteRoute(String(routeToDeleteId));
-      setIsDeleting(false);
-      setRouteToDeleteId(null);
-      if (res.success) {
-        dispatch(showToast({ message: "Ruta eliminada", type: "success" }));
-        refreshTable();
-      } else {
-        dispatch(showToast({ message: res.messages?.[0] || "Error al eliminar", type: "error" }));
-      }
-    } catch (err: any) {
-      setIsDeleting(false);
-      setRouteToDeleteId(null);
-      dispatch(showToast({ message: err?.messages?.[0] || "Error al eliminar", type: "error" }));
-    }
-  };
-
-  const handleEdit = (route: any) => {
-    navigate(`/routes/edit/${route.id}`);
-  };
-
-  const handlePrintRouteQRs = async (row: any) => {
-    const ids =
-      row.recurringLocations
-        ?.map((rl: any) => rl.locationId || rl.location?.id)
-        .filter(Boolean) || [];
-
-    if (ids.length === 0) {
-      dispatch(
-        showToast({
-          message: "Esta ruta no tiene puntos de control para imprimir",
-          type: "warning",
-        }),
-      );
-      return;
-    }
-
-    dispatch(showLoader());
-    try {
-      const res = await post<any>(
-        "/locations/print-qrs",
-        { ids },
-        { responseType: "blob" },
-      );
-      const blob = new Blob([res as any], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, "_blank");
-      dispatch(
-        showToast({ message: "PDF generado con éxito", type: "success" }),
-      );
-    } catch (e) {
-      dispatch(
-        showToast({ message: "Error al generar el PDF de QRs", type: "error" }),
-      );
-    } finally {
-      dispatch(hideLoader());
-    }
-  };
-
-  const handleCreate = () => {
-    navigate("/routes/new");
-  };
+  /** La edición de una ruta vive en su propia pantalla. */
+  const handleEdit = (route: Route) => navigate(`/routes/edit/${route.id}`);
+  const handleCreate = () => navigate("/routes/new");
 
   const columns = [
     {
@@ -240,7 +157,7 @@ const RoutesPage = () => {
   ];
 
   return (
-    <ModulePage style={{ "--p": primary } as React.CSSProperties}
+    <PageShell
       title="Gestión de Rutas"
       subtitle="Configuración de recorridos y puntos de control para rondines"
       icon={FaRoute}
@@ -254,8 +171,8 @@ const RoutesPage = () => {
           }))}
           value={selectedClientId}
           onChange={(val) => {
-            setSelectedClientId(val);
-            setRefreshKey((prev) => prev + 1);
+            setSelectedClientId(String(val));
+            refreshTable();
           }}
         />
       }
@@ -269,7 +186,7 @@ const RoutesPage = () => {
       onClearFilters={() => {
         setSearchTerm("");
         setSelectedClientId("");
-        setRefreshKey((prev) => prev + 1);
+        refreshTable();
       }}
       onRefresh={refreshTable}
       refreshKey={refreshKey}
@@ -338,7 +255,7 @@ const RoutesPage = () => {
           </div>
         </div>
       </ITDialog>
-    </ModulePage>
+    </PageShell>
   );
 };
 

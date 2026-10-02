@@ -2,7 +2,7 @@ import { ITBadget, ITButton, ITText } from "@axzydev/axzy_ui_system";
 import { FaCalendarCheck, FaClipboardCheck, FaTshirt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { ScoreRing } from "@app/core/components/ScoreRing";
-import { IAgendaItem, ILiveDashboard } from "@app/core/types/supervision.types";
+import { IAgendaItem, ILiveDashboard } from "@entities/supervision";
 import { AGENDA_STATUS_META, complianceColor, formatTime, fullName } from "@app/core/utils/supervision.utils";
 import { SURFACE, TONES } from "@shared/ui";
 

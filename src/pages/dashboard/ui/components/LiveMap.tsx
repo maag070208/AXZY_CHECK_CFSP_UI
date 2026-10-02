@@ -2,7 +2,7 @@ import { AdvancedMarker, APIProvider, InfoWindow, Map, Pin, useMap } from "@vis.
 import { ITText } from "@axzydev/axzy_ui_system";
 import { useEffect, useState } from "react";
 import { FaMapMarkerAlt } from "react-icons/fa";
-import { ILiveMapPoint, LiveRoundState } from "@app/core/types/supervision.types";
+import { ILiveMapPoint, LiveRoundState } from "@entities/supervision";
 import { timeAgo } from "@app/core/utils/supervision.utils";
 
 const PIN_COLORS: Record<LiveRoundState, { background: string; border: string }> = {

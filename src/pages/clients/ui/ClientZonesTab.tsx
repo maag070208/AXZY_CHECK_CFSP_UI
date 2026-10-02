@@ -1,21 +1,7 @@
-import { showToast } from "@app/core/store/toast/toast.slice";
-import { TResult } from "@app/core/types/TResult";
-import {
-  ITButton,
-  ITDataTable,
-  ITDialog,
-  ITInput,
-} from "@axzydev/axzy_ui_system";
-import { useCallback, useState } from "react";
+import { ITButton, ITDataTable, ITDialog, ITInput } from "@axzydev/axzy_ui_system";
 import { FaEdit, FaPlus, FaSync, FaTrash } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import {
-  createZone,
-  deleteZone,
-  getPaginatedZones,
-  updateZone,
-  Zone,
-} from "../../../zones/services/ZonesService";
+import type { Zone } from "@entities/zone";
+import { useClientZonesTab } from "../model/useClientZonesTab";
 
 interface Props {
   clientId: string;
@@ -23,117 +9,23 @@ interface Props {
 }
 
 export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
-  const dispatch = useDispatch();
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [newZoneName, setNewZoneName] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [editingZone, setEditingZone] = useState<Zone | null>(null);
-  const [updating, setUpdating] = useState(false);
-  const [zoneToDelete, setZoneToDelete] = useState<Zone | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const memoizedFetch = useCallback(
-    (params: any) => {
-      return getPaginatedZones({
-        ...params,
-        filters: { ...params.filters, clientId },
-      });
-    },
-    [clientId],
-  );
-
-  const handleCreate = async () => {
-    if (!newZoneName.trim()) return;
-    setCreating(true);
-    try {
-      const res = await createZone({ clientId, name: newZoneName });
-      if (res.success) {
-        setNewZoneName("");
-        setRefreshKey((prev) => prev + 1);
-        dispatch(
-          showToast({ message: "Zona registrada con éxito", type: "success" }),
-        );
-      } else {
-        dispatch(
-          showToast({
-            message: res.messages?.[0] || "No se pudo crear la zona",
-            type: "error",
-          }),
-        );
-      }
-    } catch (error) {
-      const err = error as TResult<any>;
-      dispatch(
-        showToast({
-          message: err.messages?.[0] || "Error de conexión",
-          type: "error",
-        }),
-      );
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleUpdate = async () => {
-    if (!editingZone || !editingZone.name.trim()) return;
-    setUpdating(true);
-    try {
-      const res = await updateZone(editingZone.id, { name: editingZone.name });
-      if (res.success) {
-        setEditingZone(null);
-        setRefreshKey((prev) => prev + 1);
-        dispatch(showToast({ message: "Zona actualizada", type: "success" }));
-      } else {
-        dispatch(
-          showToast({
-            message: res.messages?.[0] || "Error al actualizar",
-            type: "error",
-          }),
-        );
-      }
-    } catch (error) {
-      const err = error as TResult<any>;
-      dispatch(
-        showToast({
-          message: err.messages?.[0] || "Error de conexión",
-          type: "error",
-        }),
-      );
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!zoneToDelete || isDeleting) return;
-    setIsDeleting(true);
-    try {
-      const res = await deleteZone(zoneToDelete.id);
-      if (res.success) {
-        setRefreshKey((prev) => prev + 1);
-        dispatch(showToast({ message: "Zona eliminada", type: "success" }));
-        setZoneToDelete(null);
-      } else {
-        dispatch(
-          showToast({
-            message: res.messages?.[0] || "No se puede eliminar",
-            type: "error",
-          }),
-        );
-      }
-    } catch (error) {
-      const err = error as TResult<any>;
-      dispatch(
-        showToast({
-          message: err.messages?.[0] || "Error de conexión",
-          type: "error",
-        }),
-      );
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
+  const {
+    refreshKey,
+    refresh,
+    newZoneName,
+    setNewZoneName,
+    creating,
+    editingZone,
+    setEditingZone,
+    updating,
+    zoneToDelete,
+    setZoneToDelete,
+    isDeleting,
+    memoizedFetch,
+    handleCreate,
+    handleUpdate,
+    handleDelete,
+  } = useClientZonesTab({ clientId, onSelectZone });
   const columns = [
     {
       key: "name",
@@ -196,7 +88,7 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
           </p>
         </div>
         <ITButton
-          onClick={() => setRefreshKey((prev) => prev + 1)}
+          onClick={refresh}
           size="sm"
           variant="ghost"
           className="w-9 h-9 p-0 flex items-center justify-center bg-slate-50 rounded-lg hover:bg-slate-100"

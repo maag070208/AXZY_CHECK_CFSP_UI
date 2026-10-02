@@ -1,80 +1,25 @@
-import { showToast } from "@app/core/store/toast/toast.slice";
-import {
-  ITBadget,
-  ITButton,
-  ITDataTable,
-  ITDialog,
-  ITSelect,
-} from "@axzydev/axzy_ui_system";
-import { useCallback, useEffect, useState } from "react";
+import { ITBadget, ITButton, ITDataTable, ITDialog, ITSelect } from "@axzydev/axzy_ui_system";
 import { FaClock, FaSync, FaTimes, FaTrash } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import { getSchedules } from "../../../schedules/SchedulesService";
-import { fetchUsersTable, updateUser, type User } from "@entities/user";
-import { TResult } from "@app/core/types/TResult";
+import type { User } from "@entities/user";
+import { useClientGuardsTab } from "../model/useClientGuardsTab";
 
 interface Props {
   clientId: string | number;
 }
 
 export const ClientGuardsTab = ({ clientId }: Props) => {
-  const dispatch = useDispatch();
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [schedules, setSchedules] = useState<any[]>([]);
-  const [changingScheduleUser, setChangingScheduleUser] = useState<User | null>(
-    null,
-  );
-  const [removingUser, setRemovingUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    getSchedules().then(setSchedules);
-  }, []);
-
-  const memoizedFetch = useCallback(
-    (params: any) => {
-      return fetchUsersTable({
-        ...params,
-        filters: {
-          ...params.filters,
-          clientId,
-          role: { name: { in: ["GUARD", "SHIFT", "MAINT"] } },
-        },
-      });
-    },
-    [clientId],
-  );
-
-  const handleRemoveFromClient = async (user: User) => {
-    try {
-      const res = await updateUser(user.id, { clientId: null as any });
-      if (res.success) {
-        dispatch(
-          showToast({
-            message: "Guardia removido del cliente con éxito",
-            type: "success",
-          }),
-        );
-        setRefreshKey((prev) => prev + 1);
-        setRemovingUser(null);
-      } else {
-        dispatch(
-          showToast({
-            message: res.messages?.[0] || "No se pudo remover al guardia",
-            type: "error",
-          }),
-        );
-      }
-    } catch (error) {
-      const err = error as TResult<any>;
-      dispatch(
-        showToast({
-          message: err.messages?.[0] || "Error de conexión",
-          type: "error",
-        }),
-      );
-    }
-  };
-
+  const {
+    refreshKey,
+    setRefreshKey,
+    changingScheduleUser,
+    setChangingScheduleUser,
+    setRemovingUser,
+    handleScheduleChange,
+    handleRemoveFromClient,
+    memoizedFetch,
+    removingUser,
+    schedules,
+  } = useClientGuardsTab({ clientId: String(clientId) });
   const columns = [
     {
       key: "user",
@@ -227,30 +172,9 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
                 value: s.id,
               }))}
               value={changingScheduleUser?.scheduleId || ""}
-              onChange={async (e: any) => {
-                const val = e.target.value;
-                if (!changingScheduleUser) return;
-                const res = await updateUser(changingScheduleUser.id, {
-                  scheduleId: val as string,
-                });
-                if (res.success) {
-                  dispatch(
-                    showToast({
-                      message: "Horario actualizado con éxito",
-                      type: "success",
-                    }),
-                  );
-                  setRefreshKey((prev) => prev + 1);
-                  setChangingScheduleUser(null);
-                } else {
-                  dispatch(
-                    showToast({
-                      message: res.messages?.[0] || "Error al actualizar",
-                      type: "error",
-                    }),
-                  );
-                }
-              }}
+              onChange={(e: { target: { value: string } }) =>
+                void handleScheduleChange(String(e.target.value))
+              }
             />
           </div>
 

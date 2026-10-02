@@ -1,113 +1,39 @@
-import { ModulePage } from "@app/core/components/ModulePage";
-import { clearSpecificCatalogCache } from "@app/core/hooks/catalog.hook";
-import { showToast } from "@app/core/store/toast/toast.slice";
-import { TResult } from "@app/core/types/TResult";
-import {
-  ITBadget,
-  ITButton,
-  ITDataTable,
-  ITDataTableFetchParams,
-  ITDialog,
-  ITLoader,
-  ITText,
-  ITTripleFilter,
-} from "@axzydev/axzy_ui_system";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ITBadget, ITButton, ITDataTable, ITDialog, ITText, ITTripleFilter } from "@axzydev/axzy_ui_system";
 import { FaBuilding, FaEdit, FaSearchLocation, FaTrash } from "react-icons/fa";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { CreateClientWizard } from "../components/CreateClientWizard";
-import {
-  Client,
-  deleteClient,
-  getPaginatedClients,
-} from "../services/ClientsService";
+import type { Client } from "@entities/client";
+import { ConfirmDialog, PageShell } from "@shared/ui";
+import { useClientsDeps } from "../model/deps";
+import { clientInitials, useClientsPage } from "../model/useClientsPage";
+import { CreateClientWizard } from "./CreateClientWizard";
 
-const getInitials = (name?: string | null) => {
-  if (!name) return "??";
-  const parts = name.trim().split(/\s+/).slice(0, 2);
-  return parts.map((p) => p[0]?.toUpperCase() || "").join("") || "??";
-};
-
+/** Directorio de clientes. Sólo pinta: el estado vive en `useClientsPage`. */
 const ClientsPage = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive"
-  >("all");
+  const {
+    refreshKey,
+    refreshTable,
+    searchTerm,
+    setSearchTerm,
+    statusFilter,
+    setStatusFilter,
+    externalFilters,
+    memoizedFetch,
+    isCreateModalOpen,
+    setIsCreateModalOpen,
+    editingClient,
+    setEditingClient,
+    clientToDeleteId,
+    setClientToDeleteId,
+    isDeleting,
+    confirmDelete,
+    handleSuccess,
+  } = useClientsPage(useClientsDeps());
 
-  // Modal States
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [clientToDeleteId, setClientToDeleteId] = useState<string | null>(null);
-
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  // Debounce search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setRefreshKey((prev) => prev + 1);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // Immediate refresh for status filter
-  useEffect(() => {
-    setRefreshKey((prev) => prev + 1);
-  }, [statusFilter]);
-
-  const externalFilters = useMemo(() => {
-    const filters: Record<string, string | number | boolean | Date> = {};
-    if (searchTerm) filters.name = searchTerm;
-    if (statusFilter !== "all")
-      filters.active = statusFilter === "active" ? true : false;
-    return filters;
-  }, [searchTerm, statusFilter]);
-
-  const memoizedFetch = useCallback(
-    async (params: ITDataTableFetchParams): Promise<any> => {
-      const res = await getPaginatedClients(params);
-      return res.success && res.data
-        ? { data: res.data.rows, total: res.data.total }
-        : { data: [], total: 0 };
-    },
-    [],
-  );
-
-  const refreshTable = () => setRefreshKey((prev) => prev + 1);
-
-  const handleSuccess = () => {
-    setIsCreateModalOpen(false);
-    setEditingClient(null);
-    refreshTable();
-  };
-
-  const confirmDelete = async () => {
-    if (!clientToDeleteId || isDeleting) return;
-    setIsDeleting(true);
-    try {
-      await deleteClient(clientToDeleteId);
-      dispatch(showToast({ message: "Cliente eliminado", type: "success" }));
-      clearSpecificCatalogCache("client");
-      refreshTable();
-      setClientToDeleteId(null);
-    } catch (error) {
-      const result = error as TResult<void>;
-      dispatch(
-        showToast({
-          message: result?.messages?.[0] || "Error al eliminar cliente",
-          type: "error",
-        }),
-      );
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  const getInitials = clientInitials;
 
   return (
-    <ModulePage
+    <PageShell
       title="Directorio de Clientes"
       subtitle="Gestión de clientes y sus ubicaciones"
       icon={FaBuilding}
@@ -255,45 +181,17 @@ const ClientsPage = () => {
         />
       </ITDialog>
 
-      {/* Delete confirmation dialog — aligned with DESIGN_STANDARDS §6 */}
-      <ITDialog
+      <ConfirmDialog
         isOpen={!!clientToDeleteId}
         onClose={() => setClientToDeleteId(null)}
-        title=""
-        className="!max-w-md w-full!"
-      >
-        <div className="p-10 text-center">
-          <div className="w-20 h-20 rounded-3xl bg-danger-50 text-danger-500 flex items-center justify-center mx-auto mb-8 border border-danger-100 shadow-sm">
-            <FaTrash size={28} />
-          </div>
-          <ITText className="text-xl font-black text-slate-800 uppercase tracking-tight mb-3 block">
-            ¿Eliminar Cliente?
-          </ITText>
-          <ITText className="text-slate-500 text-[11px] font-bold uppercase tracking-widest leading-relaxed mb-10 max-w-xs mx-auto block">
-            Esta acción eliminará el cliente y todos sus datos asociados de
-            forma permanente.
-          </ITText>
-          <div className="flex gap-4 justify-center">
-            <ITButton
-              variant="ghost"
-              className="px-8 font-black text-[11px] uppercase tracking-widest text-slate-400"
-              onClick={() => setClientToDeleteId(null)}
-            >
-              Cancelar
-            </ITButton>
-            <ITButton
-              variant="filled"
-              color="danger"
-              className="px-10 !rounded-2xl shadow-xl shadow-danger-200"
-              onClick={confirmDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? <ITLoader size="sm" /> : "CONFIRMAR ACCIÓN"}
-            </ITButton>
-          </div>
-        </div>
-      </ITDialog>
-    </ModulePage>
+        onConfirm={confirmDelete}
+        loading={isDeleting}
+        variant="danger"
+        title="Eliminar cliente"
+        message="Se eliminará el cliente y todos sus datos asociados de forma permanente."
+        confirmLabel="Eliminar"
+      />
+    </PageShell>
   );
 };
 

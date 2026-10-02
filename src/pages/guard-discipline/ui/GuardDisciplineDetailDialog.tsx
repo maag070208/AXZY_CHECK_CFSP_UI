@@ -3,7 +3,7 @@ import { ITMediaGrid } from "@core/components/ITMediaGrid";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { FaBuilding, FaCalendarAlt, FaCheck, FaClock, FaExclamationTriangle, FaFileAlt, FaFolderOpen, FaGavel, FaTag, FaTimes, FaTrash, FaUser } from "react-icons/fa";
-import { IGuardDiscipline } from "../services/GuardDisciplineService";
+import { IGuardDiscipline } from "@entities/supervision";
 
 interface GuardDisciplineDetailDialogProps {
   isOpen: boolean;

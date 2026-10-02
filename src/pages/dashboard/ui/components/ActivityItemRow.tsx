@@ -8,7 +8,7 @@ import {
   FaTools,
   FaUserShield,
 } from "react-icons/fa";
-import { IActivityItem } from "../services/DashboardService";
+import { IActivityItem } from "@entities/supervision";
 import { activityItemToHref } from "./activityNavigation";
 import { SURFACE, TONES } from "@shared/ui";
 
