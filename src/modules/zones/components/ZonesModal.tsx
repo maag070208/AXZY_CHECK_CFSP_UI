@@ -84,7 +84,7 @@ export const ZonesModal = ({ isOpen, onClose, clientId }: Props) => {
       isOpen={isOpen} 
       onClose={onClose} 
       title=""
-      className="!max-w-md !w-full"
+      className="!max-w-md w-full!"
     >
       <div className="flex flex-col bg-white overflow-hidden max-h-[85vh]">
         <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -119,7 +119,7 @@ export const ZonesModal = ({ isOpen, onClose, clientId }: Props) => {
               <ITButton 
                 onClick={handleCreate} 
                 color="primary"
-                size="small"
+                size="sm"
                 disabled={!newZoneName.trim()}
                 className="px-5 whitespace-nowrap shadow shadow-sky-100"
               >
@@ -183,7 +183,7 @@ export const ZonesModal = ({ isOpen, onClose, clientId }: Props) => {
                     {editingZone?.id === zone.id ? (
                       <>
                         <ITButton 
-                          size="small" 
+                          size="sm" 
                           variant="ghost" 
                           className="!text-emerald-600 !p-2" 
                           onClick={handleUpdate}
@@ -200,7 +200,7 @@ export const ZonesModal = ({ isOpen, onClose, clientId }: Props) => {
                     ) : (
                       <>
                         <ITButton 
-                          size="small" 
+                          size="sm" 
                           variant="outlined" 
                           className="!border-slate-100 hover:!border-slate-300" 
                           onClick={() => setEditingZone(zone)}
@@ -208,7 +208,7 @@ export const ZonesModal = ({ isOpen, onClose, clientId }: Props) => {
                           <FaEdit size={12} className="text-slate-400" />
                         </ITButton>
                         <ITButton 
-                          size="small" 
+                          size="sm" 
                           variant="outlined" 
                           color="danger"
                           className="!border-slate-100 hover:!border-red-200" 
@@ -236,7 +236,7 @@ export const ZonesModal = ({ isOpen, onClose, clientId }: Props) => {
           <ITButton
             variant="ghost"
             onClick={onClose}
-            size="small"
+            size="sm"
             className="px-5 whitespace-nowrap shadow shadow-slate-100"
           >
             Cancelar

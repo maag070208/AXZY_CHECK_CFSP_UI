@@ -205,8 +205,8 @@ export const AnalyticsTab = () => {
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Range Selector */}
             <div className="flex justify-end gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100 w-fit ml-auto">
-                <ITDatePicker name="range" value={dateRange} range onChange={(e: any) => setDateRange(e.target.value)} className="!border-none !bg-transparent !shadow-none !p-0 px-2" />
-                <ITButton onClick={fetchData} size="small" variant="filled" color="primary" className="!rounded-xl !h-10 !w-10 !p-0 flex items-center justify-center">
+                <ITDatePicker name="range" value={dateRange} range onChange={(e: any) => setDateRange(e.target.value)} className="border-none! bg-transparent! shadow-none! !p-0 px-2" />
+                <ITButton onClick={fetchData} size="sm" variant="filled" color="primary" className="!rounded-xl !h-10 !w-10 !p-0 flex items-center justify-center">
                     <FaSync className={loading ? 'animate-spin' : ''} />
                 </ITButton>
             </div>
@@ -240,7 +240,7 @@ export const AnalyticsTab = () => {
                 <ITCard className="lg:col-span-12 shadow-xl shadow-slate-200/50 border-none bg-white rounded-3xl p-6 relative">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-bold text-slate-800">Comparativa de Carga de Trabajo</h3>
-                        <ITBadget color="primary" variant="outlined" size="small">Ranking Operacional</ITBadget>
+                        <ITBadget color="primary" variant="outlined" size="sm">Ranking Operacional</ITBadget>
                     </div>
                     <div className="h-[400px]">
                         <canvas ref={workloadChartRef}></canvas>

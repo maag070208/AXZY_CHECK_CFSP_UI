@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import {
   ITBadget,
@@ -284,7 +284,7 @@ const GuardDisciplinePage = () => {
         label: "ESTADO",
         render: (row: IGuardDiscipline) => (
           <div className="cursor-pointer" onClick={() => handleOpenDetail(row)}>
-            <ITBadget color={statusColors[row.status]} size="small">
+            <ITBadget color={statusColors[row.status]} size="sm">
               {statusLabels[row.status]}
             </ITBadget>
           </div>
@@ -311,7 +311,7 @@ const GuardDisciplinePage = () => {
               onClick={() => handleOpenDetail(row)}
               color="secondary"
               variant="outlined"
-              size="small"
+              size="sm"
               title="Ver detalle"
             >
               <FaEye size={14} />
@@ -324,7 +324,7 @@ const GuardDisciplinePage = () => {
                 }}
                 color="error"
                 variant="outlined"
-                size="small"
+                size="sm"
                 title="Eliminar"
               >
                 <FaTrash size={14} />
@@ -338,51 +338,50 @@ const GuardDisciplinePage = () => {
   );
 
   return (
-    <div className="p-6 min-h-screen font-sans">
-      <ModuleHeader
-        title="Incidencia a Guardias"
-        subtitle="Registro de incidencias disciplinarias asignadas a guardias operativos"
-        icon={FaExclamationTriangle}
-        filter={
-          !isResident && (
-            <ITSearchSelect
-              placeholder="FILTRAR POR CLIENTE..."
-              options={(clients || []).map((c: any) => ({ label: c.name, value: c.id }))}
-              value={selectedClientId}
-              onChange={(val) => { setSelectedClientId(val); setRefreshKey((p) => p + 1); }}
-              className="w-full"
-            />
-          )
-        }
-        search={{
-          value: searchTerm,
-          onChange: (val: string) => { setSearchTerm(val); setRefreshKey((p) => p + 1); },
-          placeholder: "BUSCAR GUARDIA...",
-          icon: FaUserShield,
-        }}
-        extraFilter={
-          <ITTripleFilter
-            value={statusFilter}
-            onChange={(val) => { setStatusFilter(val); setRefreshKey((p) => p + 1); }}
-            options={[
-              { label: "TODOS", value: "ALL" },
-              { label: "PENDIENTES", value: "PENDING" },
-              { label: "RESUELTOS", value: "RESOLVED" },
-              { label: "DESESTIMADOS", value: "DISMISSED" },
-            ]}
+    <ModulePage
+      title="Incidencia a Guardias"
+      subtitle="Registro de incidencias disciplinarias asignadas a guardias operativos"
+      icon={FaExclamationTriangle}
+      filter={
+        !isResident && (
+          <ITSearchSelect
+            placeholder="FILTRAR POR CLIENTE..."
+            options={(clients || []).map((c: any) => ({ label: c.name, value: c.id }))}
+            value={selectedClientId}
+            onChange={(val) => { setSelectedClientId(val); setRefreshKey((p) => p + 1); }}
+            className="w-full"
           />
-        }
-        actions={
-          <ITButton onClick={() => { resetForm(); setShowCreateModal(true); }} color="primary" variant="filled" size="small">
-            <div className="flex items-center gap-1">
-              <FaClipboardList size={14} />
-              <span className="text-[10px]">Nueva Incidencia</span>
-            </div>
-          </ITButton>
-        }
-        onRefresh={() => setRefreshKey((p) => p + 1)}
-        refreshKey={refreshKey}
-      />
+        )
+      }
+      search={{
+        value: searchTerm,
+        onChange: (val: string) => { setSearchTerm(val); setRefreshKey((p) => p + 1); },
+        placeholder: "BUSCAR GUARDIA...",
+        icon: FaUserShield,
+      }}
+      extraFilter={
+        <ITTripleFilter
+          value={statusFilter}
+          onChange={(val) => { setStatusFilter(val); setRefreshKey((p) => p + 1); }}
+          options={[
+            { label: "TODOS", value: "ALL" },
+            { label: "PENDIENTES", value: "PENDING" },
+            { label: "RESUELTOS", value: "RESOLVED" },
+            { label: "DESESTIMADOS", value: "DISMISSED" },
+          ]}
+        />
+      }
+      actions={
+        <ITButton onClick={() => { resetForm(); setShowCreateModal(true); }} color="primary" variant="filled" size="sm">
+          <div className="flex items-center gap-1">
+            <FaClipboardList size={14} />
+            <span className="text-[10px]">Nueva Incidencia</span>
+          </div>
+        </ITButton>
+      }
+      onRefresh={() => setRefreshKey((p) => p + 1)}
+      refreshKey={refreshKey}
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
         <ITDataTable<IGuardDiscipline & Record<string, unknown>>
@@ -395,7 +394,7 @@ const GuardDisciplinePage = () => {
       </div>
 
       {/* Create Modal */}
-      <ITDialog isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="" className="!max-w-md !w-full">
+      <ITDialog isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="" className="!max-w-md w-full!">
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
@@ -511,7 +510,7 @@ const GuardDisciplinePage = () => {
           <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
-              size="small"
+              size="sm"
               onClick={() => setShowCreateModal(false)}
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
@@ -520,7 +519,7 @@ const GuardDisciplinePage = () => {
             <ITButton
               variant="filled"
               color="primary"
-              size="small"
+              size="sm"
               onClick={handleCreate}
               disabled={submitting}
               className="px-5 whitespace-nowrap shadow shadow-sky-100"
@@ -549,7 +548,7 @@ const GuardDisciplinePage = () => {
         isOpen={!!showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -573,7 +572,7 @@ const GuardDisciplinePage = () => {
           <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
             <ITButton
               variant="ghost"
-              size="small"
+              size="sm"
               onClick={() => setShowDeleteModal(false)}
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
@@ -582,7 +581,7 @@ const GuardDisciplinePage = () => {
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={handleDelete}
               disabled={submitting}
@@ -592,7 +591,7 @@ const GuardDisciplinePage = () => {
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

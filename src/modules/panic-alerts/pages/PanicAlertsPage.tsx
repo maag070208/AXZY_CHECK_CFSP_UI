@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { AppState } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import { markAlertsRead } from "@app/core/store/panic/panic.slice";
@@ -244,7 +244,7 @@ const PanicAlertsPage = () => {
           };
           const m = map[row.status] ?? { color: "danger", label: row.status };
           return (
-            <ITBadget color={m.color} size="small">
+            <ITBadget color={m.color} size="sm">
               {m.label}
             </ITBadget>
           );
@@ -258,7 +258,7 @@ const PanicAlertsPage = () => {
             <ITButton
               onClick={() => setViewing(row)}
               variant="outlined"
-              size="small"
+              size="sm"
               color="secondary"
               title="Ver detalle"
             >
@@ -268,7 +268,7 @@ const PanicAlertsPage = () => {
               <ITButton
                 onClick={() => setToResolve(row)}
                 variant="outlined"
-                size="small"
+                size="sm"
                 color="success"
                 title="Marcar como atendida"
                 disabled={resolving && toResolve?.id === row.id}
@@ -288,32 +288,31 @@ const PanicAlertsPage = () => {
   );
 
   return (
-    <div className="p-4 md:p-6 min-h-screen font-sans">
-      <ModuleHeader
-        title="Alertas de Pánico"
-        subtitle="Emergencias reportadas por guardias en campo"
-        icon={FaBell}
-        search={{
-          value: searchTerm,
-          onChange: setSearchTerm,
-          placeholder: "BUSCAR ALERTA, GUARDIA O CLIENTE...",
-        }}
-        onRefresh={() => setRefreshKey((p) => p + 1)}
-        refreshKey={refreshKey}
-        extraFilter={
-          <ITTripleFilter
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              { label: "TODAS", value: "ALL" },
-              { label: "PENDIENTES", value: "PENDING" },
-              { label: "ATENDIDAS", value: "RESOLVED" },
-              { label: "EN PROGRESO", value: "IN_PROGRESS" },
-              { label: "DESCARTADAS", value: "DISMISSED" },
-            ]}
-          />
-        }
-      />
+    <ModulePage
+      title="Alertas de Pánico"
+      subtitle="Emergencias reportadas por guardias en campo"
+      icon={FaBell}
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR ALERTA, GUARDIA O CLIENTE...",
+      }}
+      onRefresh={() => setRefreshKey((p) => p + 1)}
+      refreshKey={refreshKey}
+      extraFilter={
+        <ITTripleFilter
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { label: "TODAS", value: "ALL" },
+            { label: "PENDIENTES", value: "PENDING" },
+            { label: "ATENDIDAS", value: "RESOLVED" },
+            { label: "EN PROGRESO", value: "IN_PROGRESS" },
+            { label: "DESCARTADAS", value: "DISMISSED" },
+          ]}
+        />
+      }
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
         <div className="min-w-[800px]">
@@ -390,7 +389,7 @@ const PanicAlertsPage = () => {
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

@@ -13,7 +13,7 @@ test.describe("Módulo de Autenticación - Login", () => {
 
   test("debería mostrar el formulario de inicio de sesión", async ({ page }) => {
     // Verificar título principal
-    await expect(page.locator("h1")).toContainText("AXZY Check Web");
+    await expect(page.locator("h1")).toContainText("Check Web");
     // Verificar campos de texto
     await expect(page.locator('input[name="username"]')).toBeVisible();
     await expect(page.locator('input[name="password"]')).toBeVisible();

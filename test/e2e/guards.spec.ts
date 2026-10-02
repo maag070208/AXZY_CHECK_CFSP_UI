@@ -389,7 +389,7 @@ test.describe("Módulo de Guardias - Gestión de Guardias", () => {
         await page.fill('input[name="contactPhone"]', "1234567890");
         await page.fill('input[name="appUsername"]', `martin_amaro_${ts}`);
         await page.fill('input[name="appPassword"]', "password123");
-        await page.click('button:has-text("Confirmar Registro")');
+        await page.click('button:has-text("Crear Cliente")');
         // Graceful: name unique constraint → client already exists, close and continue
         const created = await page.getByText("Cliente creado con éxito").isVisible({ timeout: 5000 }).catch(() => false);
         if (!created) {
@@ -439,14 +439,14 @@ test.describe("Módulo de Guardias - Gestión de Guardias", () => {
     
     // Desactivar
     await row.getByRole("button", { name: "Desactivar" }).click();
-    await expect(page.getByText("¿Desactivar Guardia?", { exact: true })).toBeVisible();
-    await page.click('button:has-text("CONFIRMAR ACCIÓN")');
+    await expect(page.getByRole("heading", { name: "Desactivar Guardia" })).toBeVisible();
+    await page.getByRole("button", { name: "Desactivar" }).last().click();
     await expect(page.getByText("Guardia desactivado")).toBeVisible();
 
     // Activar
     await row.getByRole("button", { name: "Activar" }).click();
-    await expect(page.getByText("¿Activar Guardia?", { exact: true })).toBeVisible();
-    await page.click('button:has-text("CONFIRMAR ACCIÓN")');
+    await expect(page.getByRole("heading", { name: "Activar Guardia" })).toBeVisible();
+    await page.getByRole("button", { name: "Activar" }).last().click();
     await expect(page.getByText("Guardia activado")).toBeVisible();
   });
 
@@ -465,19 +465,48 @@ test.describe("Módulo de Guardias - Gestión de Guardias", () => {
       await expect(page.getByText("Revisar cerraduras de la entrada principal.")).toBeVisible();
     }
 
-    await page.click('button:has-text("Cerrar Expediente")');
+    await page.keyboard.press("Escape");
   });
 
-  test("debería permitir generar una asignación especial", async ({ page }) => {
-    const row = page.locator("tr", { hasText: /mario mantenimiento/i });
+  test("debería permitir generar una asignación especial", async ({ page, request }) => {
+    // En la DB real solo asael tiene ubicaciones asignadas a su cliente.
+    const guardRowName = process.env.USE_REAL_API
+      ? /asael guardia/i
+      : /mario mantenimiento/i;
+
+    // La API rechaza asignar un guardia que ya tiene una activa en la ubicación.
+    // Como la DB real acumula corridas previas, limpiamos las PENDING de asael
+    // para que la creación sea determinista.
+    if (process.env.USE_REAL_API) {
+      const api = "http://localhost:4444/api/v1";
+      const loginRes = await request.post(`${api}/users/login`, {
+        data: { username: "admin", password: "123456" },
+      });
+      const token = (await loginRes.json()).data as string;
+      const auth = { Authorization: `Bearer ${token}` };
+      const usersRes = await request.post(`${api}/users/datatable`, {
+        headers: auth,
+        data: { page: 1, limit: 100 },
+      });
+      const asael = (await usersRes.json()).data.rows.find(
+        (u: any) => u.username === "asael",
+      );
+      if (asael) {
+        const asgRes = await request.get(
+          `${api}/assignments/all?guardId=${asael.id}`,
+          { headers: auth },
+        );
+        const list = ((await asgRes.json()).data || []) as any[];
+        for (const a of list.filter((x) => x.status === "PENDING")) {
+          await request.delete(`${api}/assignments/${a.id}`, { headers: auth });
+        }
+      }
+    }
+
+    const row = page.locator("tr", { hasText: guardRowName });
     await row.getByRole("button", { name: "Asignar" }).click();
 
-    await expect(page.getByRole("heading", { name: "Asignación Especial", exact: true })).toBeVisible();
-
-    // Seleccionar Ubicación
-    await page.click('input[placeholder="BUSCAR UBICACIÓN..."]');
-    await page.fill('input[placeholder="BUSCAR UBICACIÓN..."]', "LA FAVORITA");
-    await page.locator('.absolute.z-50').locator('div.cursor-pointer', { hasText: "PLAZA 2000-ALTA-LA FAVORITA" }).first().click();
+    await expect(page.getByRole("heading", { name: "Nueva Asignación", exact: true })).toBeVisible();
 
     // Agregar Tarea 1
     await page.fill('input[name="tempTaskDesc"]', "TEST TAREA 1");
@@ -495,11 +524,18 @@ test.describe("Módulo de Guardias - Gestión de Guardias", () => {
     await expect(page.getByText("TEST TAREA 2")).not.toBeVisible();
 
     // Agregar notas adicionales
-    await page.fill('textarea[placeholder="NOTAS U OBSERVACIONES GENERALES..."]', "TEST OBSERVACIONES");
+    await page.fill('textarea[placeholder="Instrucciones especiales..."]', "TEST OBSERVACIONES");
+
+    // Seleccionar la primera ubicación disponible (ya limpiamos duplicados).
+    // El panel flotante del select se identifica con data-it-floating.
+    await page.click('input[placeholder="Buscar ubicación..."]');
+    await page.locator('[data-it-floating="true"] div.cursor-pointer').first().click();
 
     // Enviar asignación
-    await page.click('button:has-text("Generar Asignación")');
+    await page.click('button:has-text("Crear Asignación")');
 
-    await expect(page.getByText("Asignación creada correctamente")).toBeVisible();
+    await expect(page.getByText("Asignación creada correctamente")).toBeVisible({
+      timeout: 15000,
+    });
   });
 });

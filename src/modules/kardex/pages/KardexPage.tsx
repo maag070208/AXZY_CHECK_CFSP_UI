@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { translateScanType } from "@app/core/utils/status.utils";
 import {
   ITBadget,
@@ -135,7 +135,7 @@ const KardexPage = () => {
                   ? "warning"
                   : "primary"
             }
-            size="small"
+            size="sm"
           >
             {translateScanType(row.scanType)}
           </ITBadget>
@@ -168,7 +168,7 @@ const KardexPage = () => {
             <ITButton
               onClick={() => setViewingEntry(row)}
               variant="outlined"
-              size="small"
+              size="sm"
               color="secondary"
               title="Ver Detalle"
             >
@@ -177,7 +177,7 @@ const KardexPage = () => {
             <ITButton
               onClick={() => setEntryToDeleteId(row.id)}
               variant="outlined"
-              size="small"
+              size="sm"
               color="error"
               title="Eliminar"
             >
@@ -191,41 +191,40 @@ const KardexPage = () => {
   );
 
   return (
-    <div className="p-6   min-h-screen font-sans">
-      <ModuleHeader
-        title="Expediente Kardex"
-        subtitle="Registro histórico de marcajes, evidencias y reportes de campo"
-        icon={FaBook}
-        search={{
-          value: searchTerm,
-          onChange: setSearchTerm,
-          placeholder: "BUSCAR RESPONSABLE...",
-          icon: FaUser,
-        }}
-        extraFilter={
-          <ITTripleFilter
-            value={scanTypeFilter}
-            onChange={(val) => {
-              setScanTypeFilter(val);
-              setRefreshKey((prev) => prev + 1);
-            }}
-            options={[
-              { label: "TODOS", value: "ALL" },
-              { label: "ASIGNACIÓN", value: "ASSIGNMENT" },
-              { label: "RECURRENTE", value: "RECURRING" },
-            ]}
-          />
-        }
-        dateRange={{
-          value: selectedDate as [Date | null, Date | null],
-          onChange: (val) => {
-            setSelectedDate(val);
+    <ModulePage
+      title="Expediente Kardex"
+      subtitle="Registro histórico de marcajes, evidencias y reportes de campo"
+      icon={FaBook}
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR RESPONSABLE...",
+        icon: FaUser,
+      }}
+      extraFilter={
+        <ITTripleFilter
+          value={scanTypeFilter}
+          onChange={(val) => {
+            setScanTypeFilter(val);
             setRefreshKey((prev) => prev + 1);
-          },
-        }}
-        onRefresh={() => setRefreshKey((p) => p + 1)}
-        refreshKey={refreshKey}
-      />
+          }}
+          options={[
+            { label: "TODOS", value: "ALL" },
+            { label: "ASIGNACIÓN", value: "ASSIGNMENT" },
+            { label: "RECURRENTE", value: "RECURRING" },
+          ]}
+        />
+      }
+      dateRange={{
+        value: selectedDate as [Date | null, Date | null],
+        onChange: (val) => {
+          setSelectedDate(val);
+          setRefreshKey((prev) => prev + 1);
+        },
+      }}
+      onRefresh={() => setRefreshKey((p) => p + 1)}
+      refreshKey={refreshKey}
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mt-6">
         <ITDataTable<KardexEntry & Record<string, unknown>>
@@ -249,7 +248,7 @@ const KardexPage = () => {
         isOpen={!!entryToDeleteId}
         onClose={() => setEntryToDeleteId(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -274,7 +273,7 @@ const KardexPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setEntryToDeleteId(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -282,7 +281,7 @@ const KardexPage = () => {
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
               disabled={isDeleting}
@@ -292,7 +291,7 @@ const KardexPage = () => {
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

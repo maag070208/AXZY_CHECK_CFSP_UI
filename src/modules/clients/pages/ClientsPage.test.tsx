@@ -64,7 +64,7 @@ describe("ClientsPage (Pruebas del módulo de Clientes)", () => {
   it("debe renderizar el encabezado y el filtro de estado", async () => {
     render(<ClientsPage />);
 
-    expect(screen.getByText("Directorio de Clientes")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Directorio de Clientes" })).toBeInTheDocument();
     expect(screen.getByText("Gestión de clientes y sus ubicaciones")).toBeInTheDocument();
     expect(screen.getByText("TODOS")).toBeInTheDocument();
   });

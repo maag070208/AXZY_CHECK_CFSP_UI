@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { showToast } from "@app/core/store/toast/toast.slice";
@@ -163,7 +163,7 @@ const UsersPage = () => {
           if (roleName === "MAINT") color = "danger";
 
           return (
-            <ITBadget color={color} size="small">
+            <ITBadget color={color} size="sm">
               {roleValue}
             </ITBadget>
           );
@@ -203,7 +203,7 @@ const UsersPage = () => {
         key: "active",
         label: "ESTADO",
         render: (row: User) => (
-          <ITBadget color={row.active ? "success" : "error"} size="small">
+          <ITBadget color={row.active ? "success" : "error"} size="sm">
             {row.active ? "ACTIVO" : "INACTIVO"}
           </ITBadget>
         ),
@@ -217,7 +217,7 @@ const UsersPage = () => {
               onClick={() => setChangingScheduleUser(row)}
               variant="outlined"
               color="warning"
-              size="small"
+              size="sm"
               title="Horario"
             >
               <FaClock size={14} />
@@ -226,7 +226,7 @@ const UsersPage = () => {
               onClick={() => setChangingClientUser(row)}
               variant="outlined"
               color="info"
-              size="small"
+              size="sm"
               title="Cliente"
             >
               <FaUserShield size={14} />
@@ -234,7 +234,7 @@ const UsersPage = () => {
             <ITButton
               onClick={() => setChangingPasswordUser(row)}
               variant="outlined"
-              size="small"
+              size="sm"
               title="Seguridad"
               color="danger"
             >
@@ -243,7 +243,7 @@ const UsersPage = () => {
             <ITButton
               onClick={() => setEditingUser(row)}
               variant="outlined"
-              size="small"
+              size="sm"
               title="Editar"
             >
               <FaEdit size={14} />
@@ -252,7 +252,7 @@ const UsersPage = () => {
               onClick={() => setUserToDeleteId(row.id as any)}
               variant="outlined"
               color="error"
-              size="small"
+              size="sm"
               title="Eliminar"
             >
               <FaTrash size={14} />
@@ -265,32 +265,31 @@ const UsersPage = () => {
   );
 
   return (
-    <div className="p-6   min-h-screen font-sans">
-      <ModuleHeader
-        title="Directorio de Usuarios"
-        subtitle="Gestión de expedientes operativos y controles de acceso"
-        icon={FaUserShield}
-        search={{
-          value: searchTerm,
-          onChange: setSearchTerm,
-          placeholder: "BUSCAR USUARIO...",
-        }}
-        onRefresh={refreshTable}
-        refreshKey={refreshKey}
-        onCreate={() => setIsCreateModalOpen(true)}
-        createLabel="Nuevo Usuario"
-        extraFilter={
-          <ITTripleFilter
-            value={activeFilter}
-            onChange={setActiveFilter}
-            options={[
-              { label: "TODOS", value: "all" },
-              { label: "ACTIVOS", value: "active" },
-              { label: "INACTIVOS", value: "inactive" },
-            ]}
-          />
-        }
-      />
+    <ModulePage
+      title="Directorio de Usuarios"
+      subtitle="Gestión de expedientes operativos y controles de acceso"
+      icon={FaUserShield}
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR USUARIO...",
+      }}
+      onRefresh={refreshTable}
+      refreshKey={refreshKey}
+      onCreate={() => setIsCreateModalOpen(true)}
+      createLabel="Nuevo Usuario"
+      extraFilter={
+        <ITTripleFilter
+          value={activeFilter}
+          onChange={setActiveFilter}
+          options={[
+            { label: "TODOS", value: "all" },
+            { label: "ACTIVOS", value: "active" },
+            { label: "INACTIVOS", value: "inactive" },
+          ]}
+        />
+      }
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
         <ITDataTable
@@ -311,7 +310,7 @@ const UsersPage = () => {
           setEditingUser(null);
         }}
         title={editingUser ? "Editar Usuario" : "Registro de Usuario"}
-        className="!max-w-2xl !w-full"
+        className="!max-w-2xl w-full!"
       >
         <CreateUserWizard
           userToEdit={editingUser || undefined}
@@ -328,7 +327,7 @@ const UsersPage = () => {
         isOpen={!!changingPasswordUser}
         onClose={() => setChangingPasswordUser(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         {changingPasswordUser && (
           <ChangePasswordModal
@@ -344,7 +343,7 @@ const UsersPage = () => {
         isOpen={!!changingClientUser}
         onClose={() => setChangingClientUser(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -376,7 +375,7 @@ const UsersPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setChangingClientUser(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -390,7 +389,7 @@ const UsersPage = () => {
         isOpen={!!changingScheduleUser}
         onClose={() => setChangingScheduleUser(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -425,7 +424,7 @@ const UsersPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setChangingScheduleUser(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -439,7 +438,7 @@ const UsersPage = () => {
         isOpen={!!userToDeleteId}
         onClose={() => setUserToDeleteId(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -464,7 +463,7 @@ const UsersPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setUserToDeleteId(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -472,7 +471,7 @@ const UsersPage = () => {
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
               disabled={isDeleting}
@@ -482,7 +481,7 @@ const UsersPage = () => {
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

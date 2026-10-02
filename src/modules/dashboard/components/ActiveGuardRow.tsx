@@ -77,7 +77,7 @@ export const ActiveGuardRow = ({ guard }: ActiveGuardRowProps) => {
       <div className="relative shrink-0">
         <div
           className={`
-            w-11 h-11 rounded-full bg-gradient-to-br ${role.avatar}
+            w-11 h-11 rounded-full bg-linear-to-br ${role.avatar}
             flex items-center justify-center font-black text-white text-sm
             shadow-sm ring-2 ring-white
           `}
@@ -105,12 +105,12 @@ export const ActiveGuardRow = ({ guard }: ActiveGuardRowProps) => {
           <ITBadget
             label={role.label}
             color={role.badgeColor}
-            size="small"
+            size="sm"
           />
           <ITBadget
             label={onDuty ? "EN TURNO" : "FUERA"}
             color={onDuty ? "success" : "secondary"}
-            size="small"
+            size="sm"
           />
         </div>
         <ITText className="text-xs text-slate-500 font-medium truncate mt-0.5">

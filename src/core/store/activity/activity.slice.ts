@@ -7,7 +7,9 @@ export type ActivityType =
   | "panic"
   | "guard_status"
   | "round"
-  | "kardex";
+  | "kardex"
+  | "shift_handover"
+  | "uniform_check";
 
 export interface IRealtimeActivity {
   id: string;

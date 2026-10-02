@@ -120,7 +120,7 @@ export const ActivityItemRow = ({ item }: ActivityItemRowProps) => {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <ITBadget label={meta.label} color={meta.color} size="small" />
+          <ITBadget label={meta.label} color={meta.color} size="sm" />
           <span className="text-[11px] text-slate-400 font-semibold tracking-wide">
             {formatRelativeTime(item.createdAt)}
           </span>

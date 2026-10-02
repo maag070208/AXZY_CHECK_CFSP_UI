@@ -87,7 +87,7 @@ describe("IncidentsPage (Pruebas del módulo de Incidencias)", () => {
   it("debe renderizar el encabezado y listar las incidencias", async () => {
     render(<IncidentsPage />);
 
-    expect(screen.getByText("Gestión de Incidencias")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Gestión de Incidencias" })).toBeInTheDocument();
     
     await waitFor(() => {
       expect(screen.getByText(/fuga de agua/i)).toBeInTheDocument();

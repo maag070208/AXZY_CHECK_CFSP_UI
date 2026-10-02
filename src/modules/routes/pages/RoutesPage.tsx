@@ -1,5 +1,5 @@
 import { post } from "@app/core/axios/axios";
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { showToast } from "@app/core/store/toast/toast.slice";
@@ -135,7 +135,7 @@ const RoutesPage = () => {
         >
           <div className="flex items-center gap-2 mb-1">
             <FaBuilding className="text-slate-400 text-[10px]" />
-            <ITText className="font-black text-slate-700 uppercase text-[10px] tracking-widest hover:text-[--p] transition-colors">
+            <ITText className="font-black text-slate-700 uppercase text-[10px] tracking-widest hover:text-(--p) transition-colors">
               {row.recurringLocations?.[0]?.location?.client?.name ||
                 "Sin Cliente"}
             </ITText>
@@ -157,7 +157,7 @@ const RoutesPage = () => {
           className="flex flex-col cursor-pointer"
           onClick={() => handleEdit(row)}
         >
-          <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block hover:text-[--p] transition-colors">
+          <ITText className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1 block hover:text-(--p) transition-colors">
             {row.title}
           </ITText>
           <div className="flex items-center gap-1.5">
@@ -196,7 +196,7 @@ const RoutesPage = () => {
       label: "ESTADO",
       type: "string",
       render: (row: any) => (
-        <ITBadget color={row.active ? "success" : "error"} size="small">
+        <ITBadget color={row.active ? "success" : "error"} size="sm">
           {row.active ? "ACTIVO" : "INACTIVO"}
         </ITBadget>
       ),
@@ -209,7 +209,7 @@ const RoutesPage = () => {
         <div className="flex items-center flex-wrap gap-1.5 md:gap-2">
           <ITButton
             onClick={() => handlePrintRouteQRs(row)}
-            size="small"
+            size="sm"
             variant="outlined"
             color="success"
             title="Individual QR"
@@ -220,7 +220,7 @@ const RoutesPage = () => {
             onClick={() => handleEdit(row)}
             variant="outlined"
             title="Editar Ruta"
-            size="small"
+            size="sm"
             color="info"
           >
             <FaEdit size={14} />
@@ -230,7 +230,7 @@ const RoutesPage = () => {
             variant="outlined"
             color="error"
             title="Eliminar Ruta"
-            size="small"
+            size="sm"
           >
             <FaTrash size={14} />
           </ITButton>
@@ -240,43 +240,42 @@ const RoutesPage = () => {
   ];
 
   return (
-    <div className="p-4 md:p-8 min-h-screen" style={{ "--p": primary } as React.CSSProperties}>
-      <ModuleHeader
-        title="Gestión de Rutas"
-        subtitle="Configuración de recorridos y puntos de control para rondines"
-        icon={FaRoute}
-        filter={
-          <ITSearchSelect
-            className="!z-20"
-            placeholder="Filtrar por Cliente..."
-            options={(clients || []).map((c: any) => ({
-              label: c.name,
-              value: c.id,
-            }))}
-            value={selectedClientId}
-            onChange={(val) => {
-              setSelectedClientId(val);
-              setRefreshKey((prev) => prev + 1);
-            }}
-          />
-        }
-        search={{
-          value: searchTerm,
-          onChange: setSearchTerm,
-          placeholder: "BUSCAR RUTA...",
-          icon: FaRoute,
-        }}
-        showClearFilters={!!(searchTerm || selectedClientId)}
-        onClearFilters={() => {
-          setSearchTerm("");
-          setSelectedClientId("");
-          setRefreshKey((prev) => prev + 1);
-        }}
-        onRefresh={refreshTable}
-        refreshKey={refreshKey}
-        onCreate={handleCreate}
-        createLabel="Nueva Ruta"
-      />
+    <ModulePage style={{ "--p": primary } as React.CSSProperties}
+      title="Gestión de Rutas"
+      subtitle="Configuración de recorridos y puntos de control para rondines"
+      icon={FaRoute}
+      filter={
+        <ITSearchSelect
+          className="z-20!"
+          placeholder="Filtrar por Cliente..."
+          options={(clients || []).map((c: any) => ({
+            label: c.name,
+            value: c.id,
+          }))}
+          value={selectedClientId}
+          onChange={(val) => {
+            setSelectedClientId(val);
+            setRefreshKey((prev) => prev + 1);
+          }}
+        />
+      }
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR RUTA...",
+        icon: FaRoute,
+      }}
+      showClearFilters={!!(searchTerm || selectedClientId)}
+      onClearFilters={() => {
+        setSearchTerm("");
+        setSelectedClientId("");
+        setRefreshKey((prev) => prev + 1);
+      }}
+      onRefresh={refreshTable}
+      refreshKey={refreshKey}
+      onCreate={handleCreate}
+      createLabel="Nueva Ruta"
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
         <div className="min-w-[650px]">
@@ -296,7 +295,7 @@ const RoutesPage = () => {
         isOpen={!!routeToDeleteId}
         onClose={() => setRouteToDeleteId(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -321,7 +320,7 @@ const RoutesPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setRouteToDeleteId(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -329,7 +328,7 @@ const RoutesPage = () => {
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
               disabled={isDeleting}
@@ -339,7 +338,7 @@ const RoutesPage = () => {
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

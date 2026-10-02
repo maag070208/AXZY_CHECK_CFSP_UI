@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
@@ -263,7 +263,7 @@ const columns = useMemo(
                 alignItems: 'center',
               }}
             >
-              <ITBadget size="small" color={s.color}>{s.label}</ITBadget>
+              <ITBadget size="sm" color={s.color}>{s.label}</ITBadget>
             </div>
           );
         },
@@ -289,7 +289,7 @@ const columns = useMemo(
               <ITButton
                 onClick={() => navigate(`/rounds/${row.id}`)}
                 variant="outlined"
-                size="small"
+                size="sm"
                 title="Detalles"
               >
                 <FaEye size={14} />
@@ -298,7 +298,7 @@ const columns = useMemo(
                 <ITButton
                   onClick={() => setRoundToFinishId(row.id)}
                   variant="outlined"
-                  size="small"
+                  size="sm"
                   color="error"
                   title="Finalizar"
                 >
@@ -309,7 +309,7 @@ const columns = useMemo(
                 <ITButton
                   onClick={() => setRoundToDeleteId(row.id)}
                   variant="outlined"
-                  size="small"
+                  size="sm"
                   color="error"
                   title="Eliminar"
                 >
@@ -325,58 +325,57 @@ const columns = useMemo(
   [navigate, routesMap, isResident],
 );
   return (
-    <div className="p-6   min-h-screen font-sans">
-      <ModuleHeader
-        title="Historial de Rondas"
-        subtitle="Supervisión y cronología de recorridos operativos en tiempo real"
-        icon={FaRoute}
-        filter={
-          !isResident && (
-            <ITSearchSelect
-              placeholder="FILTRAR POR CLIENTE..."
-              options={(clients || []).map((c: any) => ({
-                label: c.name,
-                value: c.id,
-              }))}
-              value={selectedClientId}
-              onChange={(val) => {
-                setSelectedClientId(val);
-                setRefreshKey((prev) => prev + 1);
-              }}
-              className="w-full"
-            />
-          )
-        }
-        search={{
-          value: searchTerm,
-          onChange: setSearchTerm,
-          placeholder: "BUSCAR GUARDIA...",
-          icon: FaUser,
-        }}
-        dateRange={{
-          value: selectedDate as [Date | null, Date | null],
-          onChange: (val) => {
-            setSelectedDate(val);
-            setRefreshKey((prev) => prev + 1);
-          },
-        }}
-        extraFilter={
-          <ITTripleFilter
-            value={statusFilter}
+    <ModulePage
+      title="Historial de Rondas"
+      subtitle="Supervisión y cronología de recorridos operativos en tiempo real"
+      icon={FaRoute}
+      filter={
+        !isResident && (
+          <ITSearchSelect
+            placeholder="FILTRAR POR CLIENTE..."
+            options={(clients || []).map((c: any) => ({
+              label: c.name,
+              value: c.id,
+            }))}
+            value={selectedClientId}
             onChange={(val) => {
-              setStatusFilter(val);
+              setSelectedClientId(val);
               setRefreshKey((prev) => prev + 1);
             }}
-            options={[
-              { label: "TODAS", value: "ALL" },
-              { label: "ACTIVAS", value: "IN_PROGRESS" },
-              { label: "HISTORIAL", value: "COMPLETED" },
-            ]}
+            className="w-full"
           />
-        }
-        onRefresh={() => setRefreshKey((prev) => prev + 1)}
-        refreshKey={refreshKey}
-      />
+        )
+      }
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR GUARDIA...",
+        icon: FaUser,
+      }}
+      dateRange={{
+        value: selectedDate as [Date | null, Date | null],
+        onChange: (val) => {
+          setSelectedDate(val);
+          setRefreshKey((prev) => prev + 1);
+        },
+      }}
+      extraFilter={
+        <ITTripleFilter
+          value={statusFilter}
+          onChange={(val) => {
+            setStatusFilter(val);
+            setRefreshKey((prev) => prev + 1);
+          }}
+          options={[
+            { label: "TODAS", value: "ALL" },
+            { label: "ACTIVAS", value: "IN_PROGRESS" },
+            { label: "HISTORIAL", value: "COMPLETED" },
+          ]}
+        />
+      }
+      onRefresh={() => setRefreshKey((prev) => prev + 1)}
+      refreshKey={refreshKey}
+    >
 
       <div className="rounds-table bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden mt-6">
         <ITDataTable<IRound & Record<string, unknown>>
@@ -394,7 +393,7 @@ const columns = useMemo(
         isOpen={!!roundToFinishId}
         onClose={() => setRoundToFinishId(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -419,7 +418,7 @@ const columns = useMemo(
             <ITButton
               variant="ghost"
               onClick={() => setRoundToFinishId(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -427,7 +426,7 @@ const columns = useMemo(
             <ITButton
               variant="filled"
               color="primary"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-amber-100"
               onClick={handleEndRound}
               disabled={isFinishing}
@@ -443,7 +442,7 @@ const columns = useMemo(
         isOpen={!!roundToDeleteId}
         onClose={() => setRoundToDeleteId(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -468,7 +467,7 @@ const columns = useMemo(
             <ITButton
               variant="ghost"
               onClick={() => setRoundToDeleteId(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -476,7 +475,7 @@ const columns = useMemo(
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDeleteRound}
               disabled={isDeleting}
@@ -486,7 +485,7 @@ const columns = useMemo(
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

@@ -281,7 +281,7 @@ test.describe("Módulo de Clientes - Gestión de Clientes", () => {
     await page.fill('input[name="appPassword"]', "password123");
 
     // 5. Enviar formulario
-    await page.click('button:has-text("Confirmar Registro")');
+    await page.click('button:has-text("Crear Cliente")');
 
     // 6. Verificar toast de éxito
     await expect(page.getByText("Cliente creado con éxito")).toBeVisible();
@@ -296,14 +296,14 @@ test.describe("Módulo de Clientes - Gestión de Clientes", () => {
     await row.getByRole("button", { name: "Editar" }).click();
 
     // 2. Esperar que el modal de edición abra
-    await expect(page.getByRole("heading", { name: new RegExp(`Editar Cliente: ${uniqueClientName}`, "i"), exact: false })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Editar Cliente", exact: true })).toBeVisible();
 
     // 3. Modificar el nombre del cliente generado y deshabilitar el estado
     await page.fill('input[name="name"]', modifiedClientName);
     await page.getByRole("switch").click();
 
     // 4. Guardar cambios
-    await page.click('button:has-text("Actualizar Información")');
+    await page.click('button:has-text("Guardar Cambios")');
 
     // 5. Verificar toast de éxito
     await expect(page.getByText("Cliente actualizado con éxito")).toBeVisible();
@@ -348,16 +348,16 @@ test.describe("Módulo de Clientes - Gestión de Clientes", () => {
     await row.getByRole("button", { name: "Eliminar" }).click();
 
     // 2. Esperar modal de confirmación
-    await expect(page.getByRole("heading", { name: "Confirmar Eliminación", exact: true })).toBeVisible();
+    await expect(page.getByText("¿Eliminar Cliente?")).toBeVisible();
 
     // 3. Confirmar eliminación
-    await page.click('button:has-text("Eliminar Cliente")');
+    await page.click('button:has-text("CONFIRMAR ACCIÓN")');
 
-    // 4. Verificar toast de confirmación
-    await expect(page.getByText("Cliente eliminado")).toBeVisible();
+    // 4. Verificar toast de confirmación (la cascada puede tardar más que el timeout por defecto)
+    await expect(page.getByText("Cliente eliminado")).toBeVisible({ timeout: 30000 });
 
     // 5. Comprobar que desapareció de la tabla
-    await expect(page.getByText(modifiedClientName)).toBeHidden();
+    await expect(page.getByText(modifiedClientName)).toBeHidden({ timeout: 15000 });
   });
   test("debería rechazar la creación de un cliente con username de app ya registrado", async ({ page }) => {
     // 1. Abrir modal nuevo cliente
@@ -375,7 +375,7 @@ test.describe("Módulo de Clientes - Gestión de Clientes", () => {
     await page.fill('input[name="appPassword"]', "password123");
 
     // 3. Enviar
-    await page.click('button:has-text("Confirmar Registro")');
+    await page.click('button:has-text("Crear Cliente")');
 
     // 4. No debe aparecer el toast de éxito
     await expect(page.getByText("Cliente creado con éxito")).toBeHidden();

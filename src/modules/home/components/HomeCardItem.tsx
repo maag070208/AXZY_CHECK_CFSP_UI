@@ -23,17 +23,17 @@ export const HomeCardItem = ({ item, index }: any) => {
       `}
     >
       <div
-        className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${accent}`}
+        className={`absolute inset-x-0 top-0 h-1 bg-linear-to-r ${accent}`}
       />
       <div
-        className={`absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br ${accent} opacity-[0.06] group-hover:opacity-[0.12] transition-opacity duration-500 blur-2xl`}
+        className={`absolute -top-12 -right-12 w-40 h-40 rounded-full bg-linear-to-br ${accent} opacity-[0.06] group-hover:opacity-[0.12] transition-opacity duration-500 blur-2xl`}
       />
 
       <div className="relative p-5 flex flex-col h-full">
         <div className="flex items-start justify-between mb-4">
           <div
             className={`
-              w-11 h-11 rounded-xl bg-gradient-to-br ${accent}
+              w-11 h-11 rounded-xl bg-linear-to-br ${accent}
               flex items-center justify-center text-white text-lg
               shadow-sm ring-1 ring-white/20
               transition-transform duration-300

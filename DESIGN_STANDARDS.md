@@ -141,7 +141,7 @@ Colors: `success` (verde), `warning` (ámbar), `danger` (rojo), `primary` (índi
   isOpen={isOpen}
   onClose={onClose}
   title="Detalle de Incidencia"
-  className="!max-w-[95vw] md:!max-w-[80vw] lg:!max-w-5xl !w-full"
+  className="max-w-[95vw]! md:!max-w-[80vw] lg:!max-w-5xl w-full!"
 >
   <div className="flex flex-col h-[85vh] w-full bg-white overflow-hidden">
     {/* Scrollable content */}

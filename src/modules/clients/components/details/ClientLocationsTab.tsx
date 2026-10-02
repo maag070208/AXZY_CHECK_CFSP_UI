@@ -146,7 +146,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
         <div className="flex items-center gap-2">
           <ITButton
             onClick={() => handlePrintBulk([row.id])}
-            size="small"
+            size="sm"
             variant="outlined"
             title="Imprimir QR"
           >
@@ -154,7 +154,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
           </ITButton>
           <ITButton
             onClick={() => setEditingLocation(row)}
-            size="small"
+            size="sm"
             variant="outlined"
             title="Editar"
           >
@@ -162,7 +162,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
           </ITButton>
           <ITButton
             onClick={() => setLocationToDelete(row)}
-            size="small"
+            size="sm"
             variant="outlined"
             color="error"
             title="Eliminar"
@@ -188,7 +188,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
         <div className="flex gap-2">
           <ITButton
             onClick={() => setRefreshKey((prev) => prev + 1)}
-            size="small"
+            size="sm"
             variant="ghost"
             className="w-9 h-9 p-0 flex items-center justify-center bg-slate-50 rounded-lg hover:bg-slate-100"
           >
@@ -196,7 +196,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
           </ITButton>
           <ITButton
             onClick={() => setIsBulkPrintOpen(true)}
-            size="small"
+            size="sm"
             variant="outlined"
             className="px-5 whitespace-nowrap shadow shadow-slate-100"
           >
@@ -208,7 +208,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
           <ITButton
             onClick={() => setIsCreateModalOpen(true)}
             color="primary"
-            size="small"
+            size="sm"
             className="px-5 whitespace-nowrap shadow shadow-sky-100"
           >
             <div className="flex items-center gap-1">
@@ -235,7 +235,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
           setCreateInitialData(null);
         }}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -304,7 +304,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
         isOpen={!!editingLocation}
         onClose={() => setEditingLocation(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -360,7 +360,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
         isOpen={!!locationToDelete}
         onClose={() => setLocationToDelete(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -385,7 +385,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
             <ITButton
               variant="ghost"
               onClick={() => setLocationToDelete(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -393,7 +393,7 @@ export const ClientLocationsTab = ({ clientId, selectedZoneId, onCreateFromZone 
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
               disabled={isDeleting}

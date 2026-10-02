@@ -1,5 +1,5 @@
 import { post } from "@app/core/axios/axios";
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { AppState } from "@app/core/store/store";
@@ -261,7 +261,7 @@ const LocationsPage = () => {
           <div className="flex items-center gap-2">
             <ITButton
               onClick={() => handlePrintQR(row)}
-              size="small"
+              size="sm"
               variant="outlined"
               color="success"
               title="Individual QR"
@@ -272,7 +272,7 @@ const LocationsPage = () => {
               <>
                 <ITButton
                   onClick={() => setEditingLocation(row)}
-                  size="small"
+                  size="sm"
                   variant="outlined"
                   title="Editar"
                 >
@@ -280,7 +280,7 @@ const LocationsPage = () => {
                 </ITButton>
                 <ITButton
                   onClick={() => setLocationToDelete(row)}
-                  size="small"
+                  size="sm"
                   variant="outlined"
                   color="error"
                   title="Eliminar"
@@ -297,78 +297,77 @@ const LocationsPage = () => {
   );
 
   return (
-    <div className="p-8   min-h-screen">
-      <ModuleHeader
-        title="Directorio de Ubicaciones"
-        subtitle="Gestión y control de puntos QR para rondines y asistencia"
-        icon={FaSearchLocation}
-        filter={
-          <ITSearchSelect
-            className="!z-20"
-            placeholder="Filtrar por Cliente..."
-            options={(clients || []).map((c: any) => ({
-              label: c.name,
-              value: c.id,
-            }))}
-            value={selectedClientId}
-            onChange={(val: any) => setSelectedClientId(val)}
-          />
-        }
-        search={{
-          value: searchTerm,
-          onChange: setSearchTerm,
-          placeholder: "BUSCAR UBICACIÓN...",
-          icon: FaSearchLocation,
-        }}
-        onRefresh={() => setRefreshKey((prev) => prev + 1)}
-        refreshKey={refreshKey}
-        onCreate={
-          user?.role !== "OPERATOR" ? () => setIsModalOpen(true) : undefined
-        }
-        createLabel="Nueva Ubicación"
-        actions={
-          <div className="flex items-center gap-3">
-            {selectedClientId && (
-              <ITButton
-                onClick={() => setIsZonesModalOpen(true)}
-                variant="filled"
-                color="secondary"
-              >
-                <div className="flex items-center gap-2">
-                  <FaMapMarkedAlt size={12} />
-                  <span className="hidden lg:inline">Zonas del Cliente</span>
-                </div>
-              </ITButton>
-            )}
-
+    <ModulePage
+      title="Directorio de Ubicaciones"
+      subtitle="Gestión y control de puntos QR para rondines y asistencia"
+      icon={FaSearchLocation}
+      filter={
+        <ITSearchSelect
+          className="z-20!"
+          placeholder="Filtrar por Cliente..."
+          options={(clients || []).map((c: any) => ({
+            label: c.name,
+            value: c.id,
+          }))}
+          value={selectedClientId}
+          onChange={(val: any) => setSelectedClientId(val)}
+        />
+      }
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR UBICACIÓN...",
+        icon: FaSearchLocation,
+      }}
+      onRefresh={() => setRefreshKey((prev) => prev + 1)}
+      refreshKey={refreshKey}
+      onCreate={
+        user?.role !== "OPERATOR" ? () => setIsModalOpen(true) : undefined
+      }
+      createLabel="Nueva Ubicación"
+      actions={
+        <div className="flex items-center gap-3">
+          {selectedClientId && (
             <ITButton
-              onClick={() => setIsBulkPrintModalOpen(true)}
+              onClick={() => setIsZonesModalOpen(true)}
               variant="filled"
               color="secondary"
             >
               <div className="flex items-center gap-2">
-                <FaPrint size={12} />
-                <span className="hidden lg:inline">Imprimir</span>
+                <FaMapMarkedAlt size={12} />
+                <span className="hidden lg:inline">Zonas del Cliente</span>
               </div>
             </ITButton>
+          )}
 
-            {(searchTerm || selectedClientId) && (
-              <ITButton
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedClientId("");
-                }}
-                variant="filled"
-                color="error"
-                size="small"
-                title="Limpiar Filtros"
-              >
-                <FaFilter size={12} />
-              </ITButton>
-            )}
-          </div>
-        }
-      />
+          <ITButton
+            onClick={() => setIsBulkPrintModalOpen(true)}
+            variant="filled"
+            color="secondary"
+          >
+            <div className="flex items-center gap-2">
+              <FaPrint size={12} />
+              <span className="hidden lg:inline">Imprimir</span>
+            </div>
+          </ITButton>
+
+          {(searchTerm || selectedClientId) && (
+            <ITButton
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedClientId("");
+              }}
+              variant="filled"
+              color="error"
+              size="sm"
+              title="Limpiar Filtros"
+            >
+              <FaFilter size={12} />
+            </ITButton>
+          )}
+        </div>
+      }
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
         <ITDataTable
@@ -402,7 +401,7 @@ const LocationsPage = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title=""
-        className="!max-w-lg !w-full"
+        className="!max-w-lg w-full!"
       >
         {isModalOpen && (
           <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
@@ -440,7 +439,7 @@ const LocationsPage = () => {
         isOpen={!!editingLocation}
         onClose={() => setEditingLocation(null)}
         title=""
-        className="!max-w-lg !w-full"
+        className="!max-w-lg w-full!"
       >
         {editingLocation && (
           <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
@@ -469,7 +468,7 @@ const LocationsPage = () => {
         isOpen={!!locationToDelete}
         onClose={() => setLocationToDelete(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -494,7 +493,7 @@ const LocationsPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setLocationToDelete(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -502,7 +501,7 @@ const LocationsPage = () => {
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
             >
@@ -511,7 +510,7 @@ const LocationsPage = () => {
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

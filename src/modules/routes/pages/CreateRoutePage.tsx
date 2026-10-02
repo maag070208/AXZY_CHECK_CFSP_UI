@@ -6,6 +6,7 @@ import {
   ITDialog,
   ITInput,
   ITLoader,
+  ITPage,
   ITSearchSelect,
   ITSlideToggle,
   useITTheme,
@@ -299,41 +300,33 @@ const CreateRoutePage = () => {
     },
   ];
 
+  const pageTitle = isEditing ? "Editar ruta" : "Nueva ruta";
+  const pageProps = {
+    noPadding: true,
+    title: pageTitle,
+    description: isEditing ? "Ajusta los puntos, el orden y las tareas del recorrido." : "Asistente para configurar un recorrido de vigilancia.",
+    icon: <FaRoute size={20} />,
+    backAction: () => navigate("/routes"),
+    breadcrumbs: [
+      { label: "Inicio", onClick: () => navigate("/home") },
+      { label: "Configuración de rondas", onClick: () => navigate("/routes") },
+      { label: pageTitle },
+    ],
+  };
+
   if (fetchingData)
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-white">
-        <div className="relative">
-          <div className="w-20 h-20 rounded-full border-4 border-slate-200 border-t-[--p] animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <FaRoute className="text-[--p] opacity-50" size={20} />
-          </div>
-        </div>
-        <p className="mt-6 text-sm text-slate-400 font-light">
-          Cargando configuración...
-        </p>
-      </div>
+      <ITPage {...pageProps} loading>
+        {null}
+      </ITPage>
     );
 
   return (
-    <div className="h-full flex overflow-hidden bg-slate-50" style={{ "--p": primary, "--pl": primaryLight } as React.CSSProperties}>
+    <div style={{ "--p": primary, "--pl": primaryLight } as React.CSSProperties}>
+    <ITPage {...pageProps}>
+    <div className="h-[calc(100vh-15rem)] min-h-[560px] flex overflow-hidden bg-slate-50 rounded-2xl border border-slate-200/70 shadow-sm">
       {/* SIDEBAR STEPS - Mejorado */}
       <aside className="hidden md:flex w-[260px] bg-white border-r border-slate-200/60 flex-col p-6 shrink-0 shadow-lg relative z-20">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[--p] to-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/25">
-              <FaRoute size={18} />
-            </div>
-            <div>
-              <h1 className="text-sm font-semibold text-slate-800">
-                {isEditing ? "Editar Ruta" : "Nueva Ruta"}
-              </h1>
-              <p className="text-[10px] text-slate-400 font-light">
-                {isEditing ? `ID: ${id?.slice(-8)}` : "Asistente de creación"}
-              </p>
-            </div>
-          </div>
-        </div>
-
         <div className="flex-1 space-y-1">
           {steps.map((step, idx) => {
             const isActive = currentStep === idx;
@@ -343,7 +336,7 @@ const CreateRoutePage = () => {
                 key={idx}
                 onClick={() => setCurrentStep(idx)}
                 className={`w-full flex items-center gap-4 p-3 rounded-2xl transition-all duration-300 text-left ${isActive
-                    ? "bg-[--pl] border border-[--p]/20 shadow-sm"
+                    ? "bg-(--pl) border border-(--p)/20 shadow-sm"
                     : isCompleted
                       ? "hover:bg-slate-50"
                       : "hover:bg-slate-50/50"
@@ -351,9 +344,9 @@ const CreateRoutePage = () => {
               >
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 shrink-0 ${isActive
-                      ? "bg-[--p] text-white shadow-lg shadow-emerald-500/25"
+                      ? "bg-(--p) text-white shadow-lg shadow-emerald-500/25"
                       : isCompleted
-                        ? "bg-[--pl] text-[--p]"
+                        ? "bg-(--pl) text-(--p)"
                         : "bg-slate-100 text-slate-400"
                     }`}
                 >
@@ -361,20 +354,20 @@ const CreateRoutePage = () => {
                 </div>
                 <div className="min-w-0">
                   <p
-                    className={`text-xs font-medium leading-tight ${isActive ? "text-[--p]" : "text-slate-600"
+                    className={`text-xs font-medium leading-tight ${isActive ? "text-(--p)" : "text-slate-600"
                       }`}
                   >
                     {step.title}
                   </p>
                   <p
-                    className={`text-[10px] mt-0.5 ${isActive ? "text-[--p]/70" : "text-slate-400"
+                    className={`text-[10px] mt-0.5 ${isActive ? "text-(--p)/70" : "text-slate-400"
                       }`}
                   >
                     {step.subtitle}
                   </p>
                 </div>
                 {isActive && (
-                  <div className="ml-auto w-1.5 h-8 rounded-full bg-[--p] animate-pulse" />
+                  <div className="ml-auto w-1.5 h-8 rounded-full bg-(--p) animate-pulse" />
                 )}
               </button>
             );
@@ -404,7 +397,7 @@ const CreateRoutePage = () => {
         <div className="md:hidden shrink-0 bg-white border-b border-slate-200/60 px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[--p] text-white flex items-center justify-center text-xs font-bold">
+              <div className="w-8 h-8 rounded-lg bg-(--p) text-white flex items-center justify-center text-xs font-bold">
                 {currentStep + 1}
               </div>
               <div>
@@ -416,7 +409,7 @@ const CreateRoutePage = () => {
               {steps.map((_, idx) => (
                 <div
                   key={idx}
-                  className={`w-6 h-1.5 rounded-full transition-all ${idx === currentStep ? "bg-[--p] w-8" : idx < currentStep ? "bg-[--pl]" : "bg-slate-200"
+                  className={`w-6 h-1.5 rounded-full transition-all ${idx === currentStep ? "bg-(--p) w-8" : idx < currentStep ? "bg-(--pl)" : "bg-slate-200"
                     }`}
                 />
               ))}
@@ -476,7 +469,7 @@ const CreateRoutePage = () => {
                       </p>
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-100">
-                          <div className="w-8 h-8 rounded-lg bg-[--p] text-white flex items-center justify-center text-xs font-bold">
+                          <div className="w-8 h-8 rounded-lg bg-(--p) text-white flex items-center justify-center text-xs font-bold">
                             1
                           </div>
                           <div>
@@ -485,7 +478,7 @@ const CreateRoutePage = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-100">
-                          <div className="w-8 h-8 rounded-lg bg-[--pl] flex items-center justify-center text-[--p] text-xs font-bold">
+                          <div className="w-8 h-8 rounded-lg bg-(--pl) flex items-center justify-center text-(--p) text-xs font-bold">
                             2
                           </div>
                           <div>
@@ -494,7 +487,7 @@ const CreateRoutePage = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-100">
-                          <div className="w-8 h-8 rounded-lg bg-[--pl] flex items-center justify-center text-[--p] text-xs font-bold">
+                          <div className="w-8 h-8 rounded-lg bg-(--pl) flex items-center justify-center text-(--p) text-xs font-bold">
                             3
                           </div>
                           <div>
@@ -527,7 +520,7 @@ const CreateRoutePage = () => {
                       </div>
                     )}
 
-                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 p-4 rounded-2xl flex items-start gap-3 border border-emerald-100/50">
+                    <div className="bg-linear-to-br from-emerald-50 to-teal-50/50 p-4 rounded-2xl flex items-start gap-3 border border-emerald-100/50">
                       <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-emerald-500 shadow-sm shrink-0">
                         <FaInfoCircle size={14} />
                       </div>
@@ -682,7 +675,7 @@ const CreateRoutePage = () => {
                               <div className="p-4 border-b border-slate-100 bg-slate-50/50">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-2 min-w-0">
-                                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[--p] text-white text-xs font-bold">
+                                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-(--p) text-white text-xs font-bold">
                                       {idx + 1}
                                     </span>
                                     <p className="text-sm font-medium text-slate-800 truncate">
@@ -694,7 +687,7 @@ const CreateRoutePage = () => {
                                     <button
                                       onClick={() => moveLocation(idx, "up")}
                                       disabled={idx === 0}
-                                      className="p-1.5 text-slate-300 hover:text-[--p] disabled:opacity-30 transition-colors"
+                                      className="p-1.5 text-slate-300 hover:text-(--p) disabled:opacity-30 transition-colors"
                                       aria-label="Mover arriba"
                                     >
                                       <FaChevronUp size={10} />
@@ -702,7 +695,7 @@ const CreateRoutePage = () => {
                                     <button
                                       onClick={() => moveLocation(idx, "down")}
                                       disabled={idx === addedLocations.length - 1}
-                                      className="p-1.5 text-slate-300 hover:text-[--p] disabled:opacity-30 transition-colors"
+                                      className="p-1.5 text-slate-300 hover:text-(--p) disabled:opacity-30 transition-colors"
                                       aria-label="Mover abajo"
                                     >
                                       <FaChevronDown size={10} />
@@ -711,7 +704,7 @@ const CreateRoutePage = () => {
                                     <button
                                       onClick={() => handleCloneTasks(idx)}
                                       disabled={loc.tasks.length === 0}
-                                      className="p-1.5 text-slate-300 hover:text-[--p] disabled:opacity-30 transition-colors"
+                                      className="p-1.5 text-slate-300 hover:text-(--p) disabled:opacity-30 transition-colors"
                                       aria-label="Clonar tareas"
                                       title="Clonar tareas a todos los puntos"
                                     >
@@ -737,7 +730,7 @@ const CreateRoutePage = () => {
                                 {loc.tasks.map((task, tIdx) => (
                                   <div
                                     key={tIdx}
-                                    className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100 focus-within:border-[--p]/40 focus-within:bg-white transition-all"
+                                    className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100 focus-within:border-(--p)/40 focus-within:bg-white transition-all"
                                   >
                                     <span className="text-[10px] text-slate-400 font-medium w-5 text-center">
                                       {tIdx + 1}
@@ -765,7 +758,7 @@ const CreateRoutePage = () => {
                                 ))}
                                 <button
                                   onClick={() => handleAddTask(idx)}
-                                  className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-sm text-slate-400 hover:border-[--p] hover:text-[--p] hover:bg-[--pl] transition-all flex items-center justify-center gap-2"
+                                  className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-sm text-slate-400 hover:border-(--p) hover:text-(--p) hover:bg-(--pl) transition-all flex items-center justify-center gap-2"
                                 >
                                   <FaPlus size={12} />
                                   <span>Agregar tarea</span>
@@ -822,13 +815,13 @@ const CreateRoutePage = () => {
                           <input
                             type="text"
                             placeholder="Buscar guardia..."
-                            className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-[--p] outline-none transition-all"
+                            className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-(--p) outline-none transition-all"
                             value={guardSearch}
                             onChange={(e) => setGuardSearch(e.target.value)}
                           />
                         </div>
                         <ITButton
-                          size="small"
+                          size="sm"
                           variant="outlined"
                           onClick={() => {
                             const allIds = filteredGuards.map((g) => g.id);
@@ -877,13 +870,13 @@ const CreateRoutePage = () => {
                               key={guard.id}
                               onClick={() => toggleGuard(guard.id)}
                               className={`cursor-pointer p-4 rounded-2xl border-2 transition-all flex items-center gap-4 ${isSelected
-                                  ? "border-[--p] bg-[--pl] shadow-lg shadow-emerald-500/10"
+                                  ? "border-(--p) bg-(--pl) shadow-lg shadow-emerald-500/10"
                                   : "border-slate-200/60 bg-white hover:border-slate-300"
                                 }`}
                             >
                               <div
                                 className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-medium transition-all shrink-0 ${isSelected
-                                    ? "bg-[--p] text-white shadow-lg shadow-emerald-500/25"
+                                    ? "bg-(--p) text-white shadow-lg shadow-emerald-500/25"
                                     : "bg-slate-100 text-slate-500"
                                   }`}
                               >
@@ -899,7 +892,7 @@ const CreateRoutePage = () => {
                                 </p>
                               </div>
                               {isSelected && (
-                                <div className="w-6 h-6 rounded-full bg-[--p] text-white flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                                <div className="w-6 h-6 rounded-full bg-(--p) text-white flex items-center justify-center shadow-lg shadow-emerald-500/25">
                                   <FaCheck size={10} />
                                 </div>
                               )}
@@ -918,7 +911,7 @@ const CreateRoutePage = () => {
               <div className="h-full overflow-y-auto p-4 md:p-8 lg:p-10">
                 <div className="max-w-4xl mx-auto">
                   <div className="mb-8 text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[--pl] text-[--p] mb-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-(--pl) text-(--p) mb-4">
                       <FaClipboardCheck size={28} />
                     </div>
                     <h2 className="text-xl md:text-2xl font-semibold text-slate-800">
@@ -931,10 +924,10 @@ const CreateRoutePage = () => {
 
                   <div className="bg-white rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden">
                     {/* Header */}
-                    <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-[--pl] to-transparent">
+                    <div className="p-6 border-b border-slate-100 bg-linear-to-r from-(--pl) to-transparent">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs text-[--p] font-medium uppercase tracking-wider">
+                          <p className="text-xs text-(--p) font-medium uppercase tracking-wider">
                             Ruta de Vigilancia
                           </p>
                           <h3 className="text-lg font-semibold text-slate-800 mt-1">
@@ -951,7 +944,7 @@ const CreateRoutePage = () => {
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-px bg-slate-100">
                       <div className="bg-white p-6 text-center">
-                        <div className="w-12 h-12 rounded-xl bg-[--pl] text-[--p] flex items-center justify-center mx-auto mb-2">
+                        <div className="w-12 h-12 rounded-xl bg-(--pl) text-(--p) flex items-center justify-center mx-auto mb-2">
                           <FaBuilding size={18} />
                         </div>
                         <p className="text-xs text-slate-400">Cliente</p>
@@ -962,7 +955,7 @@ const CreateRoutePage = () => {
                         </p>
                       </div>
                       <div className="bg-white p-6 text-center">
-                        <div className="w-12 h-12 rounded-xl bg-[--pl] text-[--p] flex items-center justify-center mx-auto mb-2">
+                        <div className="w-12 h-12 rounded-xl bg-(--pl) text-(--p) flex items-center justify-center mx-auto mb-2">
                           <FaMapMarkerAlt size={18} />
                         </div>
                         <p className="text-xs text-slate-400">Puntos de Control</p>
@@ -971,7 +964,7 @@ const CreateRoutePage = () => {
                         </p>
                       </div>
                       <div className="bg-white p-6 text-center">
-                        <div className="w-12 h-12 rounded-xl bg-[--pl] text-[--p] flex items-center justify-center mx-auto mb-2">
+                        <div className="w-12 h-12 rounded-xl bg-(--pl) text-(--p) flex items-center justify-center mx-auto mb-2">
                           <FaUsers size={18} />
                         </div>
                         <p className="text-xs text-slate-400">Personal Asignado</p>
@@ -990,7 +983,7 @@ const CreateRoutePage = () => {
                         <div className="space-y-2">
                           {addedLocations.map((loc, idx) => (
                             <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                              <span className="text-xs font-bold text-[--p] w-6 text-center">
+                              <span className="text-xs font-bold text-(--p) w-6 text-center">
                                 {idx + 1}
                               </span>
                               <span className="text-sm text-slate-700 flex-1">
@@ -1006,7 +999,7 @@ const CreateRoutePage = () => {
                     )}
 
                     {/* Success Message */}
-                    <div className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50/50 border-t border-emerald-100/50">
+                    <div className="p-6 bg-linear-to-br from-emerald-50 to-teal-50/50 border-t border-emerald-100/50">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/25">
                           <FaCheck size={16} />
@@ -1037,7 +1030,7 @@ const CreateRoutePage = () => {
                 : setCurrentStep((prev) => prev - 1)
             }
             variant="ghost"
-            size="small"
+            size="sm"
             className="px-5"
           >
             <div className="flex items-center gap-2">
@@ -1055,7 +1048,7 @@ const CreateRoutePage = () => {
                 <div
                   key={idx}
                   className={`h-1.5 rounded-full transition-all ${idx <= currentStep
-                      ? "bg-[--p]"
+                      ? "bg-(--p)"
                       : "bg-slate-200"
                     }`}
                   style={{ width: idx === currentStep ? '24px' : '16px' }}
@@ -1068,7 +1061,7 @@ const CreateRoutePage = () => {
                 onClick={() => setCurrentStep((prev) => prev + 1)}
                 disabled={!steps[currentStep].isValid}
                 color="primary"
-                size="small"
+                size="sm"
                 className="px-6 shadow shadow-emerald-100"
               >
                 <div className="flex items-center gap-2">
@@ -1080,7 +1073,7 @@ const CreateRoutePage = () => {
               <ITButton
                 onClick={handleSave}
                 color="primary"
-                size="small"
+                size="sm"
                 className="px-6 shadow shadow-emerald-100"
               >
                 <div className="flex items-center gap-2">
@@ -1098,12 +1091,12 @@ const CreateRoutePage = () => {
         isOpen={showUserModal}
         onClose={() => setShowUserModal(false)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-[--pl] text-[--p] flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-(--pl) text-(--p) flex items-center justify-center">
                 <FaUserFriends size={18} />
               </div>
               <div>
@@ -1131,7 +1124,7 @@ const CreateRoutePage = () => {
         isOpen={showClearDialog}
         onClose={() => setShowClearDialog(false)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -1156,7 +1149,7 @@ const CreateRoutePage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setShowClearDialog(false)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -1164,7 +1157,7 @@ const CreateRoutePage = () => {
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={() => {
                 setAddedLocations([]);
@@ -1176,6 +1169,8 @@ const CreateRoutePage = () => {
           </div>
         </div>
       </ITDialog>
+    </div>
+    </ITPage>
     </div>
   );
 };

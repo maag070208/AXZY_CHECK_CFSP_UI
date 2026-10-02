@@ -115,7 +115,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
         return (
           <ITBadget
             color={status === "ACTIVO" ? "success" : "error"}
-            size="small"
+            size="sm"
           >
             {status}
           </ITBadget>
@@ -152,7 +152,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
         <div className="flex items-center gap-2">
           <ITButton
             onClick={() => setChangingScheduleUser(row)}
-            size="small"
+            size="sm"
             variant="outlined"
             title="Reasignar Horario"
           >
@@ -160,7 +160,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
           </ITButton>
           <ITButton
             onClick={() => setRemovingUser(row)}
-            size="small"
+            size="sm"
             variant="outlined"
             color="error"
             title="Remover de Cliente"
@@ -185,7 +185,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
         </div>
         <ITButton
           onClick={() => setRefreshKey((prev) => prev + 1)}
-          size="small"
+          size="sm"
           variant="ghost"
           className="w-9 h-9 p-0 flex items-center justify-center bg-slate-50 rounded-lg hover:bg-slate-100"
         >
@@ -206,7 +206,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
         isOpen={!!changingScheduleUser}
         onClose={() => setChangingScheduleUser(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -262,7 +262,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
             <ITButton
               variant="ghost"
               onClick={() => setChangingScheduleUser(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -270,7 +270,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
             <ITButton
               onClick={() => setChangingScheduleUser(null)}
               color="primary"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-sky-100"
             >
               Cerrar
@@ -283,7 +283,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
         isOpen={!!removingUser}
         onClose={() => setRemovingUser(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -308,7 +308,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
             <ITButton
               variant="ghost"
               onClick={() => setRemovingUser(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -316,7 +316,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={() => removingUser && handleRemoveFromClient(removingUser)}
             >

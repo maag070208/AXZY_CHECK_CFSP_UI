@@ -91,13 +91,13 @@ export const MediaCarousel: React.FC<MediaCarouselProps> = ({
         flex flex-col w-full h-full mx-auto overflow-hidden bg-white transition-all duration-500
         pointer-events-auto
         fixed inset-0
-        ${isFullscreen ? "fixed inset-0 z-[99999]" : "relative"}
+        ${isFullscreen ? "fixed inset-0 z-99999" : "relative"}
       `}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Premium Glass Header */}
       <div
-        className="absolute top-0 inset-x-0 z-20 p-10 flex justify-between items-start pointer-events-none bg-gradient-to-b from-white/90 via-white/40 to-transparent"
+        className="absolute top-0 inset-x-0 z-20 p-10 flex justify-between items-start pointer-events-none bg-linear-to-b from-white/90 via-white/40 to-transparent"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="pointer-events-auto flex flex-col gap-2">

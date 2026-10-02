@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { clearSpecificCatalogCache } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import { TResult } from "@app/core/types/TResult";
@@ -107,32 +107,31 @@ const ClientsPage = () => {
   };
 
   return (
-    <div className="p-6 min-h-screen font-sans">
-      <ModuleHeader
-        title="Directorio de Clientes"
-        subtitle="Gestión de clientes y sus ubicaciones"
-        icon={FaBuilding}
-        search={{
-          value: searchTerm,
-          onChange: setSearchTerm,
-          placeholder: "BUSCAR CLIENTE...",
-        }}
-        onRefresh={refreshTable}
-        refreshKey={refreshKey}
-        onCreate={() => setIsCreateModalOpen(true)}
-        createLabel="Nuevo Cliente"
-        extraFilter={
-          <ITTripleFilter
-            value={statusFilter}
-            onChange={(val) => setStatusFilter(val as any)}
-            options={[
-              { label: "TODOS", value: "all" },
-              { label: "ACTIVOS", value: "active" },
-              { label: "INACTIVOS", value: "inactive" },
-            ]}
-          />
-        }
-      />
+    <ModulePage
+      title="Directorio de Clientes"
+      subtitle="Gestión de clientes y sus ubicaciones"
+      icon={FaBuilding}
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR CLIENTE...",
+      }}
+      onRefresh={refreshTable}
+      refreshKey={refreshKey}
+      onCreate={() => setIsCreateModalOpen(true)}
+      createLabel="Nuevo Cliente"
+      extraFilter={
+        <ITTripleFilter
+          value={statusFilter}
+          onChange={(val) => setStatusFilter(val as any)}
+          options={[
+            { label: "TODOS", value: "all" },
+            { label: "ACTIVOS", value: "active" },
+            { label: "INACTIVOS", value: "inactive" },
+          ]}
+        />
+      }
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
         <ITDataTable<Client & Record<string, unknown>>
@@ -192,7 +191,7 @@ const ClientsPage = () => {
               label: "ESTADO",
               type: "string",
               render: (row: Client) => (
-                <ITBadget color={row.active ? "success" : "danger"} size="small">
+                <ITBadget color={row.active ? "success" : "danger"} size="sm">
                   {row.active ? "ACTIVO" : "INACTIVO"}
                 </ITBadget>
               ),
@@ -205,7 +204,7 @@ const ClientsPage = () => {
                 <div className="flex items-center gap-2">
                   <ITButton
                     onClick={() => navigate(`/clients/${row.id}`)}
-                    size="small"
+                    size="sm"
                     variant="outlined"
                     title="Ver Detalles"
                   >
@@ -213,7 +212,7 @@ const ClientsPage = () => {
                   </ITButton>
                   <ITButton
                     onClick={() => setEditingClient(row)}
-                    size="small"
+                    size="sm"
                     variant="outlined"
                     color="info"
                     title="Editar"
@@ -222,7 +221,7 @@ const ClientsPage = () => {
                   </ITButton>
                   <ITButton
                     onClick={() => setClientToDeleteId(row.id)}
-                    size="small"
+                    size="sm"
                     variant="outlined"
                     color="danger"
                     title="Eliminar"
@@ -244,7 +243,7 @@ const ClientsPage = () => {
           setEditingClient(null);
         }}
         title=""
-        className="!max-w-lg !w-full"
+        className="!max-w-lg w-full!"
       >
         <CreateClientWizard
           clientToEdit={editingClient || undefined}
@@ -261,7 +260,7 @@ const ClientsPage = () => {
         isOpen={!!clientToDeleteId}
         onClose={() => setClientToDeleteId(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="p-10 text-center">
           <div className="w-20 h-20 rounded-3xl bg-danger-50 text-danger-500 flex items-center justify-center mx-auto mb-8 border border-danger-100 shadow-sm">
@@ -294,7 +293,7 @@ const ClientsPage = () => {
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

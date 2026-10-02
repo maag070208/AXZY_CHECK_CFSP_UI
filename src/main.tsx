@@ -1,4 +1,4 @@
-import { ITThemeProvider } from "@axzydev/axzy_ui_system";
+import { ITThemePalette, ITThemeProvider } from "@axzydev/axzy_ui_system";
 import store from "@core/store/store";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
@@ -21,23 +21,45 @@ if (!localStorage.getItem("it-theme-dark-mode")) {
   localStorage.setItem("it-theme-dark-mode", "light");
 }
 
-const customTheme = {
-  primary: "#05537A",
-  secondary: "#64748B",
-  danger: "#DC2626",
-  info: "#0284C7",
-  success: "#16A34A",
+const customTheme: ITThemePalette = {
+  // ─────────────────────────────────────────────
+  // Brand
+  // ─────────────────────────────────────────────
+  primary: "#009F73",
+  secondary: "#00B27F",
+  ternary: "#F2F7F5",
+
+  // ─────────────────────────────────────────────
+  // Semantic
+  // ─────────────────────────────────────────────
+  alert: "#F4B942",
+  warning: "#F4B942",
+  danger: "#D32F2F",
+  info: "#536DFE",
+  success: "#00A878",
+
+  // ─────────────────────────────────────────────
+  // Layout
+  // ─────────────────────────────────────────────
   layout: {
     sidebarBg: "#FFFFFF",
-    sidebarText: "#334155",
+    sidebarText: "#46545A",
+
     navbarBg: "#FFFFFF",
-    navbarText: "#0F172A",
+    navbarText: "#11182C",
   },
+
+  // ─────────────────────────────────────────────
+  // Tables
+  // ─────────────────────────────────────────────
   table: {
-    headerBg: "#F8FAFC",
-    headerText: "#0F172A",
+    headerBg: "#E4F3EE",
+    headerText: "#007A59",
+
     rowBg: "#FFFFFF",
-    rowText: "#1E293B",
+    rowText: "#11182C",
+
+    rowHover: "#EAF7F3",
   },
 };
 

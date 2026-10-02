@@ -333,9 +333,12 @@ test.describe("Módulo de Horarios - Gestión de Horarios", () => {
     const row = page.locator("tr", { hasText: modifiedScheduleName });
     await row.getByRole("button", { name: "Eliminar" }).click();
 
-    await expect(page.getByRole("heading", { name: "¿Eliminar Horario?", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Eliminar Horario", exact: true })).toBeVisible();
 
-    await page.click('button:has-text("ELIMINAR AHORA")');
+    await page
+      .locator('[data-it-dialog="true"]')
+      .getByRole("button", { name: "Eliminar", exact: true })
+      .click();
 
     await expect(page.getByText("Horario eliminado con éxito")).toBeVisible();
     await expect(page.getByText(modifiedScheduleName)).not.toBeVisible();

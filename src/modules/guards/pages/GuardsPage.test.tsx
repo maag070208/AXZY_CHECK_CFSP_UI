@@ -92,7 +92,7 @@ describe("GuardsPage (Pruebas del módulo de Guardias)", () => {
   it("debe renderizar el encabezado y listar los guardias en la tabla", async () => {
     render(<GuardsPage />);
 
-    expect(screen.getByText("Directorio de Guardias")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Directorio de Guardias" })).toBeInTheDocument();
     
     await waitFor(() => {
       expect(screen.getByText(/juan pérez/i)).toBeInTheDocument();

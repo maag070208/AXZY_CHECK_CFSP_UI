@@ -19,21 +19,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@axzydev/axzy_ui_system": "1.1.0",
+    "@axzydev/axzy_ui_system": "file:axzy_ui_system-v1.3.6-fix.tgz",
     "@reduxjs/toolkit": "^2.5.1",
+    "@tailwindcss/vite": "^4.3.3",
     "@testing-library/dom": "^10.4.1",
     "@types/qrcode": "^1.5.6",
     "@types/react-scroll-sync": "^0.9.0",
     "@vis.gl/react-google-maps": "^1.7.1",
     "ably": "^2.23.0",
-    "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
     "chart.js": "^4.5.1",
     "dayjs": "^1.11.19",
     "dotenv": "^16.4.7",
     "formik": "^2.4.6",
     "playwright": "^1.60.0",
-    "postcss": "^8.4.0",
     "qrcode": "^1.5.4",
     "react": "19.0.0",
     "react-color": "^2.19.3",
@@ -43,7 +42,7 @@
     "react-jwt": "^1.3.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.2.0",
-    "tailwindcss": "3",
+    "tailwindcss": "^4.3.3",
     "yup": "^1.6.1"
   },
   "devDependencies": {

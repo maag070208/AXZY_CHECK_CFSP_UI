@@ -31,7 +31,7 @@ const IncidentDetailDialog = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Detalle de Incidencia"
-      className="!max-w-[95vw] md:!max-w-[80vw] lg:!max-w-5xl !w-full"
+      className="max-w-[95vw]! md:!max-w-[80vw] lg:!max-w-5xl w-full!"
     >
       <div className="flex flex-col h-[85vh] w-full bg-white overflow-hidden">
         {/* Contenido con scroll */}
@@ -59,7 +59,7 @@ const IncidentDetailDialog = ({
                 </div>
 
                 <div className="space-y-6">
-                  <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tight break-words">
+                  <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tight wrap-break-word">
                     {incident.title}
                   </h3>
 
@@ -260,7 +260,7 @@ const IncidentDetailDialog = ({
             <ITButton
               variant="outlined"
               color="error"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={() => onDelete(incident)}
             >

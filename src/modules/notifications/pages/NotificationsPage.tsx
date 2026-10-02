@@ -1,5 +1,5 @@
 import { post } from "@app/core/axios/axios";
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITBadget,
@@ -214,7 +214,7 @@ const NotificationsPage = () => {
       key: "active",
       label: "Estado",
       render: (row: ScheduledNotification) => (
-        <ITBadget color={row.active ? "success" : "error"} size="small">
+        <ITBadget color={row.active ? "success" : "error"} size="sm">
           {row.active ? "ACTIVO" : "PAUSADO"}
         </ITBadget>
       ),
@@ -226,7 +226,7 @@ const NotificationsPage = () => {
         <div className="flex items-center flex-wrap gap-1.5">
           <ITButton
             onClick={() => handleSendNow(row)}
-            size="small"
+            size="sm"
             variant="outlined"
             color="success"
             title="Enviar ahora"
@@ -234,10 +234,10 @@ const NotificationsPage = () => {
           >
             {sendingId === row.id ? <ITLoader size="sm" /> : <FaPaperPlane size={14} />}
           </ITButton>
-          <ITButton onClick={() => openEdit(row)} size="small" variant="outlined" title="Editar">
+          <ITButton onClick={() => openEdit(row)} size="sm" variant="outlined" title="Editar">
             <FaEdit size={14} />
           </ITButton>
-          <ITButton onClick={() => setDeleteId(row.id)} size="small" variant="outlined" color="error" title="Eliminar">
+          <ITButton onClick={() => setDeleteId(row.id)} size="sm" variant="outlined" color="error" title="Eliminar">
             <FaTrash size={14} />
           </ITButton>
         </div>
@@ -246,27 +246,26 @@ const NotificationsPage = () => {
   ];
 
   return (
-    <div className="p-4 md:p-6 min-h-screen">
-      <ModuleHeader
-        title="Notificaciones Programadas"
-        subtitle="Configuración de alertas automáticas y recordatorios"
-        icon={FaCalendarAlt}
-        onRefresh={() => setRefreshKey((p) => p + 1)}
-        refreshKey={refreshKey}
-        onCreate={openCreate}
-        createLabel="Nueva"
-        extraFilter={
-          <ITTripleFilter
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              { label: "TODAS", value: "ALL" },
-              { label: "ACTIVAS", value: "ACTIVE" },
-              { label: "PAUSADAS", value: "INACTIVE" },
-            ]}
-          />
-        }
-      />
+    <ModulePage
+      title="Notificaciones Programadas"
+      subtitle="Configuración de alertas automáticas y recordatorios"
+      icon={FaCalendarAlt}
+      onRefresh={() => setRefreshKey((p) => p + 1)}
+      refreshKey={refreshKey}
+      onCreate={openCreate}
+      createLabel="Nueva"
+      extraFilter={
+        <ITTripleFilter
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { label: "TODAS", value: "ALL" },
+            { label: "ACTIVAS", value: "ACTIVE" },
+            { label: "PAUSADAS", value: "INACTIVE" },
+          ]}
+        />
+      }
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
         <div className="min-w-[650px]">
@@ -282,7 +281,7 @@ const NotificationsPage = () => {
       </div>
 
       {/* CREATE / EDIT MODAL */}
-      <ITDialog isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditing(null); }} title="" className="!max-w-lg !w-full">
+      <ITDialog isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditing(null); }} title="" className="!max-w-lg w-full!">
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
@@ -369,8 +368,8 @@ const NotificationsPage = () => {
           </div>
 
           <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
-            <ITButton variant="ghost" onClick={() => { setIsModalOpen(false); setEditing(null); }} size="small" className="px-5 shadow shadow-slate-100">Cancelar</ITButton>
-            <ITButton variant="filled" color="primary" size="small" className="px-5 shadow shadow-emerald-100" onClick={handleSave} disabled={saving || !form.message.trim()}>
+            <ITButton variant="ghost" onClick={() => { setIsModalOpen(false); setEditing(null); }} size="sm" className="px-5 shadow shadow-slate-100">Cancelar</ITButton>
+            <ITButton variant="filled" color="primary" size="sm" className="px-5 shadow shadow-emerald-100" onClick={handleSave} disabled={saving || !form.message.trim()}>
               {saving ? <ITLoader size="sm" color="white" /> : editing ? "Actualizar" : "Crear"}
             </ITButton>
           </div>
@@ -378,7 +377,7 @@ const NotificationsPage = () => {
       </ITDialog>
 
       {/* DELETE */}
-      <ITDialog isOpen={!!deleteId} onClose={() => setDeleteId(null)} title="" className="!max-w-md !w-full">
+      <ITDialog isOpen={!!deleteId} onClose={() => setDeleteId(null)} title="" className="!max-w-md w-full!">
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
@@ -388,14 +387,14 @@ const NotificationsPage = () => {
           </div>
           <div className="px-8 py-6"><p className="text-sm text-slate-500 text-center">Esta acción es permanente.</p></div>
           <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
-            <ITButton variant="ghost" onClick={() => setDeleteId(null)} size="small" className="px-5 shadow shadow-slate-100">Cancelar</ITButton>
-            <ITButton variant="filled" color="danger" size="small" className="px-5 shadow shadow-rose-100" onClick={confirmDelete} disabled={deleting}>
+            <ITButton variant="ghost" onClick={() => setDeleteId(null)} size="sm" className="px-5 shadow shadow-slate-100">Cancelar</ITButton>
+            <ITButton variant="filled" color="danger" size="sm" className="px-5 shadow shadow-rose-100" onClick={confirmDelete} disabled={deleting}>
               {deleting ? <ITLoader size="sm" /> : "Eliminar"}
             </ITButton>
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

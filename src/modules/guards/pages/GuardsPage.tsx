@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { AppState } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
@@ -163,7 +163,7 @@ const GuardsPage = () => {
           if (roleName === "MAINT") color = "danger";
 
           return (
-            <ITBadget color={color} size="small">
+            <ITBadget color={color} size="sm">
               {roleValue}
             </ITBadget>
           );
@@ -192,7 +192,7 @@ const GuardsPage = () => {
         key: "status",
         label: "ESTADO",
         render: (row: User) => (
-          <ITBadget color={row.active ? "success" : "error"} size="small">
+          <ITBadget color={row.active ? "success" : "error"} size="sm">
             {row.active ? "ACTIVO" : "INACTIVO"}
           </ITBadget>
         ),
@@ -224,7 +224,7 @@ const GuardsPage = () => {
                 <ITButton
                   onClick={() => setChangingScheduleUser(row)}
                   variant="outlined"
-                  size="small"
+                  size="sm"
                   title="Horario"
                   color="warning"
                 >
@@ -233,7 +233,7 @@ const GuardsPage = () => {
                 <ITButton
                   onClick={() => setChangingClientUser(row)}
                   variant="outlined"
-                  size="small"
+                  size="sm"
                   title="Cliente"
                 >
                   <FaUserShield size={14} />
@@ -242,7 +242,7 @@ const GuardsPage = () => {
                   onClick={() => setGuardToToggle(row)}
                   variant="outlined"
                   color={row.active ? "error" : "success"}
-                  size="small"
+                  size="sm"
                   title={row.active ? "Desactivar" : "Activar"}
                 >
                   <FaPowerOff size={14} />
@@ -253,7 +253,7 @@ const GuardsPage = () => {
               onClick={() => handleViewAssignments(row)}
               variant="outlined"
               color="secondary"
-              size="small"
+              size="sm"
               title="Ver Tareas"
             >
               <FaEye size={14} />
@@ -264,7 +264,7 @@ const GuardsPage = () => {
                 variant="outlined"
                 color="secondary"
                 title="Asignar"
-                size="small"
+                size="sm"
               >
                 <FaClipboardList size={14} />
               </ITButton>
@@ -277,43 +277,42 @@ const GuardsPage = () => {
   );
 
   return (
-    <div className="p-4 md:p-6 min-h-screen font-sans">
-      <ModuleHeader
-        title="Directorio de Guardias"
-        subtitle="Gestión de personal operativo, asignaciones y controles de turno"
-        icon={FaUserShield}
-        search={{
-          value: searchTerm,
-          onChange: setSearchTerm,
-          placeholder: "BUSCAR GUARDIA...",
-        }}
-        onRefresh={refreshTable}
-        refreshKey={refreshKey}
-        actions={
-          !isClient && (
-            <ITButton
-              onClick={() => setIsNotificationOpen(true)}
-              variant="outlined"
-              color="warning"
-              size="small"
-              title="Enviar Notificación"
-            >
-              <FaBell size={14} />
-            </ITButton>
-          )
-        }
-        extraFilter={
-          <ITTripleFilter
-            value={activeFilter}
-            onChange={setActiveFilter}
-            options={[
-              { label: "TODOS", value: "all" },
-              { label: "ACTIVOS", value: "active" },
-              { label: "INACTIVOS", value: "inactive" },
-            ]}
-          />
-        }
-      />
+    <ModulePage
+      title="Directorio de Guardias"
+      subtitle="Gestión de personal operativo, asignaciones y controles de turno"
+      icon={FaUserShield}
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR GUARDIA...",
+      }}
+      onRefresh={refreshTable}
+      refreshKey={refreshKey}
+      actions={
+        !isClient && (
+          <ITButton
+            onClick={() => setIsNotificationOpen(true)}
+            variant="outlined"
+            color="warning"
+            size="sm"
+            title="Enviar Notificación"
+          >
+            <FaBell size={14} />
+          </ITButton>
+        )
+      }
+      extraFilter={
+        <ITTripleFilter
+          value={activeFilter}
+          onChange={setActiveFilter}
+          options={[
+            { label: "TODOS", value: "all" },
+            { label: "ACTIVOS", value: "active" },
+            { label: "INACTIVOS", value: "inactive" },
+          ]}
+        />
+      }
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
         <div className="min-w-[700px]">
@@ -333,7 +332,7 @@ const GuardsPage = () => {
         isOpen={!!changingClientUser}
         onClose={() => setChangingClientUser(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -379,7 +378,7 @@ const GuardsPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setChangingClientUser(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -393,7 +392,7 @@ const GuardsPage = () => {
         isOpen={!!changingScheduleUser}
         onClose={() => setChangingScheduleUser(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -442,7 +441,7 @@ const GuardsPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setChangingScheduleUser(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -456,7 +455,7 @@ const GuardsPage = () => {
   isOpen={!!guardToToggle}
   onClose={() => setGuardToToggle(null)}
   title=""
-  className="!max-w-md !w-full"
+  className="!max-w-md w-full!"
 >
   <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
     {/* Header with subtle color accent */}
@@ -514,7 +513,7 @@ const GuardsPage = () => {
     <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
       <ITButton
         variant="ghost"
-        size="small"
+        size="sm"
         onClick={() => setGuardToToggle(null)}
         className="px-5 whitespace-nowrap shadow shadow-slate-100"
       >
@@ -523,7 +522,7 @@ const GuardsPage = () => {
       <ITButton
         variant="filled"
         color={guardToToggle?.active ? "danger" : "primary"}
-        size="small"
+        size="sm"
         className={`px-5 whitespace-nowrap shadow transition-all ${
           guardToToggle?.active 
             ? "shadow-rose-100 bg-rose-500 hover:bg-rose-600" 
@@ -566,7 +565,7 @@ const GuardsPage = () => {
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
       />
-    </div>
+    </ModulePage>
   );
 };
 

@@ -152,7 +152,7 @@ export const AssignmentModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title=""
-      className="!max-w-md !w-full"
+      className="!max-w-md w-full!"
     >
       <div className="px-8 pt-8 pb-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
@@ -292,7 +292,7 @@ export const AssignmentModal = ({
         <ITButton
           variant="ghost"
           onClick={onClose}
-          size="small"
+          size="sm"
           className="px-5 whitespace-nowrap shadow shadow-slate-100"
         >
           Cancelar
@@ -301,7 +301,7 @@ export const AssignmentModal = ({
           onClick={handleSubmit}
           disabled={!selectedLocationId || submitting}
           color="primary"
-          size="small"
+          size="sm"
           className="px-5 whitespace-nowrap shadow shadow-sky-100"
         >
           {submitting ? <ITLoader size="sm" /> : "Crear Asignación"}

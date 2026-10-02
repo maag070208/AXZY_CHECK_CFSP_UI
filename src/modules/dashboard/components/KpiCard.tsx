@@ -1,196 +1,94 @@
 import { ITText } from "@axzydev/axzy_ui_system";
 import { ReactNode } from "react";
-import { FaArrowUp, FaArrowDown, FaChevronRight } from "react-icons/fa";
 
-interface KpiCardProps {
-  label: string;
-  value: number | string;
-  icon: ReactNode;
-  color: "primary" | "danger" | "warning" | "info" | "success" | "purple";
-  trend?: { value: number; direction: "up" | "down" };
-  subtitle?: string;
-  pulse?: boolean;
-  onClick?: () => void;
-  breakdown?: Array<{
-    label: string;
-    value: number;
-    tone?: "primary" | "warning" | "info" | "danger" | "success" | "purple";
-  }>;
+/**
+ * Tonos semánticos del pulso operativo. Cada KPI recibe un tono para que la
+ * franja se lea de un vistazo: color = tipo de dato, no decoración.
+ */
+export type KpiTone = "emerald" | "sky" | "amber" | "indigo" | "violet" | "teal" | "rose" | "slate";
+
+interface ToneStyle {
+  tile: string;
+  glow: string;
+  accent: string;
 }
 
-type Palette = {
-  iconBg: string;
-  iconText: string;
-  accent: string;
-  glow: string;
-  ring: string;
+const TONES: Record<KpiTone, ToneStyle> = {
+  emerald: { tile: "bg-emerald-50 text-emerald-600 ring-emerald-100", glow: "bg-emerald-400/10", accent: "bg-emerald-500" },
+  sky: { tile: "bg-sky-50 text-sky-600 ring-sky-100", glow: "bg-sky-400/10", accent: "bg-sky-500" },
+  amber: { tile: "bg-amber-50 text-amber-600 ring-amber-100", glow: "bg-amber-400/10", accent: "bg-amber-500" },
+  indigo: { tile: "bg-indigo-50 text-indigo-600 ring-indigo-100", glow: "bg-indigo-400/10", accent: "bg-indigo-500" },
+  violet: { tile: "bg-violet-50 text-violet-600 ring-violet-100", glow: "bg-violet-400/10", accent: "bg-violet-500" },
+  teal: { tile: "bg-teal-50 text-teal-600 ring-teal-100", glow: "bg-teal-400/10", accent: "bg-teal-500" },
+  rose: { tile: "bg-rose-50 text-rose-600 ring-rose-100", glow: "bg-rose-400/10", accent: "bg-rose-500" },
+  slate: { tile: "bg-slate-100 text-slate-500 ring-slate-200/70", glow: "bg-slate-400/10", accent: "bg-slate-400" },
 };
 
-const colorMap: Record<KpiCardProps["color"], Palette> = {
-  primary: {
-    iconBg: "bg-emerald-50",
-    iconText: "text-emerald-700",
-    accent: "from-emerald-500 to-emerald-600",
-    glow: "group-hover:shadow-emerald-200/60",
-    ring: "ring-emerald-100",
-  },
-  danger: {
-    iconBg: "bg-rose-50",
-    iconText: "text-rose-700",
-    accent: "from-rose-500 to-rose-600",
-    glow: "group-hover:shadow-rose-200/60",
-    ring: "ring-rose-100",
-  },
-  warning: {
-    iconBg: "bg-amber-50",
-    iconText: "text-amber-700",
-    accent: "from-amber-500 to-amber-600",
-    glow: "group-hover:shadow-amber-200/60",
-    ring: "ring-amber-100",
-  },
-  info: {
-    iconBg: "bg-sky-50",
-    iconText: "text-sky-700",
-    accent: "from-sky-500 to-sky-600",
-    glow: "group-hover:shadow-sky-200/60",
-    ring: "ring-sky-100",
-  },
-  success: {
-    iconBg: "bg-green-50",
-    iconText: "text-green-700",
-    accent: "from-green-500 to-green-600",
-    glow: "group-hover:shadow-green-200/60",
-    ring: "ring-green-100",
-  },
-  purple: {
-    iconBg: "bg-violet-50",
-    iconText: "text-violet-700",
-    accent: "from-violet-500 to-violet-600",
-    glow: "group-hover:shadow-violet-200/60",
-    ring: "ring-violet-100",
-  },
+export interface KpiCardProps {
+  label: string;
+  value: string | number;
+  icon: ReactNode;
+  tone?: KpiTone;
+  /** Texto corto bajo el valor (contexto, no una tendencia numérica). */
+  hint?: string;
+  /** Dirección semántica del hint: define el color del punto y del texto. */
+  hintTone?: "up" | "down" | "neutral";
+  onClick?: () => void;
+}
+
+const HINT_TONE: Record<NonNullable<KpiCardProps["hintTone"]>, { dot: string; text: string }> = {
+  up: { dot: "bg-emerald-500", text: "text-emerald-700" },
+  down: { dot: "bg-rose-500", text: "text-rose-700" },
+  neutral: { dot: "bg-slate-300", text: "text-slate-500" },
 };
 
-export const KpiCard = ({
-  label,
-  value,
-  icon,
-  color,
-  trend,
-  subtitle,
-  pulse = false,
-  onClick,
-  breakdown,
-}: KpiCardProps) => {
-  const palette = colorMap[color];
-  const isCritical = pulse && Number(value) > 0;
-  const Wrapper: any = onClick ? "button" : "div";
+/**
+ * Métrica del monitoreo en vivo. Más densa que `ITStatCard`: lleva tile de
+ * icono, valor tabular grande y una pista con punto semántico.
+ */
+export const KpiCard = ({ label, value, icon, tone = "slate", hint, hintTone = "neutral", onClick }: KpiCardProps) => {
+  const t = TONES[tone];
+  const h = HINT_TONE[hintTone];
 
-  const toneClass: Record<NonNullable<KpiCardProps["breakdown"]>[number]["tone"] & string, string> = {
-    primary: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-    warning: "bg-violet-50 text-violet-700 ring-violet-100",
-    info: "bg-sky-50 text-sky-700 ring-sky-100",
-    danger: "bg-rose-50 text-rose-700 ring-rose-100",
-    success: "bg-green-50 text-green-700 ring-green-100",
-    purple: "bg-violet-50 text-violet-700 ring-violet-100",
-  };
+  const interactive = Boolean(onClick);
 
   return (
-    <Wrapper
-      type={onClick ? "button" : undefined}
+    <button
+      type="button"
       onClick={onClick}
+      disabled={!interactive}
       className={`
-        group relative flex flex-col items-stretch
-        w-full text-left overflow-hidden
-        rounded-2xl bg-white
-        border border-slate-200/70
-        shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_rgba(15,23,42,0.04)]
-        hover:shadow-[0_10px_30px_rgba(15,23,42,0.08)] ${palette.glow}
+        group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/70 bg-white p-4 text-left
+        shadow-[0_1px_2px_rgba(15,23,42,0.04)]
         transition-all duration-300 ease-out
-        ${onClick ? "cursor-pointer hover:-translate-y-1 active:translate-y-0" : "cursor-default"}
+        ${interactive ? "cursor-pointer hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_12px_28px_-12px_rgba(15,23,42,0.18)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300" : "cursor-default"}
       `}
     >
-      <div
-        className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${palette.accent}`}
-      />
+      <span className={`absolute -top-10 -right-8 h-24 w-24 rounded-full blur-2xl transition-opacity duration-500 ${t.glow} group-hover:opacity-100 opacity-70`} />
 
-      <div className="flex items-start justify-between w-full p-5 pb-3">
-        <div
-          className={`
-            w-11 h-11 rounded-xl ${palette.iconBg} ${palette.iconText}
-            ring-1 ${palette.ring}
-            flex items-center justify-center text-lg
-            transition-transform duration-300
-            group-hover:scale-105
-          `}
-        >
+      <div className="relative flex items-center gap-2.5">
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[13px] ring-1 transition-transform duration-300 group-hover:scale-105 ${t.tile}`}>
           {icon}
-        </div>
-        {trend && (
-          <div
-            className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md ${
-              trend.direction === "up"
-                ? "text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100"
-                : "text-rose-700 bg-rose-50 ring-1 ring-rose-100"
-            }`}
-          >
-            {trend.direction === "up" ? (
-              <FaArrowUp size={9} />
-            ) : (
-              <FaArrowDown size={9} />
-            )}
-            {Math.abs(trend.value)}%
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col px-5 pb-5">
-        <ITText className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 mb-2">
+        </span>
+        <ITText className="text-[10px] font-black uppercase leading-tight tracking-[0.14em] text-slate-400">
           {label}
         </ITText>
-        <ITText
-          className={`text-[34px] leading-none font-black tracking-tight tabular-nums ${
-            isCritical ? "text-rose-600" : "text-slate-900"
-          }`}
-        >
-          {value}
-        </ITText>
-        {subtitle && (
-          <ITText className="text-[11px] text-slate-500 font-semibold mt-2">
-            {subtitle}
-          </ITText>
-        )}
       </div>
 
-      {breakdown && breakdown.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5 px-5 pb-4 -mt-1">
-          {breakdown.map((b, i) => (
-            <span
-              key={i}
-              className={`inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md ring-1 ${
-                toneClass[b.tone ?? "primary"]
-              }`}
-            >
-              <span className="tabular-nums text-[11px]">{b.value}</span>
-              <span className="opacity-80">{b.label}</span>
-            </span>
-          ))}
-        </div>
-      )}
+      <div className="relative mt-3 flex items-end gap-2">
+        <ITText className="text-[30px] font-black leading-none tabular-nums tracking-tight text-slate-900">
+          {value}
+        </ITText>
+      </div>
 
-      {isCritical && (
-        <span className="absolute top-4 right-4 flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
-        </span>
-      )}
-
-      {onClick && (
-        <FaChevronRight
-          size={11}
-          className="absolute bottom-4 right-4 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all duration-200"
-        />
-      )}
-    </Wrapper>
+      <div className="relative mt-2 flex min-h-[16px] items-center gap-1.5">
+        {hint && (
+          <>
+            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${h.dot}`} />
+            <ITText className={`truncate text-[11px] font-bold ${h.text}`}>{hint}</ITText>
+          </>
+        )}
+      </div>
+    </button>
   );
 };

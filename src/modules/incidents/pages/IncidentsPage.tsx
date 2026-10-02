@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { AppState } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
@@ -143,7 +143,7 @@ const IncidentsPage = () => {
                   label={row.category?.name || "GENERAL"}
                   color="primary"
                   variant="outlined"
-                  className="!text-[8px] !px-1.5 !py-0.5 !h-auto"
+                  className="text-[8px]! !px-1.5 !py-0.5 h-auto!"
                 />
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
                   • {row.client?.name}
@@ -190,7 +190,7 @@ const IncidentsPage = () => {
         render: (row: Incident) => (
           <ITBadget
             color={row.status === "ATTENDED" ? "success" : "danger"}
-            size="small"
+            size="sm"
           >
             {row.status === "ATTENDED" ? "ATENDIDA" : "PENDIENTE"}
           </ITBadget>
@@ -204,7 +204,7 @@ const IncidentsPage = () => {
             <ITButton
               onClick={() => setViewingIncident(row)}
               variant="outlined"
-              size="small"
+              size="sm"
               color="secondary"
               title="Ver detalle"
             >
@@ -214,7 +214,7 @@ const IncidentsPage = () => {
               <ITButton
                 onClick={() => handleResolve(row.id as any)}
                 variant="outlined"
-                size="small"
+                size="sm"
                 color="success"
                 title="Resolver"
                 disabled={resolvingId === (row.id as any)}
@@ -231,7 +231,7 @@ const IncidentsPage = () => {
                 onClick={() => setIncidentToDelete(row)}
                 color="error"
                 variant="outlined"
-                size="small"
+                size="sm"
                 title="Eliminar"
                 disabled={deletingId === (row.id as any)}
               >
@@ -246,30 +246,29 @@ const IncidentsPage = () => {
   );
 
   return (
-    <div className="p-4 md:p-6 min-h-screen font-sans">
-      <ModuleHeader
-        title="Gestión de Incidencias"
-        subtitle="Monitoreo y respuesta inmediata a reportes de seguridad"
-        icon={FaExclamationTriangle}
-        search={{
-          value: searchTerm,
-          onChange: setSearchTerm,
-          placeholder: "BUSCAR REPORTE...",
-        }}
-        onRefresh={() => setRefreshKey((p) => p + 1)}
-        refreshKey={refreshKey}
-        extraFilter={
-          <ITTripleFilter
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              { label: "TODOS", value: "ALL" },
-              { label: "PENDIENTES", value: "PENDING" },
-              { label: "ATENDIDAS", value: "ATTENDED" },
-            ]}
-          />
-        }
-      />
+    <ModulePage
+      title="Gestión de Incidencias"
+      subtitle="Monitoreo y respuesta inmediata a reportes de seguridad"
+      icon={FaExclamationTriangle}
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR REPORTE...",
+      }}
+      onRefresh={() => setRefreshKey((p) => p + 1)}
+      refreshKey={refreshKey}
+      extraFilter={
+        <ITTripleFilter
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { label: "TODOS", value: "ALL" },
+            { label: "PENDIENTES", value: "PENDING" },
+            { label: "ATENDIDAS", value: "ATTENDED" },
+          ]}
+        />
+      }
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
         <div className="min-w-[700px]">
@@ -299,7 +298,7 @@ const IncidentsPage = () => {
         isOpen={!!incidentToResolveId}
         onClose={() => setIncidentToResolveId(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -324,7 +323,7 @@ const IncidentsPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setIncidentToResolveId(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -332,7 +331,7 @@ const IncidentsPage = () => {
             <ITButton
               variant="filled"
               color="primary"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-emerald-100"
               onClick={confirmResolve}
               disabled={!!resolvingId}
@@ -348,7 +347,7 @@ const IncidentsPage = () => {
         isOpen={!!incidentToDelete}
         onClose={() => setIncidentToDelete(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -373,7 +372,7 @@ const IncidentsPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setIncidentToDelete(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -381,7 +380,7 @@ const IncidentsPage = () => {
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
               disabled={!!deletingId}
@@ -391,7 +390,7 @@ const IncidentsPage = () => {
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

@@ -59,9 +59,9 @@ const GuardDisciplineDetailDialog = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Detalle de Incidencia a Guardia"
-      className="!max-w-[95vw] md:!max-w-[85vw] lg:!max-w-6xl !w-full"
+      className="max-w-[95vw]! md:!max-w-[85vw] lg:!max-w-6xl w-full!"
     >
-      <div className="flex flex-col max-h-[90vh] md:h-[85vh] w-full bg-gradient-to-br from-slate-50 to-white overflow-hidden">
+      <div className="flex flex-col max-h-[90vh] md:h-[85vh] w-full bg-linear-to-br from-slate-50 to-white overflow-hidden">
         {/* Header con status */}
         <div className="flex-none px-4 md:px-8 py-3 md:py-4 border-b border-slate-200/60 bg-white/80 backdrop-blur-sm">
           <div className="flex items-center justify-between">
@@ -189,7 +189,7 @@ const GuardDisciplineDetailDialog = ({
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 text-white flex items-center justify-center text-lg font-medium shrink-0 shadow-lg">
+                    <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-slate-700 to-slate-900 text-white flex items-center justify-center text-lg font-medium shrink-0 shadow-lg">
                       {record.guard.name?.[0]}
                       {record.guard.lastName?.[0]}
                     </div>
@@ -241,7 +241,7 @@ const GuardDisciplineDetailDialog = ({
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-500 text-white flex items-center justify-center text-base font-medium shrink-0 shadow-lg">
+                    <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-sky-400 to-blue-500 text-white flex items-center justify-center text-base font-medium shrink-0 shadow-lg">
                       {record.createdBy.name?.[0]}
                       {record.createdBy.lastName?.[0]}
                     </div>
@@ -274,7 +274,7 @@ const GuardDisciplineDetailDialog = ({
                           onClick={() => setResolveMode("RESOLVED")}
                           variant="filled"
                           color="success"
-                          size="small"
+                          size="sm"
                           className="w-full shadow shadow-emerald-200"
                         >
                           <div className="flex items-center justify-center gap-2">
@@ -286,7 +286,7 @@ const GuardDisciplineDetailDialog = ({
                           onClick={() => setResolveMode("DISMISSED")}
                           variant="outlined"
                           color="error"
-                          size="small"
+                          size="sm"
                           className="w-full"
                         >
                           <div className="flex items-center justify-center gap-2">
@@ -325,7 +325,7 @@ const GuardDisciplineDetailDialog = ({
                           <ITButton
                             variant="filled"
                             color={resolveMode === "RESOLVED" ? "success" : "warning"}
-                            size="small"
+                            size="sm"
                             className="flex-1"
                             onClick={handleConfirmResolve}
                             disabled={resolveLoading}
@@ -334,7 +334,7 @@ const GuardDisciplineDetailDialog = ({
                           </ITButton>
                           <ITButton
                             variant="ghost"
-                            size="small"
+                            size="sm"
                             onClick={handleCancelResolve}
                           >
                             <div className="flex items-center gap-1">
@@ -351,7 +351,7 @@ const GuardDisciplineDetailDialog = ({
 
               {/* Status banners para resolved/dismissed */}
               {record.status === "RESOLVED" && (
-                <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 rounded-2xl text-white shadow-lg shadow-emerald-500/20 relative overflow-hidden">
+                <div className="bg-linear-to-br from-emerald-500 to-emerald-600 p-6 rounded-2xl text-white shadow-lg shadow-emerald-500/20 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-6 opacity-10">
                     <FaCheck size={60} />
                   </div>
@@ -368,7 +368,7 @@ const GuardDisciplineDetailDialog = ({
               )}
 
               {record.status === "DISMISSED" && (
-                <div className="bg-gradient-to-br from-rose-500 to-rose-600 p-6 rounded-2xl text-white shadow-lg shadow-rose-500/20 relative overflow-hidden">
+                <div className="bg-linear-to-br from-rose-500 to-rose-600 p-6 rounded-2xl text-white shadow-lg shadow-rose-500/20 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-6 opacity-10">
                     <FaTimes size={60} />
                   </div>
@@ -396,7 +396,7 @@ const GuardDisciplineDetailDialog = ({
           <div className="flex items-center gap-3">
             <ITButton
               variant="ghost"
-              size="small"
+              size="sm"
               className="px-4"
               onClick={() => {
                 handleCancelResolve();
@@ -413,7 +413,7 @@ const GuardDisciplineDetailDialog = ({
               <ITButton
                 variant="outlined"
                 color="error"
-                size="small"
+                size="sm"
                 className="px-4"
                 onClick={() => onDelete(record)}
               >

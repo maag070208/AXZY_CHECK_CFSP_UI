@@ -157,7 +157,7 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
       <div className="flex-none flex justify-end items-center px-8 py-4 border-t border-slate-100 bg-slate-50/30 gap-3">
         <ITButton
           variant="ghost"
-          size="small"
+          size="sm"
           onClick={onCancel}
           className="px-5 whitespace-nowrap shadow shadow-slate-100"
         >
@@ -166,7 +166,7 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
         <ITButton
           type="submit"
           onClick={() => setIsSavingAndNew(true)}
-          size="small"
+          size="sm"
           variant="filled"
           color="warning"
           className="px-5 whitespace-nowrap shadow shadow-amber-100"
@@ -174,7 +174,7 @@ export const LocationForm = ({ onSubmit, onCancel, initialData }: Props) => {
           Guardar y Nueva
         </ITButton>
         <ITButton
-          size="small"
+          size="sm"
           type="submit"
           onClick={() => setIsSavingAndNew(false)}
           color="primary"

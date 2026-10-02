@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import {
   ITBadget,
@@ -159,7 +159,7 @@ const GuardLogsPage = () => {
                 </span>
               </>
             ) : (
-              <ITBadget color="warning" size="small">
+              <ITBadget color="warning" size="sm">
                 ABIERTO
               </ITBadget>
             )}
@@ -198,7 +198,7 @@ const GuardLogsPage = () => {
                 onClick={() => setLogToClose(row)}
                 color="success"
                 variant="outlined"
-                size="small"
+                size="sm"
                 title="Cerrar Turno"
                 disabled={closingId === row.id || deletingId === row.id}
               >
@@ -209,7 +209,7 @@ const GuardLogsPage = () => {
               onClick={() => setLogToDelete(row)}
               color="error"
               variant="outlined"
-              size="small"
+              size="sm"
               title="Eliminar"
               disabled={deletingId === row.id || closingId === row.id}
             >
@@ -223,61 +223,60 @@ const GuardLogsPage = () => {
   );
 
   return (
-    <div className="p-6 min-h-screen font-sans">
-      <ModuleHeader
-        title="Prenómina - Control de Asistencia"
-        subtitle="Registro de entrada y salida de guardias operativos"
-        icon={FaClipboardList}
-        filter={
-          !isResident && (
-            <ITSearchSelect
-              placeholder="FILTRAR POR CLIENTE..."
-              options={(clients || []).map((c: any) => ({
-                label: c.name,
-                value: c.id,
-              }))}
-              value={selectedClientId}
-              onChange={(val) => {
-                setSelectedClientId(val);
-                setRefreshKey((prev) => prev + 1);
-              }}
-              className="w-full"
-            />
-          )
-        }
-        search={{
-          value: searchTerm,
-          onChange: (val: string) => {
-            setSearchTerm(val);
-            setRefreshKey((prev) => prev + 1);
-          },
-          placeholder: "BUSCAR GUARDIA...",
-          icon: FaUserClock,
-        }}
-        dateRange={{
-          value: selectedDate as [Date | null, Date | null],
-          onChange: (val) => {
-            setSelectedDate(val);
-            setRefreshKey((prev) => prev + 1);
-          },
-        }}
-        extraFilter={
-          <ITTripleFilter
-            value={statusFilter}
+    <ModulePage
+      title="Prenómina - Control de Asistencia"
+      subtitle="Registro de entrada y salida de guardias operativos"
+      icon={FaClipboardList}
+      filter={
+        !isResident && (
+          <ITSearchSelect
+            placeholder="FILTRAR POR CLIENTE..."
+            options={(clients || []).map((c: any) => ({
+              label: c.name,
+              value: c.id,
+            }))}
+            value={selectedClientId}
             onChange={(val) => {
-              setStatusFilter(val);
+              setSelectedClientId(val);
               setRefreshKey((prev) => prev + 1);
             }}
-            options={[
-              { label: "TODOS", value: "ALL" },
-              { label: "ABIERTOS", value: "OPEN" },
-              { label: "CERRADOS", value: "CLOSED" },
-            ]}
+            className="w-full"
           />
-        }
-        onRefresh={() => setRefreshKey((prev) => prev + 1)}
-        refreshKey={refreshKey}
-      />
+        )
+      }
+      search={{
+        value: searchTerm,
+        onChange: (val: string) => {
+          setSearchTerm(val);
+          setRefreshKey((prev) => prev + 1);
+        },
+        placeholder: "BUSCAR GUARDIA...",
+        icon: FaUserClock,
+      }}
+      dateRange={{
+        value: selectedDate as [Date | null, Date | null],
+        onChange: (val) => {
+          setSelectedDate(val);
+          setRefreshKey((prev) => prev + 1);
+        },
+      }}
+      extraFilter={
+        <ITTripleFilter
+          value={statusFilter}
+          onChange={(val) => {
+            setStatusFilter(val);
+            setRefreshKey((prev) => prev + 1);
+          }}
+          options={[
+            { label: "TODOS", value: "ALL" },
+            { label: "ABIERTOS", value: "OPEN" },
+            { label: "CERRADOS", value: "CLOSED" },
+          ]}
+        />
+      }
+      onRefresh={() => setRefreshKey((prev) => prev + 1)}
+      refreshKey={refreshKey}
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
         <ITDataTable<IGuardLoginLog & Record<string, unknown>>
@@ -294,7 +293,7 @@ const GuardLogsPage = () => {
         isOpen={!!logToClose}
         onClose={() => setLogToClose(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -319,7 +318,7 @@ const GuardLogsPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setLogToClose(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -327,7 +326,7 @@ const GuardLogsPage = () => {
             <ITButton
               variant="filled"
               color="primary"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-sky-100"
               onClick={confirmClose}
               disabled={!!closingId}
@@ -343,7 +342,7 @@ const GuardLogsPage = () => {
         isOpen={!!logToDelete}
         onClose={() => setLogToDelete(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -368,7 +367,7 @@ const GuardLogsPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setLogToDelete(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -376,7 +375,7 @@ const GuardLogsPage = () => {
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
               disabled={!!deletingId}
@@ -386,7 +385,7 @@ const GuardLogsPage = () => {
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

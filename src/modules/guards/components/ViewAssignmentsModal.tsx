@@ -151,7 +151,7 @@ export const ViewAssignmentsModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title=""
-      className="!max-w-6xl !w-full"
+      className="!max-w-6xl w-full!"
     >
       <div className="flex flex-col h-[85vh]">
         {/* Profile Header */}
@@ -185,7 +185,7 @@ export const ViewAssignmentsModal = ({
                   <ITButton
                     onClick={onReassignSchedule}
                     variant="ghost"
-                    size="small"
+                    size="sm"
                     className="px-5 whitespace-nowrap shadow shadow-slate-100"
                   >
                     <div className="flex items-center gap-1">
@@ -196,7 +196,7 @@ export const ViewAssignmentsModal = ({
                   <ITButton
                     onClick={onReassignClient}
                     variant="ghost"
-                    size="small"
+                    size="sm"
                     className="px-5 whitespace-nowrap shadow shadow-slate-100"
                   >
                     <div className="flex items-center gap-1">
@@ -243,7 +243,7 @@ export const ViewAssignmentsModal = ({
                       Reporte de Ubicación
                     </h4>
                     <ITBadget
-                    size="small"
+                    size="sm"
                       color={getStatusColor(selectedAssignment.status)}
                       variant="outlined"
                       className="text-[9px] font-medium px-2.5 tracking-widest"
@@ -341,7 +341,7 @@ export const ViewAssignmentsModal = ({
                       size="sm"
                       defaultItemsPerPage={10}
                       itemsPerPageOptions={[5, 10, 20]}
-                      className="!border-0 !shadow-none"
+                      className="border-0! shadow-none!"
                       containerClassName="!space-y-0"
                     />
 
@@ -401,7 +401,7 @@ export const ViewAssignmentsModal = ({
                             disabled={approvingId === selectedAssignment.id}
                             variant="filled"
                             color="primary"
-                            size="small"
+                            size="sm"
                             className="w-full px-5 whitespace-nowrap shadow shadow-sky-100"
                           >
                             {approvingId === selectedAssignment.id ? (
@@ -458,7 +458,7 @@ export const ViewAssignmentsModal = ({
                     <ITBadget
                       color={getStatusColor(row.status)}
                       variant="outlined"
-                      size="small"
+                      size="sm"
                       className="text-[9px] font-medium px-2.5 tracking-widest"
                     >
                       {statusTranslations[row.status as AssignmentStatus]}
@@ -529,7 +529,7 @@ export const ViewAssignmentsModal = ({
         isOpen={!!assignmentToDeleteId}
         onClose={() => setAssignmentToDeleteId(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -554,7 +554,7 @@ export const ViewAssignmentsModal = ({
             <ITButton
               variant="ghost"
               onClick={() => setAssignmentToDeleteId(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -562,7 +562,7 @@ export const ViewAssignmentsModal = ({
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDeleteAssignment}
               disabled={isDeleting}

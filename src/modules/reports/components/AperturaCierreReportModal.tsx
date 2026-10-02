@@ -195,7 +195,7 @@ export const AperturaCierreReportModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title=""
-      className="!max-w-md !w-full"
+      className="!max-w-md w-full!"
     >
       <div className="flex flex-col bg-white overflow-hidden max-h-[85vh]">
         <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -326,7 +326,7 @@ export const AperturaCierreReportModal = ({
           <ITButton
             variant="ghost"
             onClick={onClose}
-            size="small"
+            size="sm"
             className="px-5 whitespace-nowrap shadow shadow-slate-100"
           >
             Cancelar
@@ -338,7 +338,7 @@ export const AperturaCierreReportModal = ({
             disabled={
               isGenerating || selectedConfigIds.length === 0 || !name.trim()
             }
-            size="small"
+            size="sm"
             className="px-5 whitespace-nowrap shadow shadow-sky-100"
           >
             {isGenerating ? (

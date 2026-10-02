@@ -33,7 +33,7 @@ export const PanicAlertDetailDialog = ({
     <ITDialog isOpen={isOpen} onClose={onClose} title="Detalle de alerta">
       <div className="p-6 space-y-5 max-w-2xl">
         <div className="flex items-start gap-4 p-4 rounded-2xl bg-rose-50 border border-rose-200">
-          <div className="w-12 h-12 rounded-xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0">
             <FaBell size={20} />
           </div>
           <div className="flex-1 min-w-0">

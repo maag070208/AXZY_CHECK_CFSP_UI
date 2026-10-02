@@ -315,14 +315,19 @@ test.describe("Módulo de Ubicaciones - Gestión de Ubicaciones", () => {
     // 3. Verificar modal abierto
     await expect(page.getByRole("heading", { name: "Registro de Ubicación", exact: true })).toBeVisible();
 
-    // 4. Seleccionar Cliente
+    // 4. Seleccionar Cliente (nombre real en la DB cuando se usa la API real)
+    const clientName = process.env.USE_REAL_API ? "Hotel Puerto Nuevo" : "Plaza 2000";
     await page.click('input[placeholder="Seleccionar cliente..."]');
-    await page.fill('input[placeholder="Seleccionar cliente..."]', "Plaza 2000");
-    await page.locator('.absolute.z-50').locator('div.cursor-pointer', { hasText: 'Plaza 2000' }).first().click();
+    await page.fill('input[placeholder="Seleccionar cliente..."]', clientName);
+    await page.locator('[data-it-floating="true"] div.cursor-pointer', { hasText: clientName }).first().click();
 
-    // 5. Seleccionar Zona
+    // 5. Seleccionar Zona (en real la zona depende del cliente; usamos la primera opción)
     await expect(page.locator('select[name="zoneId"]')).toBeEnabled();
-    await page.selectOption('select[name="zoneId"]', { label: "ALTA" });
+    if (process.env.USE_REAL_API) {
+      await page.selectOption('select[name="zoneId"]', { index: 1 });
+    } else {
+      await page.selectOption('select[name="zoneId"]', { label: "ALTA" });
+    }
 
     // 6. Llenar nombre de la ubicación
     await page.fill('input[name="name"]', uniqueLocNameInput);
@@ -381,10 +386,13 @@ test.describe("Módulo de Ubicaciones - Gestión de Ubicaciones", () => {
     await row.getByRole("button", { name: "Eliminar" }).click();
 
     // 2. Verificar modal confirmación
-    await expect(page.getByRole("heading", { name: "Confirmar Eliminación", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Eliminar Ubicación", exact: true })).toBeVisible();
 
     // 3. Confirmar
-    await page.click('button:has-text("Sí, Eliminar")');
+    await page
+      .locator('[data-it-dialog="true"]')
+      .getByRole("button", { name: "Eliminar", exact: true })
+      .click();
 
     // 4. Verificar toast
     await expect(page.getByText("Ubicación eliminada")).toBeVisible();

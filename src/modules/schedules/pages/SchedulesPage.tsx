@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
@@ -226,7 +226,7 @@ const SchedulesPage = () => {
         key: "active",
         label: "ESTADO",
         render: (row: Schedule) => (
-          <ITBadget color={row.active ? "success" : "error"} size="small">
+          <ITBadget color={row.active ? "success" : "error"} size="sm">
             {row.active ? "ACTIVO" : "INACTIVO"}
           </ITBadget>
         ),
@@ -239,7 +239,7 @@ const SchedulesPage = () => {
             <ITButton
               onClick={() => openModal(row)}
               variant="outlined"
-              size="small"
+              size="sm"
               title="Editar"
             >
               <FaEdit size={14} />
@@ -248,7 +248,7 @@ const SchedulesPage = () => {
               onClick={() => setScheduleToDeleteId(row.id)}
               variant="outlined"
               color="error"
-              size="small"
+              size="sm"
               title="Eliminar"
             >
               <FaTrash size={14} />
@@ -261,32 +261,31 @@ const SchedulesPage = () => {
   );
 
   return (
-    <div className="p-4 md:p-6 min-h-screen font-sans">
-      <ModuleHeader
-        title="Directorio de Horarios"
-        subtitle="Gestión de turnos operativos y controles de asistencia"
-        icon={FaClock}
-        search={{
-          value: searchTerm,
-          onChange: setSearchTerm,
-          placeholder: "BUSCAR HORARIO...",
-        }}
-        onRefresh={() => setRefreshKey((p) => p + 1)}
-        refreshKey={refreshKey}
-        onCreate={() => openModal()}
-        createLabel="Nuevo Horario"
-        extraFilter={
-          <ITTripleFilter
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              { label: "TODOS", value: "ALL" },
-              { label: "ACTIVOS", value: "ACTIVE" },
-              { label: "INACTIVOS", value: "INACTIVE" },
-            ]}
-          />
-        }
-      />
+    <ModulePage
+      title="Directorio de Horarios"
+      subtitle="Gestión de turnos operativos y controles de asistencia"
+      icon={FaClock}
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR HORARIO...",
+      }}
+      onRefresh={() => setRefreshKey((p) => p + 1)}
+      refreshKey={refreshKey}
+      onCreate={() => openModal()}
+      createLabel="Nuevo Horario"
+      extraFilter={
+        <ITTripleFilter
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { label: "TODOS", value: "ALL" },
+            { label: "ACTIVOS", value: "ACTIVE" },
+            { label: "INACTIVOS", value: "INACTIVE" },
+          ]}
+        />
+      }
+    >
 
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
         <div className="min-w-[650px]">
@@ -306,7 +305,7 @@ const SchedulesPage = () => {
         isOpen={isModalOpen}
         onClose={closeModal}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -371,7 +370,7 @@ const SchedulesPage = () => {
               type="button"
               variant="ghost"
               onClick={closeModal}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -381,7 +380,7 @@ const SchedulesPage = () => {
               onClick={handleSave}
               disabled={isSaving || !name || !startTime || !endTime}
               color="primary"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-sky-100"
             >
               {isSaving ? <ITLoader size="sm" /> : "Guardar Turno"}
@@ -395,7 +394,7 @@ const SchedulesPage = () => {
         isOpen={!!scheduleToDeleteId}
         onClose={() => setScheduleToDeleteId(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -420,7 +419,7 @@ const SchedulesPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setScheduleToDeleteId(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -428,7 +427,7 @@ const SchedulesPage = () => {
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
             >
@@ -442,7 +441,7 @@ const SchedulesPage = () => {
       <ITDialog
         isOpen={viewingUsers}
         onClose={() => setViewingUsers(false)}
-        className="!w-full !max-w-lg"
+        className="w-full! !max-w-lg"
       >
         <div className="p-8">
           <div className="flex items-center gap-4 mb-8">
@@ -520,7 +519,7 @@ const SchedulesPage = () => {
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

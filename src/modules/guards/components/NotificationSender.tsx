@@ -65,7 +65,7 @@ export const NotificationSender = ({ isOpen, onClose }: Props) => {
       isOpen={isOpen}
       onClose={onClose}
       title=""
-      className="!max-w-lg !w-full"
+      className="!max-w-lg w-full!"
     >
       <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
         <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -153,7 +153,7 @@ export const NotificationSender = ({ isOpen, onClose }: Props) => {
           <ITButton
             variant="ghost"
             onClick={onClose}
-            size="small"
+            size="sm"
             className="px-5 whitespace-nowrap shadow shadow-slate-100"
           >
             Cancelar
@@ -161,7 +161,7 @@ export const NotificationSender = ({ isOpen, onClose }: Props) => {
           <ITButton
             variant="filled"
             color="primary"
-            size="small"
+            size="sm"
             className="px-5 whitespace-nowrap shadow shadow-emerald-100"
             onClick={handleSend}
             disabled={sending || !form.message.trim()}

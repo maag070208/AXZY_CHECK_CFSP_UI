@@ -96,7 +96,7 @@ export const BulkPrintModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title=""
-      className="!max-w-4xl !w-full"
+      className="!max-w-4xl w-full!"
     >
       <div className="flex flex-col bg-white overflow-hidden max-h-[85vh]">
         <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -354,7 +354,7 @@ export const BulkPrintModal = ({
         <div className="flex-none flex justify-end items-center px-8 py-5 border-t border-slate-100 bg-slate-50/30 gap-3">
           <ITButton
             variant="ghost"
-            size="small"
+            size="sm"
             onClick={onClose}
             className="px-5 whitespace-nowrap shadow shadow-slate-100"
           >
@@ -363,7 +363,7 @@ export const BulkPrintModal = ({
           <ITButton
             variant="filled"
             color="primary"
-            size="small"
+            size="sm"
             onClick={handleConfirm}
             disabled={selectedIds.length === 0}
             className="px-5 whitespace-nowrap shadow shadow-sky-100"

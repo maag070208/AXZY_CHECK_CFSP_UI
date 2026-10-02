@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import {
@@ -417,7 +417,7 @@ const SettingsPage = () => {
                 render: (row: any) => (
                   <ITBadget
                     color={row.type === "INCIDENT" ? "warning" : row.type === "MAINTENANCE" ? "info" : "error"}
-                    size="small"
+                    size="sm"
                   >
                     {row.type === "INCIDENT" ? "INCIDENTE" : row.type === "MAINTENANCE" ? "MANTENIMIENTO" : "DISCIPLINA"}
                   </ITBadget>
@@ -430,7 +430,7 @@ const SettingsPage = () => {
                 actions: (row: any) => (
                   <div className="flex items-center gap-2">
                     <ITButton
-                      size="small"
+                      size="sm"
                       variant="outlined"
                       onClick={() => openCategoryModal(row)}
                       title="Editar"
@@ -438,7 +438,7 @@ const SettingsPage = () => {
                       <FaEdit size={14} />
                     </ITButton>
                     <ITButton
-                      size="small"
+                      size="sm"
                       variant="outlined"
                       color="error"
                       onClick={async () => {
@@ -496,7 +496,7 @@ const SettingsPage = () => {
                 actions: (row: any) => (
                   <div className="flex items-center gap-2">
                     <ITButton
-                      size="small"
+                      size="sm"
                       variant="outlined"
                       onClick={() => openTypeModal(row)}
                       title="Editar"
@@ -504,7 +504,7 @@ const SettingsPage = () => {
                       <FaEdit size={14} />
                     </ITButton>
                     <ITButton
-                      size="small"
+                      size="sm"
                       variant="outlined"
                       color="error"
                       onClick={async () => {
@@ -572,7 +572,7 @@ const SettingsPage = () => {
                 actions: (row: any) => (
                   <div className="flex items-center gap-2">
                     <ITButton
-                      size="small"
+                      size="sm"
                       variant="outlined"
                       onClick={() => openConfigModal(row)}
                       title="Editar"
@@ -580,7 +580,7 @@ const SettingsPage = () => {
                       <FaEdit size={14} />
                     </ITButton>
                     <ITButton
-                      size="small"
+                      size="sm"
                       variant="outlined"
                       color="error"
                       onClick={async () => {
@@ -604,34 +604,33 @@ const SettingsPage = () => {
   ];
 
   return (
-    <div className="p-10 min-h-screen bg-slate-50/50">
-      <ModuleHeader
-        title="Configuración del Sistema"
-        subtitle="Administración de catálogos y parámetros globales"
-        icon={FaCogs}
-        search={{
-          value:
-            activeTab === "CATEGORIES"
-              ? searchCat
-              : activeTab === "TYPES"
-                ? searchType
-                : searchConfig,
-          onChange: (val) => {
-            if (activeTab === "CATEGORIES") setSearchCat(val);
-            else if (activeTab === "TYPES") setSearchType(val);
-            else setSearchConfig(val);
-          },
-          placeholder: "BUSCAR...",
-        }}
-        onRefresh={() => setRefreshKey((p) => p + 1)}
-        refreshKey={refreshKey}
-        onCreate={() => {
-          if (activeTab === "CATEGORIES") openCategoryModal();
-          else if (activeTab === "TYPES") openTypeModal();
-          else openConfigModal();
-        }}
-        createLabel="Agregar"
-      />
+    <ModulePage
+      title="Configuración del Sistema"
+      subtitle="Administración de catálogos y parámetros globales"
+      icon={FaCogs}
+      search={{
+        value:
+          activeTab === "CATEGORIES"
+            ? searchCat
+            : activeTab === "TYPES"
+              ? searchType
+              : searchConfig,
+        onChange: (val) => {
+          if (activeTab === "CATEGORIES") setSearchCat(val);
+          else if (activeTab === "TYPES") setSearchType(val);
+          else setSearchConfig(val);
+        },
+        placeholder: "BUSCAR...",
+      }}
+      onRefresh={() => setRefreshKey((p) => p + 1)}
+      refreshKey={refreshKey}
+      onCreate={() => {
+        if (activeTab === "CATEGORIES") openCategoryModal();
+        else if (activeTab === "TYPES") openTypeModal();
+        else openConfigModal();
+      }}
+      createLabel="Agregar"
+    >
 
       <div className="bg-white rounded-[40px] p-8 shadow-2xl shadow-slate-200/40 border border-white">
         <ITTabs
@@ -646,7 +645,7 @@ const SettingsPage = () => {
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -755,7 +754,7 @@ const SettingsPage = () => {
                 </h3>
                 {editingCategory && !isAddingSubtype && (
                   <ITButton
-                    size="small"
+                    size="sm"
                     variant="outlined"
                     onClick={() => setIsAddingSubtype(true)}
                     className="text-sky-500 font-medium text-xs p-1"
@@ -805,7 +804,7 @@ const SettingsPage = () => {
                         <div className="flex justify-end gap-2">
                           <ITButton
                             type="button"
-                            size="small"
+                            size="sm"
                             variant="ghost"
                             onClick={() => setIsAddingSubtype(false)}
                           >
@@ -813,7 +812,7 @@ const SettingsPage = () => {
                           </ITButton>
                           <ITButton
                             type="submit"
-                            size="small"
+                            size="sm"
                             color="primary"
                             className="rounded-xl"
                           >
@@ -843,7 +842,7 @@ const SettingsPage = () => {
                             </p>
                           </div>
                           <ITButton
-                            size="small"
+                            size="sm"
                             variant="outlined"
                             onClick={() => handleDeleteSubtype(t.id)}
                             color="danger"
@@ -862,7 +861,7 @@ const SettingsPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setIsCategoryModalOpen(false)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -871,7 +870,7 @@ const SettingsPage = () => {
               variant="filled"
               color="primary"
               onClick={handleSaveCategory as any}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-sky-100"
             >
               Guardar Cambios
@@ -885,7 +884,7 @@ const SettingsPage = () => {
         isOpen={isTypeModalOpen}
         onClose={() => setIsTypeModalOpen(false)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -947,7 +946,7 @@ const SettingsPage = () => {
               <ITButton
                 variant="ghost"
                 onClick={() => setIsTypeModalOpen(false)}
-                size="small"
+                size="sm"
                 className="px-5 whitespace-nowrap shadow shadow-slate-100"
               >
                 Cancelar
@@ -956,7 +955,7 @@ const SettingsPage = () => {
                 variant="filled"
                 color="primary"
                 type="submit"
-                size="small"
+                size="sm"
                 className="px-5 whitespace-nowrap shadow shadow-sky-100"
               >
                 Guardar Tipo
@@ -971,7 +970,7 @@ const SettingsPage = () => {
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -1013,7 +1012,7 @@ const SettingsPage = () => {
               <ITButton
                 variant="ghost"
                 onClick={() => setIsConfigModalOpen(false)}
-                size="small"
+                size="sm"
                 className="px-5 whitespace-nowrap shadow shadow-slate-100"
               >
                 Cancelar
@@ -1022,7 +1021,7 @@ const SettingsPage = () => {
                 variant="filled"
                 color="primary"
                 type="submit"
-                size="small"
+                size="sm"
                 className="px-5 whitespace-nowrap shadow shadow-sky-100"
               >
                 Guardar Parámetro
@@ -1031,7 +1030,7 @@ const SettingsPage = () => {
           </form>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

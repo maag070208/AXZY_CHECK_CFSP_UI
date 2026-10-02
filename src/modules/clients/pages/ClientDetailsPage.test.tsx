@@ -62,7 +62,7 @@ describe("ClientDetailsPage (Pruebas de Detalle de Cliente)", () => {
 
     // Verificar que cargue la información del cliente
     await waitFor(() => {
-      expect(screen.getByText("Cliente Alfa")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Cliente Alfa" })).toBeInTheDocument();
       expect(screen.getByText(/RFC: ALFA123456HM8/i)).toBeInTheDocument();
       expect(screen.getByText(/CONTACTO: JUAN PÉREZ/i)).toBeInTheDocument();
       expect(screen.getByText("ACTIVO")).toBeInTheDocument();
@@ -85,8 +85,8 @@ describe("ClientDetailsPage (Pruebas de Detalle de Cliente)", () => {
     render(<ClientDetailsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("Cliente Extraviado")).toBeInTheDocument();
-      expect(screen.getByText(/El registro que buscas no existe o ha sido removido del sistema/i)).toBeInTheDocument();
+      expect(screen.getByText("Cliente no encontrado")).toBeInTheDocument();
+      expect(screen.getByText(/El registro que buscas no existe o fue removido/i)).toBeInTheDocument();
     });
   });
 });

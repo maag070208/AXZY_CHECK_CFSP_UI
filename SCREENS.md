@@ -4,7 +4,7 @@
 
 ### Confirmación (Eliminar, Desactivar, Resolver, Finalizar, etc.)
 ```tsx
-<ITDialog isOpen={...} onClose={...} title="" className="!max-w-md !w-full">
+<ITDialog isOpen={...} onClose={...} title="" className="!max-w-md w-full!">
   <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
     {/* Header: icon circle w-11 h-11 rounded-xl + title text-base font-medium + subtitle text-xs font-light */}
     <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -125,7 +125,7 @@ Mismo header + contenido de formulario + footer con Cancel ghost + Action primar
 │          Cancelar    [Action btn] │
 └──────────────────────────────────┘
 ```
-- ITDialog: `title="" className="!max-w-md !w-full"`
+- ITDialog: `title="" className="!max-w-md w-full!"`
 - Contenedor: `flex flex-col bg-white overflow-hidden rounded-2xl`
 - Icon: `w-11 h-11 rounded-xl bg-primary-50 text-primary-500`
 - Select label: `text-xs text-slate-400 font-medium uppercase tracking-widest`

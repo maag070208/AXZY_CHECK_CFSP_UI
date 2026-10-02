@@ -1,4 +1,4 @@
-import Logo from "@assets/logo.png";
+import Logo from "@assets/logo-mark.png";
 import { IAuthRegister } from "@core/types/auth.types";
 import { ITCard } from "@axzydev/axzy_ui_system";
 import { useDispatch } from "react-redux";
@@ -40,7 +40,7 @@ const RegisterPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center   relative overflow-hidden">
       {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-emerald-50/30 via-transparent to-transparent z-0" />
+      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_left,var(--tw-gradient-stops))] from-emerald-50/30 via-transparent to-transparent z-0" />
 
       <div className="relative z-10 w-full max-w-[480px] px-6">
         {/* Branding */}
@@ -58,7 +58,7 @@ const RegisterPage = () => {
 
         {/* Register Card */}
         <ITCard
-          className="!bg-white !border-slate-100 !rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.04)] animate-in fade-in zoom-in-95 duration-500 delay-150"
+          className="!bg-white !border-slate-100 rounded-[24px]! shadow-[0_20px_50px_rgba(0,0,0,0.04)] animate-in fade-in zoom-in-95 duration-500 delay-150"
           contentClassName="p-8 sm:p-10"
         >
           <div className="flex flex-col space-y-6">

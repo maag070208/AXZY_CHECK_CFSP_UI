@@ -109,7 +109,7 @@ export const ChangePasswordModal: React.FC<Props> = ({
           type="button"
           variant="ghost"
           onClick={onCancel}
-          size="small"
+          size="sm"
           className="px-5 whitespace-nowrap shadow shadow-slate-100"
         >
           Cancelar
@@ -119,7 +119,7 @@ export const ChangePasswordModal: React.FC<Props> = ({
           onClick={() => formik.submitForm()}
           color="primary"
           disabled={formik.isSubmitting}
-          size="small"
+          size="sm"
           className="px-5 whitespace-nowrap shadow shadow-sky-100"
         >
           {formik.isSubmitting ? <ITLoader size="sm" /> : "Actualizar Clave"}

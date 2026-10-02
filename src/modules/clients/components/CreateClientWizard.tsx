@@ -250,7 +250,7 @@ export const CreateClientWizard: React.FC<Props> = ({
           <ITButton
             variant="ghost"
             onClick={onCancel}
-            size="small"
+            size="sm"
             className="px-5 whitespace-nowrap shadow shadow-slate-100"
           >
             Cancelar
@@ -260,7 +260,7 @@ export const CreateClientWizard: React.FC<Props> = ({
             color="primary"
             type="submit"
             disabled={formik.isSubmitting}
-            size="small"
+            size="sm"
             className="px-5 whitespace-nowrap shadow shadow-sky-100"
           >
             {formik.isSubmitting

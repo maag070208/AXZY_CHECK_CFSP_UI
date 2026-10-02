@@ -1,538 +1,360 @@
-import { ITLoader, ITText } from "@axzydev/axzy_ui_system";
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import {
+  ITButton,
+  ITPage,
+  ITSearchSelect,
+  ITText,
+} from "@axzydev/axzy_ui_system";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FaBell,
+  FaCalendarCheck,
+  FaClipboardCheck,
+  FaClock,
   FaExclamationTriangle,
   FaRoute,
-  FaTools,
-  FaUserShield,
-  FaUsers,
+  FaShieldAlt,
   FaSync,
-  FaClock,
+  FaTshirt,
+  FaUsers,
 } from "react-icons/fa";
-import { AppState } from "@app/core/store/store";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useCatalog } from "@app/core/hooks/catalog.hook";
+import { useSupervisionPermissions } from "@app/core/hooks/supervisionPermissions.hook";
+import { AppState } from "@app/core/store/store";
+import { ILiveDashboard } from "@app/core/types/supervision.types";
 import { ActiveGuardRow } from "../components/ActiveGuardRow";
+import { ActiveRoundsPanel } from "../components/ActiveRoundsPanel";
 import { ActivityItemRow } from "../components/ActivityItemRow";
+import { CompliancePanel } from "../components/CompliancePanel";
 import { KpiCard } from "../components/KpiCard";
-
-const ROLE_TONE_CLASS: Record<
-  "emerald" | "violet" | "sky",
-  { bg: string; text: string; ring: string; dot: string }
-> = {
-  emerald: {
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    ring: "ring-emerald-100",
-    dot: "bg-emerald-500",
-  },
-  violet: {
-    bg: "bg-violet-50",
-    text: "text-violet-700",
-    ring: "ring-violet-100",
-    dot: "bg-violet-500",
-  },
-  sky: {
-    bg: "bg-sky-50",
-    text: "text-sky-700",
-    ring: "ring-sky-100",
-    dot: "bg-sky-500",
-  },
-};
-
-const RolePill = ({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number;
-  color: "emerald" | "violet" | "sky";
-}) => {
-  const t = ROLE_TONE_CLASS[color];
-  return (
-    <div
-      className={`flex flex-col items-center justify-center px-2 py-2.5 rounded-xl ring-1 ${t.bg} ${t.ring}`}
-    >
-      <span className="flex items-center gap-1.5 mb-0.5">
-        <span className={`w-1.5 h-1.5 rounded-full ${t.dot}`} />
-        <span className={`text-[10px] font-black uppercase tracking-wider ${t.text}`}>
-          {label}
-        </span>
-      </span>
-      <span className={`text-2xl font-black tabular-nums leading-none ${t.text}`}>
-        {value}
-      </span>
-    </div>
-  );
-};
+import { LiveAlertsPanel } from "../components/LiveAlertsPanel";
+import { LiveMap } from "../components/LiveMap";
+import { Panel } from "../components/Panel";
 import {
   getDashboardActiveGuards,
-  getDashboardOverview,
-  getDashboardPanicAlerts,
   getDashboardRecentActivity,
+  getLiveDashboard,
   IActiveGuard,
   IActivityItem,
-  IDashboardOverview,
-  IPanicAlertListItem,
 } from "../services/DashboardService";
 
-const formatGreeting = (): string => {
-  const h = new Date().getHours();
-  if (h < 6) return "Buenas noches";
-  if (h < 12) return "Buenos días";
-  if (h < 19) return "Buenas tardes";
-  return "Buenas noches";
-};
+/** Respaldo por si Ably no entrega eventos: los estados también cambian con la hora. */
+const POLL_MS = 60_000;
 
-const formatLongDate = (): string =>
-  new Date().toLocaleDateString("es-MX", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+/** Eventos en vivo que cambian lo que muestra el dashboard. */
+const REFRESH_ON = new Set(["incident", "maintenance", "discipline", "panic", "guard_status", "round", "kardex", "shift_handover", "uniform_check"]);
 
+const percentLabel = (p: number | null) => (p === null ? "—" : `${p}%`);
+
+/** Contador compacto que acompaña al título de un panel. */
+const Counter = ({ value, tone = "slate" }: { value: number; tone?: "slate" | "rose" }) => (
+  <span
+    className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-black tabular-nums ${
+      tone === "rose" ? "bg-rose-100 text-rose-700" : "bg-slate-100 text-slate-600"
+    }`}
+  >
+    {value}
+  </span>
+);
+
+/**
+ * Monitoreo en vivo: qué está pasando ahora en la operación. Postgres es la
+ * fuente de verdad; Ably solo avisa que hay que volver a pedir los datos.
+ */
 const DashboardPage = () => {
-  const user = useSelector((state: AppState) => state.auth);
-  const livePanicAlerts = useSelector(
-    (state: AppState) => state.panic.liveAlerts,
-  );
-  const unreadPanicIds = useSelector(
-    (state: AppState) => state.panic.unreadIds,
-  );
-  const activityEvents = useSelector(
-    (state: AppState) => state.activity.events,
-  );
+  const navigate = useNavigate();
+  const { canRegister, isClient } = useSupervisionPermissions();
+  const { data: clients } = useCatalog("client");
+  const livePanicAlerts = useSelector((state: AppState) => state.panic.liveAlerts);
+  const unreadPanicIds = useSelector((state: AppState) => state.panic.unreadIds);
+  const activityEvents = useSelector((state: AppState) => state.activity.events);
 
-  const [overview, setOverview] = useState<IDashboardOverview | null>(null);
-  const [activeGuards, setActiveGuards] = useState<IActiveGuard[]>([]);
+  const [clientId, setClientId] = useState("");
+  const [live, setLive] = useState<ILiveDashboard | null>(null);
+  const [guards, setGuards] = useState<IActiveGuard[]>([]);
   const [activity, setActivity] = useState<IActivityItem[]>([]);
-  const [serverPanicAlerts, setServerPanicAlerts] = useState<
-    IPanicAlertListItem[]
-  >([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isClient = user.role === "RESDN";
-
-  const fetchAll = useCallback(async (silent: boolean = false) => {
-    if (silent) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-    try {
-      const [ovRes, agRes, actRes, paRes] = await Promise.all([
-        getDashboardOverview(),
-        getDashboardActiveGuards(),
-        getDashboardRecentActivity(20),
-        getDashboardPanicAlerts(10),
-      ]);
-
-      if (ovRes.success && ovRes.data) setOverview(ovRes.data);
-      if (agRes.success && agRes.data) setActiveGuards(agRes.data);
-      if (actRes.success && actRes.data) setActivity(actRes.data);
-      if (paRes.success && paRes.data) setServerPanicAlerts(paRes.data);
-
-      if (!ovRes.success || !agRes.success) {
-        setError(
-          ovRes.messages?.[0] ?? agRes.messages?.[0] ?? "Error al cargar",
-        );
+  const fetchAll = useCallback(
+    async (silent = false) => {
+      if (silent) setRefreshing(true);
+      else setLoading(true);
+      try {
+        const [liveRes, guardsRes, activityRes] = await Promise.all([
+          getLiveDashboard(clientId || undefined),
+          getDashboardActiveGuards(),
+          getDashboardRecentActivity(25),
+        ]);
+        if (liveRes.success) {
+          setLive(liveRes.data);
+          setError(null);
+        } else {
+          setError(liveRes.messages?.[0] ?? "No se pudo cargar el monitoreo");
+        }
+        if (guardsRes.success) setGuards(guardsRes.data);
+        if (activityRes.success) setActivity(activityRes.data);
+      } catch (err: any) {
+        setError(err?.messages?.[0] ?? "No se pudo cargar el monitoreo");
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-    } catch (e: any) {
-      setError(e?.message ?? "Error al cargar el dashboard");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+    },
+    [clientId],
+  );
 
   useEffect(() => {
-    void fetchAll(false);
+    void fetchAll();
   }, [fetchAll]);
 
-  const lastEventIdRef = useRef<string | null>(null);
   useEffect(() => {
-    if (activityEvents.length === 0) return;
-    const latest = activityEvents[0];
-    if (!latest || latest.id === lastEventIdRef.current) return;
-    lastEventIdRef.current = latest.id;
+    const id = window.setInterval(() => void fetchAll(true), POLL_MS);
+    return () => window.clearInterval(id);
+  }, [fetchAll]);
 
-    const type = latest.type;
-    if (
-      type === "incident" ||
-      type === "maintenance" ||
-      type === "discipline" ||
-      type === "panic" ||
-      type === "guard_status"
-    ) {
-      void fetchAll(true);
-    }
+  const lastEventRef = useRef<string | null>(null);
+  useEffect(() => {
+    const latest = activityEvents[0];
+    if (!latest || latest.id === lastEventRef.current) return;
+    lastEventRef.current = latest.id;
+    if (REFRESH_ON.has(latest.type)) void fetchAll(true);
   }, [activityEvents, fetchAll]);
 
-  const mergedPanicAlerts = useMemo(() => {
-    const ids = new Set(serverPanicAlerts.map((a) => a.id));
-    const liveAsList: IPanicAlertListItem[] = livePanicAlerts.map((a) => ({
-      id: a.id,
-      title: a.title,
-      description: a.message,
-      guardId: a.guardId,
-      guardName: a.guardName,
-      clientId: a.clientId,
-      clientName: a.clientName,
-      latitude: a.latitude,
-      longitude: a.longitude,
-      status: "PENDING",
-      createdAt: new Date(a.receivedAt).toISOString(),
-      resolvedAt: null,
-    }));
-    return [...liveAsList.filter((a) => !ids.has(a.id)), ...serverPanicAlerts];
-  }, [serverPanicAlerts, livePanicAlerts]);
+  // Los endpoints de personal y actividad no filtran por cliente: se filtra aquí.
+  const scopedGuards = useMemo(
+    () =>
+      guards
+        .filter((g) => !clientId || g.clientId === clientId)
+        .sort((a, b) => Number(b.isLoggedIn) - Number(a.isLoggedIn) || a.name.localeCompare(b.name)),
+    [guards, clientId],
+  );
+  const scopedActivity = useMemo(
+    () => activity.filter((a) => !clientId || a.clientId === clientId),
+    [activity, clientId],
+  );
+  const onlineGuards = scopedGuards.filter((g) => g.isLoggedIn);
+  const livePanic = livePanicAlerts.filter((a) => unreadPanicIds.includes(a.id) && (!clientId || a.clientId === clientId));
 
-  const mergedActivity = useMemo(() => {
-    if (livePanicAlerts.length === 0) return activity;
-    const liveAsActivity: IActivityItem[] = livePanicAlerts.map((a) => ({
-      id: a.id,
-      type: "panic",
-      title: a.title,
-      guardId: a.guardId,
-      guardName: a.guardName,
-      clientId: a.clientId,
-      clientName: a.clientName,
-      status: "PENDING",
-      latitude: a.latitude ?? undefined,
-      longitude: a.longitude ?? undefined,
-      createdAt: new Date(a.receivedAt).toISOString(),
-    }));
-    const liveIds = new Set(liveAsActivity.map((a) => a.id));
-    return [...liveAsActivity, ...activity.filter((a) => !liveIds.has(a.id))];
-  }, [activity, livePanicAlerts]);
-
-  const onDutyByRole = useMemo(() => {
-    const acc = { GUARD: 0, SHIFT: 0, MAINT: 0 };
-    activeGuards.forEach((g) => {
-      if (g.isLoggedIn) acc[g.role] += 1;
-    });
-    return acc;
-  }, [activeGuards]);
-
-  const sortedGuards = useMemo(() => {
-    const order: Record<string, number> = { SHIFT: 0, GUARD: 1, MAINT: 2 };
-    return [...activeGuards].sort((a, b) => {
-      if (a.isLoggedIn !== b.isLoggedIn) return a.isLoggedIn ? -1 : 1;
-      const ro = (order[a.role] ?? 9) - (order[b.role] ?? 9);
-      if (ro !== 0) return ro;
-      return a.name.localeCompare(b.name);
-    });
-  }, [activeGuards]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50/40">
-        <ITLoader size="lg" variant="spinner" color="primary" />
-      </div>
-    );
-  }
-
-  const counts = overview?.pendingCounts;
-  const onlineGuardsCount = activeGuards.filter((g) => g.isLoggedIn).length;
-  const liveUnreadCount = unreadPanicIds.length;
-  const greeting = formatGreeting();
-  const longDate = formatLongDate();
+  const kpis = live?.kpis;
+  const updatedAt = live ? new Date(live.generatedAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
+  const panicCount = kpis ? Math.max(kpis.pendingPanic, livePanic.length) : 0;
+  const routesPercent = kpis && kpis.routesTotal ? Math.round((kpis.routesCovered / kpis.routesTotal) * 100) : null;
 
   return (
-    <div className="min-h-screen bg-slate-50/40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
-        {/* HEADER */}
-        <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-2">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-5 rounded-full bg-emerald-600" />
-              <ITText className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
-                Dashboard · Operaciones
-              </ITText>
+    <ITPage
+      noPadding
+      title="Monitoreo en vivo"
+      description="Qué está pasando ahora mismo en la operación."
+      icon={<FaShieldAlt size={20} />}
+      loading={loading && !live}
+      error={!live ? error : null}
+      onRetry={() => fetchAll()}
+      actions={
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {!isClient && (
+            <div className="w-full sm:w-56">
+              <ITSearchSelect
+                size="sm"
+                placeholder="Todos los clientes"
+                options={clients.map((c) => ({ label: c.name, value: String(c.id) }))}
+                value={clientId}
+                clearable
+                onClear={() => setClientId("")}
+                onChange={(v) => setClientId(String(v))}
+              />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              {isClient ? "Vista de cliente" : "Centro de operaciones"}
-            </h1>
-            <p className="text-sm text-slate-500 font-medium">
-              {greeting}
-              {user.name ? `, ${user.name.split(" ")[0]}` : ""} · {longDate}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {refreshing && (
-              <span className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 ring-1 ring-emerald-200 text-xs font-bold text-emerald-700">
-                <FaSync className="animate-spin" size={11} />
-                Sincronizando
-              </span>
-            )}
-            <button
-              type="button"
+          )}
+
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-emerald-700">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            </span>
+            En vivo
+          </span>
+
+          <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-white py-1 pl-3 pr-1">
+            <ITText className="hidden text-[11px] font-bold tabular-nums text-slate-400 md:block">
+              {updatedAt ? `Actualizado ${updatedAt}` : "Sin datos"}
+            </ITText>
+            <ITButton
+              variant="icon-only"
+              color="gray"
+              size="sm"
               onClick={() => fetchAll(true)}
               disabled={refreshing}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 text-sm font-bold shadow-sm transition-all disabled:opacity-50"
+              title="Refrescar"
+              ariaLabel="Refrescar"
             >
-              <FaSync className={refreshing ? "animate-spin" : ""} size={12} />
-              Refrescar
+              <FaSync size={11} className={refreshing ? "animate-spin" : ""} />
+            </ITButton>
+          </div>
+        </div>
+      }
+    >
+      {live && kpis && (
+        <>
+          {panicCount > 0 && (
+            <button
+              type="button"
+              onClick={() => navigate("/panic-alerts")}
+              className="group flex w-full items-center gap-4 rounded-2xl bg-rose-600 p-4 text-left text-white shadow-lg shadow-rose-200 transition-colors hover:bg-rose-700"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15">
+                <FaBell className="animate-pulse" />
+              </span>
+              <span className="flex-1">
+                <span className="block text-sm font-black uppercase tracking-wider">
+                  {panicCount} {panicCount === 1 ? "alerta de pánico" : "alertas de pánico"} sin atender
+                </span>
+                <span className="block text-xs text-rose-100">
+                  {livePanic[0] ? `Última: ${livePanic[0].guardName}${livePanic[0].clientName ? ` · ${livePanic[0].clientName}` : ""}` : "Revisa y atiende de inmediato"}
+                </span>
+              </span>
+              <span className="text-xs font-bold underline underline-offset-4">Atender</span>
             </button>
-          </div>
-        </header>
+          )}
 
-        {error && (
-          <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium flex items-center gap-3">
-            <FaExclamationTriangle />
-            {error}
-          </div>
-        )}
-
-        {/* PANIC ALERTS BANNER */}
-        {mergedPanicAlerts.length > 0 && (
-          <section
-            className={`rounded-2xl border p-5 ${
-              liveUnreadCount > 0
-                ? "border-rose-300 bg-rose-50"
-                : "border-slate-200 bg-white"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-              <div className="flex items-center gap-2.5">
-                <FaBell className="text-rose-600" size={16} />
-                <h2 className="text-sm font-black uppercase tracking-widest text-rose-900">
-                  Alertas de pánico
-                </h2>
-                {liveUnreadCount > 0 && (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-black uppercase tracking-wider">
-                    <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
-                    {liveUnreadCount} en vivo
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {mergedPanicAlerts.slice(0, 4).map((a) => {
-                const isLive = unreadPanicIds.includes(a.id);
-                return (
-                  <div
-                    key={a.id}
-                    className={`flex items-center justify-between p-3 rounded-lg bg-white border ${
-                      isLive ? "border-rose-300" : "border-slate-200"
-                    }`}
-                  >
-                    <div className="min-w-0">
-                      <div className="text-sm font-bold text-slate-900 truncate">
-                        {a.guardName}
-                      </div>
-                      <div className="text-xs text-slate-500 truncate">
-                        {a.clientName ?? "—"} · {a.status}
-                      </div>
-                    </div>
-                    {a.latitude != null && a.longitude != null && (
-                      <a
-                        href={`https://www.google.com/maps?q=${a.latitude},${a.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[11px] font-bold text-rose-700 hover:text-rose-900 px-2.5 py-1.5 rounded-md bg-rose-50 hover:bg-rose-100 transition-colors flex-shrink-0"
-                      >
-                        Mapa
-                      </a>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* KPI CARDS */}
-        <section className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">
-              Indicadores clave
-            </h2>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              Tiempo real
-            </span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            <KpiCard
-              label="Personal en turno"
-              value={overview?.activeBreakdown?.total ?? 0}
-              icon={<FaUsers />}
-              color="primary"
-              subtitle={`${onlineGuardsCount} de ${overview?.totalGuards ?? 0}`}
-            />
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
             <KpiCard
               label="Rondas activas"
-              value={counts?.activeRounds ?? 0}
+              value={kpis.activeRounds}
               icon={<FaRoute />}
-              color="info"
+              tone="emerald"
+              hint={kpis.stalledRounds ? `${kpis.stalledRounds} estancadas` : "Al corriente"}
+              hintTone={kpis.stalledRounds ? "down" : "up"}
+              onClick={() => navigate("/rounds")}
             />
             <KpiCard
-              label="Incidencias"
-              value={counts?.incidents ?? 0}
+              label="Personal en turno"
+              value={kpis.guardsOnShift}
+              icon={<FaUsers />}
+              tone="sky"
+              hint={`${onlineGuards.length} en línea ahora`}
+              hintTone="neutral"
+              onClick={() => navigate("/guards")}
+            />
+            <KpiCard
+              label="Incidencias abiertas"
+              value={kpis.openIncidents}
               icon={<FaExclamationTriangle />}
-              color="warning"
-              pulse
+              tone="amber"
+              hint={kpis.openIncidents ? "Requieren atención" : "Sin pendientes"}
+              hintTone={kpis.openIncidents ? "down" : "up"}
+              onClick={() => navigate("/incidents")}
             />
             <KpiCard
-              label="Mantenimientos"
-              value={counts?.maintenances ?? 0}
-              icon={<FaTools />}
-              color="info"
+              label="Cobertura de rutas"
+              value={`${kpis.routesCovered}/${kpis.routesTotal}`}
+              icon={<FaClock />}
+              tone="indigo"
+              hint={routesPercent === null ? "Sin rutas activas" : `${routesPercent}% recorridas`}
+              hintTone={routesPercent !== null && routesPercent < 100 ? "down" : "neutral"}
+              onClick={() => navigate("/routes")}
             />
             <KpiCard
-              label="Disciplinas"
-              value={counts?.disciplines ?? 0}
-              icon={<FaUserShield />}
-              color="purple"
+              label="Entregas del turno"
+              value={percentLabel(kpis.handoverCompliance)}
+              icon={<FaClipboardCheck />}
+              tone="violet"
+              hint={`${live.compliance.handover.done}/${live.compliance.handover.total} hechas`}
+              hintTone={kpis.handoverCompliance !== null && kpis.handoverCompliance < 90 ? "down" : "neutral"}
+              onClick={() => navigate("/shift-planning")}
             />
             <KpiCard
-              label="Pánico"
-              value={counts?.panicAlerts ?? 0}
-              icon={<FaBell />}
-              color="danger"
-              pulse
+              label="Uniformes del turno"
+              value={percentLabel(kpis.uniformCompliance)}
+              icon={<FaTshirt />}
+              tone="teal"
+              hint={`${live.compliance.uniform.done}/${live.compliance.uniform.total} hechas`}
+              hintTone={kpis.uniformCompliance !== null && kpis.uniformCompliance < 90 ? "down" : "neutral"}
+              onClick={() => navigate("/shift-planning")}
             />
           </div>
-        </section>
 
-        {/* MAIN GRID: GUARDS + ACTIVITY */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
-          {/* ACTIVE GUARDS */}
-          <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200/70 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_rgba(15,23,42,0.04)] overflow-hidden">
-            <div className="px-5 sm:px-6 py-5 border-b border-slate-100">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-sm">
-                  <FaUsers size={16} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <ITText className="text-sm font-black uppercase tracking-widest text-slate-800">
-                    Personal en turno
-                  </ITText>
-                  <ITText className="text-[11px] text-slate-500 font-semibold">
-                    En operación ahora mismo
-                  </ITText>
-                </div>
-              </div>
+          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-3">
+            <Panel
+              title="Alertas operativas"
+              accent="rose"
+              icon={<FaExclamationTriangle size={13} />}
+              badge={<Counter value={live.alerts.length} tone={live.alerts.length ? "rose" : "slate"} />}
+              className="xl:col-span-2"
+            >
+              <LiveAlertsPanel alerts={live.alerts} />
+            </Panel>
 
-              <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-5xl font-black text-slate-900 tabular-nums leading-none tracking-tight">
-                  {onlineGuardsCount}
-                </span>
-                <span className="text-sm font-bold text-slate-500">
-                  de {activeGuards.length} totales
-                </span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <RolePill
-                  label="Guardias"
-                  value={onDutyByRole.GUARD}
-                  color="emerald"
-                />
-                <RolePill
-                  label="Jefe turno"
-                  value={onDutyByRole.SHIFT}
-                  color="violet"
-                />
-                <RolePill
-                  label="Mantto"
-                  value={onDutyByRole.MAINT}
-                  color="sky"
-                />
-              </div>
-            </div>
-            <div className="p-3 sm:p-4 space-y-2 max-h-[560px] overflow-y-auto">
-              {sortedGuards.length === 0 ? (
-                <EmptyState
-                  icon={<FaUsers />}
-                  title="Sin personal registrado"
-                  subtitle="No hay personal activo en este momento"
-                />
-              ) : (
-                sortedGuards.map((g) => <ActiveGuardRow key={g.id} guard={g} />)
-              )}
-            </div>
+            <Panel
+              title="Cumplimiento del turno"
+              accent="emerald"
+              icon={<FaCalendarCheck size={13} />}
+              action={
+                <ITButton variant="text" color="primary" size="sm" onClick={() => navigate("/shift-planning")}>
+                  Agenda
+                </ITButton>
+              }
+            >
+              <CompliancePanel compliance={live.compliance} canRegister={canRegister} />
+            </Panel>
           </div>
 
-          {/* ACTIVITY FEED */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/70 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_rgba(15,23,42,0.04)] overflow-hidden">
-            <div className="px-5 sm:px-6 py-5 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-sky-600 text-white flex items-center justify-center shadow-sm">
-                  <FaClock size={16} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <ITText className="text-sm font-black uppercase tracking-widest text-slate-800">
-                      Actividad reciente
-                    </ITText>
-                    {liveUnreadCount > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-black uppercase tracking-wider">
-                        <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
-                        {liveUnreadCount} en vivo
-                      </span>
-                    )}
-                  </div>
-                  <ITText className="text-[11px] text-slate-500 font-semibold">
-                    Bitácora de eventos operativos
-                  </ITText>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-2xl font-black text-slate-900 tabular-nums leading-none">
-                  {mergedActivity.length}
-                </span>
-                <ITText className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">
-                  eventos
+          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
+            <Panel
+              title="Rondas activas"
+              accent="emerald"
+              icon={<FaRoute size={13} />}
+              badge={<Counter value={live.activeRounds.filter((r) => r.state !== "ABANDONED").length} />}
+            >
+              <ActiveRoundsPanel rounds={live.activeRounds} uncoveredRoutes={live.uncoveredRoutes} />
+            </Panel>
+
+            <Panel title="Última ubicación conocida" accent="sky" icon={<FaRoute size={13} />}>
+              <LiveMap points={live.mapPoints} height={360} />
+            </Panel>
+          </div>
+
+          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-3">
+            <Panel
+              title="Personal en turno"
+              accent="sky"
+              icon={<FaUsers size={13} />}
+              badge={
+                <ITText className="text-[11px] font-black tabular-nums text-slate-400">
+                  {onlineGuards.length}/{scopedGuards.length}
                 </ITText>
+              }
+            >
+              <div className="max-h-[460px] space-y-2 overflow-y-auto pr-1">
+                {scopedGuards.length === 0 ? (
+                  <ITText className="py-8 text-center text-sm text-slate-400">Sin personal registrado</ITText>
+                ) : (
+                  scopedGuards.map((g) => <ActiveGuardRow key={g.id} guard={g} />)
+                )}
               </div>
-            </div>
-            <div className="p-3 sm:p-4 space-y-2 max-h-[640px] overflow-y-auto">
-              {mergedActivity.length === 0 ? (
-                <EmptyState
-                  icon={<FaClock />}
-                  title="Sin actividad reciente"
-                  subtitle="Los eventos del sistema se mostrarán aquí"
-                />
-              ) : (
-                mergedActivity.map((item) => (
-                  <ActivityItemRow
-                    key={`${item.type}-${item.id}`}
-                    item={item}
-                  />
-                ))
-              )}
-            </div>
+            </Panel>
+
+            <Panel
+              title="Actividad reciente"
+              accent="violet"
+              icon={<FaClock size={13} />}
+              badge={<Counter value={scopedActivity.length} />}
+              className="xl:col-span-2"
+            >
+              <div className="max-h-[460px] space-y-2 overflow-y-auto pr-1">
+                {scopedActivity.length === 0 ? (
+                  <ITText className="py-8 text-center text-sm text-slate-400">Los eventos del sistema se mostrarán aquí</ITText>
+                ) : (
+                  scopedActivity.map((item) => <ActivityItemRow key={`${item.type}-${item.id}`} item={item} />)
+                )}
+              </div>
+            </Panel>
           </div>
-        </section>
-      </div>
-    </div>
+        </>
+      )}
+    </ITPage>
   );
 };
-
-const EmptyState = ({
-  icon,
-  title,
-  subtitle,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string;
-}) => (
-  <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-    <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center text-base mb-3">
-      {icon}
-    </div>
-    <ITText className="text-sm font-bold text-slate-600">{title}</ITText>
-    {subtitle && (
-      <ITText className="text-xs text-slate-400 mt-1">{subtitle}</ITText>
-    )}
-  </div>
-);
 
 export default DashboardPage;

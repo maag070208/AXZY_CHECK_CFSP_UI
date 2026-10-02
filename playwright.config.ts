@@ -15,6 +15,10 @@ export default defineConfig({
   workers: process.env.USE_REAL_API ? 1 : (process.env.CI ? 1 : undefined),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
+
+  /* La API real puede tardar más que los mocks: damos margen a las aserciones
+     y a las acciones para evitar falsos negativos por latencia de red/DB. */
+  expect: { timeout: 10000 },
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */

@@ -8,6 +8,7 @@ import {
   FaHome,
   FaUserShield,
   FaBell,
+  FaCalendarCheck,
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -126,6 +127,38 @@ export const useNavigationItems = (): any[] => {
           action: () => navigate("/notifications"),
           isActive: isRouteActive("/notifications"),
           roles: ROLES.ADMIN_SHIFT_LIDER,
+        },
+      ],
+    },
+    {
+      id: "supervision",
+      label: "Supervisión",
+      icon: <FaCalendarCheck />,
+      isActive:
+        isRouteActive("/shift-planning") ||
+        isRouteActive("/shift-handovers") ||
+        isRouteActive("/uniforms"),
+      subitems: [
+        {
+          id: "shift-planning",
+          label: "Programación",
+          action: () => navigate("/shift-planning"),
+          isActive: isRouteActive("/shift-planning"),
+          roles: ROLES.ADMIN_SHIFT_RESDN,
+        },
+        {
+          id: "shift-handovers",
+          label: "Entregas de turno",
+          action: () => navigate("/shift-handovers"),
+          isActive: isRouteActive("/shift-handovers"),
+          roles: ROLES.ADMIN_SHIFT_RESDN,
+        },
+        {
+          id: "uniforms",
+          label: "Uniformes",
+          action: () => navigate("/uniforms"),
+          isActive: isRouteActive("/uniforms"),
+          roles: ROLES.ADMIN_SHIFT_RESDN,
         },
       ],
     },

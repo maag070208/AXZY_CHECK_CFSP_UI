@@ -163,7 +163,7 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
       actions: (row: Zone) => (
         <div className="flex items-center gap-2">
           <ITButton
-            size="small"
+            size="sm"
             variant="outlined"
             onClick={() => setEditingZone(row)}
             title="Editar"
@@ -171,7 +171,7 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
             <FaEdit size={14} />
           </ITButton>
           <ITButton
-            size="small"
+            size="sm"
             variant="outlined"
             color="error"
             onClick={() => setZoneToDelete(row)}
@@ -197,7 +197,7 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
         </div>
         <ITButton
           onClick={() => setRefreshKey((prev) => prev + 1)}
-          size="small"
+          size="sm"
           variant="ghost"
           className="w-9 h-9 p-0 flex items-center justify-center bg-slate-50 rounded-lg hover:bg-slate-100"
         >
@@ -249,7 +249,7 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
         isOpen={!!editingZone}
         onClose={() => setEditingZone(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         {editingZone && (
           <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
@@ -280,7 +280,7 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
               <ITButton
                 variant="ghost"
                 onClick={() => setEditingZone(null)}
-                size="small"
+                size="sm"
                 className="px-5 whitespace-nowrap shadow shadow-slate-100"
               >
                 Cancelar
@@ -289,7 +289,7 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
                 onClick={handleUpdate}
                 disabled={updating}
                 color="primary"
-                size="small"
+                size="sm"
                 className="px-5 whitespace-nowrap shadow shadow-sky-100"
               >
                 {updating ? "Guardando..." : "Guardar Cambios"}
@@ -303,7 +303,7 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
         isOpen={!!zoneToDelete}
         onClose={() => setZoneToDelete(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         {zoneToDelete && (
           <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
@@ -327,7 +327,7 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
               <ITButton
                 variant="ghost"
                 onClick={() => setZoneToDelete(null)}
-                size="small"
+                size="sm"
                 className="px-5 whitespace-nowrap shadow shadow-slate-100"
               >
                 Cancelar
@@ -336,7 +336,7 @@ export const ClientZonesTab = ({ clientId, onSelectZone }: Props) => {
                 onClick={handleDelete}
                 disabled={isDeleting}
                 color="danger"
-                size="small"
+                size="sm"
                 className="px-5 whitespace-nowrap shadow shadow-rose-100"
               >
                 {isDeleting ? "Eliminando..." : "Eliminar"}

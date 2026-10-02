@@ -500,7 +500,7 @@ test.describe("Módulo de Usuarios - Gestión de Usuarios", () => {
         await page.fill('input[name="contactPhone"]', "1234567890");
         await page.fill('input[name="appUsername"]', `corpo_centro_${ts}`);
         await page.fill('input[name="appPassword"]', "password123");
-        await page.click('button:has-text("Confirmar Registro")');
+        await page.click('button:has-text("Crear Cliente")');
         // Graceful: name unique constraint → client already exists, close and continue
         const created = await page
           .getByText("Cliente creado con éxito")
@@ -639,7 +639,10 @@ test.describe("Módulo de Usuarios - Gestión de Usuarios", () => {
       page.getByRole("heading", { name: "Eliminar Registro", exact: true }),
     ).toBeVisible();
 
-    await page.click('button:has-text("ELIMINAR AHORA")');
+    await page
+      .locator('[data-it-dialog="true"]')
+      .getByRole("button", { name: "Eliminar", exact: true })
+      .click();
 
     await expect(page.getByText("Usuario eliminado")).toBeVisible();
     await expect(page.getByText(modifiedUserFullName)).not.toBeVisible();

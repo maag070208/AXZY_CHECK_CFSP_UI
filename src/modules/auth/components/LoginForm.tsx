@@ -84,7 +84,7 @@ const LoginFormComponent = ({
           <div className="mt-8">
             <ITButton 
               disabled={!isValid || loading} 
-              className={`w-full !h-14 !rounded-2xl font-bold text-lg shadow-lg shadow-emerald-200 transition-all ${!isValid || loading ? 'opacity-50' : 'hover:scale-[1.02] active:scale-95 bg-emerald-600 hover:bg-emerald-700'}`} 
+              className={`w-full !h-10 !rounded-2xl font-bold text-lg shadow-lg shadow-emerald-200 transition-all ${!isValid || loading ? 'opacity-50' : 'hover:scale-[1.02] active:scale-95 bg-emerald-600 hover:bg-emerald-700'}`} 
               type="submit"
             >
               <div className="flex items-center justify-center gap-3">

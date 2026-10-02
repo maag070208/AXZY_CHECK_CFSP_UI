@@ -29,6 +29,10 @@ import GuardDisciplinePage from "./modules/guard-discipline/pages/GuardDisciplin
 import GuardLogsPage from "./modules/guard-logs/pages/GuardLogsPage";
 import NotificationsPage from "./modules/notifications/pages/NotificationsPage";
 import PanicAlertsPage from "./modules/panic-alerts/pages/PanicAlertsPage";
+import ShiftPlanningPage from "./modules/shift-plans/pages/ShiftPlanningPage";
+import ShiftHandoversPage from "./modules/shift-handovers/pages/ShiftHandoversPage";
+import NewShiftHandoverPage from "./modules/shift-handovers/pages/NewShiftHandoverPage";
+import UniformChecksPage from "./modules/uniform-checks/pages/UniformChecksPage";
 
 
 function App() {
@@ -107,6 +111,10 @@ function App() {
           <Route path="/guard-discipline" element={<GuardDisciplinePage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/panic-alerts" element={<PanicAlertsPage />} />
+          <Route path="/shift-planning" element={<ShiftPlanningPage />} />
+          <Route path="/shift-handovers" element={<ShiftHandoversPage />} />
+          <Route path="/shift-handovers/new" element={<NewShiftHandoverPage />} />
+          <Route path="/uniforms" element={<UniformChecksPage />} />
 
         </Route>
         <Route path="*" element={<Navigate to="/home" />} />
@@ -114,7 +122,7 @@ function App() {
 
       {/* GLOBAL MODAL ACTION LOADER */}
       {loading && (
-        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-slate-900/20 backdrop-blur-[2px] transition-all">
+        <div className="fixed inset-0 z-999999 flex items-center justify-center bg-slate-900/20 backdrop-blur-[2px] transition-all">
           <div className="bg-white p-10 rounded-[32px] shadow-2xl border border-slate-100 flex flex-col items-center gap-6">
             <ITLoader size="lg" />
             <div className="flex flex-col items-center gap-1">

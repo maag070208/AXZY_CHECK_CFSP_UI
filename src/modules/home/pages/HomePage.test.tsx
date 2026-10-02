@@ -1,97 +1,54 @@
-import { render, screen, fireEvent, waitFor, store } from "@app/core/utils/test-utils";
+import { render, screen, store } from "@app/core/utils/test-utils";
 import HomePage from "./HomePage";
 import { vi } from "vitest";
 import { setAuth, logout } from "@app/core/store/auth/auth.slice";
 import "@testing-library/jest-dom";
 
-// Mock useNavigate
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async (importOriginal) => {
   const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
+  return { ...actual, useNavigate: () => mockNavigate };
 });
 
-// Mock react-jwt to allow decoding custom mock tokens
 vi.mock("react-jwt", () => ({
   decodeToken: vi.fn((token: string) => {
-    if (token === "fake-admin-token") {
-      return { id: 1, name: "Administrador", role: "ADMIN", email: "admin@test.com" };
-    }
-    if (token === "fake-guard-token") {
-      return { id: 2, name: "Guardia Turno", role: "SHIFT", email: "guardia@test.com" };
-    }
-    return null;
+    const roles: Record<string, string> = {
+      "fake-admin-token": "ADMIN",
+      "fake-shift-token": "SHIFT",
+      "fake-client-token": "RESDN",
+      "fake-guard-token": "GUARD",
+    };
+    return roles[token] ? { id: 1, name: "Usuario", role: roles[token] } : null;
   }),
   isExpired: vi.fn(() => false),
 }));
 
-// Mock tabs to avoid rendering complex Chart.js canvases in JSDOM
-vi.mock("../components/tabs/AnalyticsTab", () => ({
-  AnalyticsTab: () => <div data-testid="analytics-tab">Analytics Tab Mock</div>,
-}));
-vi.mock("../components/tabs/OperationalDetailTab", () => ({
-  OperationalDetailTab: () => <div data-testid="operational-detail-tab">Operational Detail Tab Mock</div>,
+// El monitoreo en vivo hace peticiones y usa mapas: se prueba por separado.
+vi.mock("@modules/dashboard/pages/DashboardPage", () => ({
+  default: () => <div data-testid="live-dashboard">Monitoreo en vivo</div>,
 }));
 
-describe("HomePage (Pruebas del Panel de Control)", () => {
+describe("HomePage (Inicio por rol)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     store.dispatch(logout());
   });
 
-  it("debe renderizar las tarjetas de navegación autorizadas para el rol ADMIN", async () => {
-    store.dispatch(setAuth("fake-admin-token"));
+  it.each(["fake-admin-token", "fake-shift-token", "fake-client-token"])(
+    "los roles de supervisión ven el monitoreo en vivo (%s)",
+    (token) => {
+      store.dispatch(setAuth(token));
+      render(<HomePage />);
+      expect(screen.getByTestId("live-dashboard")).toBeInTheDocument();
+    },
+  );
 
-    render(<HomePage />);
-
-    // Admin should see Clients, Locations, Rounds, etc.
-    await waitFor(() => {
-      expect(screen.getByText(/^Clientes$/i)).toBeInTheDocument();
-      expect(screen.getByText(/^Ubicaciones$/i)).toBeInTheDocument();
-      expect(screen.getByText(/^Recorridos$/i)).toBeInTheDocument();
-      expect(screen.getByText(/^Configuración de rondas$/i)).toBeInTheDocument();
-      expect(screen.getByText(/^Usuarios$/i)).toBeInTheDocument();
-      expect(screen.getByText(/^Catálogos$/i)).toBeInTheDocument();
-    });
-  });
-
-  it("debe ocultar tarjetas restringidas para el rol SHIFT (Guardia)", async () => {
+  it("un guardia ve accesos rápidos a sus módulos y no el monitoreo", () => {
     store.dispatch(setAuth("fake-guard-token"));
-
     render(<HomePage />);
-
-    await waitFor(() => {
-      // Shift Guard should see Locations, Rounds, Guards, etc.
-      expect(screen.getByText(/^Ubicaciones$/i)).toBeInTheDocument();
-      expect(screen.getByText(/^Recorridos$/i)).toBeInTheDocument();
-      
-      // Shift Guard should NOT see Clients or Users
-      expect(screen.queryByText(/^Clientes$/i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/^Usuarios$/i)).not.toBeInTheDocument();
-    });
-  });
-
-  it("debe permitir cambiar de pestaña a Security Analytics y Detalle Operativo", async () => {
-    store.dispatch(setAuth("fake-admin-token"));
-
-    render(<HomePage />);
-
-    // Should render Tab buttons for Admin
-    const analyticsBtn = await screen.findByRole("button", { name: /Analytics/i });
-    const detailBtn = await screen.findByRole("button", { name: /Detalle/i });
-
-    expect(analyticsBtn).toBeInTheDocument();
-    expect(detailBtn).toBeInTheDocument();
-
-    // Click on Security Analytics
-    fireEvent.click(analyticsBtn);
-    expect(screen.getByTestId("analytics-tab")).toBeInTheDocument();
-
-    // Click on Detalle Operativo
-    fireEvent.click(detailBtn);
-    expect(screen.getByTestId("operational-detail-tab")).toBeInTheDocument();
+    expect(screen.queryByTestId("live-dashboard")).not.toBeInTheDocument();
+    expect(screen.getByText(/^Recorridos$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Incidencias$/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^Clientes$/i)).not.toBeInTheDocument();
   });
 });

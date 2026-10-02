@@ -1,11 +1,10 @@
 import { ITMediaGrid } from "@app/core/components/ITMediaGrid";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import store from "@app/core/store/store";
-import { ITButton, ITLoader, useITTheme } from "@axzydev/axzy_ui_system";
+import { ITBadget, ITButton, ITPage, useITTheme } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import {
-  FaArrowLeft,
   FaBuilding,
   FaCalendarAlt,
   FaCheckCircle,
@@ -226,105 +225,66 @@ const RoundDetailPage = () => {
     window.open(url, "_blank");
   };
 
-  if (loading)
-    return (
-      <div className="min-h-screen   flex flex-col items-center justify-center space-y-4">
-        <ITLoader />
-        <p className="text-xs text-slate-400 font-light">
-          Sincronizando ruta...
-        </p>
-      </div>
-    );
+  const statusBadge = data ? (
+    <ITBadget color={data.round.status === "COMPLETED" ? "success" : "warning"} size="sm">
+      {data.round.status === "COMPLETED" ? "COMPLETADA" : "EN CURSO"}
+    </ITBadget>
+  ) : null;
 
-  if (!data)
-    return (
-      <div className="min-h-screen   flex items-center justify-center p-6">
-        <div className="text-center bg-white rounded-[32px] shadow-xl p-12 max-w-md border border-slate-100">
-          <div className="w-20 h-20 bg-rose-50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-rose-100">
-            <FaExclamationTriangle className="text-rose-500 text-3xl" />
-          </div>
-          <h3 className="text-base font-medium text-slate-800 mb-2">
-            Ronda no encontrada
-          </h3>
-          <p className="text-[10px] text-slate-400 font-light mb-8">
-            El registro solicitado no existe o fue removido.
-          </p>
-          <ITButton
-            onClick={() => navigate(-1)}
-            size="small"
-          >
-            <div className="flex items-center gap-1">
-              <FaArrowLeft size={14} />
-              <span className="text-[10px]">Volver al historial</span>
-            </div>
-          </ITButton>
-        </div>
-      </div>
-    );
+  const title = data
+    ? routeTitle || data.round.recurringConfiguration?.title || `Ronda #${data.round.id}`
+    : "Detalle de recorrido";
 
-  const title =
-    routeTitle ||
-    data.round.recurringConfiguration?.title ||
-    `Ronda #${data.round.id}`;
+  const pageProps = {
+    noPadding: true,
+    title,
+    icon: <FaRoute size={20} />,
+    backAction: () => navigate(-1),
+    breadcrumbs: [
+      { label: "Inicio", onClick: () => navigate("/home") },
+      { label: "Historial de recorridos", onClick: () => navigate("/rounds") },
+      { label: title },
+    ],
+  };
+
+  if (loading || !data)
+    return (
+      <ITPage
+        {...pageProps}
+        loading={loading}
+        error={!loading && !data ? "El registro solicitado no existe o fue removido." : null}
+        errorTitle="Ronda no encontrada"
+        errorActionLabel="Volver al historial"
+        onRetry={() => navigate("/rounds")}
+      >
+        {null}
+      </ITPage>
+    );
 
   return (
-    <div className="min-h-screen pb-20" style={{ "--p": primary, "--pl": primaryLight } as React.CSSProperties}>
-      <div className="bg-white border-b border-slate-100 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-slate-50 group-hover:bg-[--p] group-hover:text-white flex items-center justify-center transition-all text-slate-400 border border-slate-100 shadow-sm">
-              <FaArrowLeft size={14} />
-            </div>
-            <span className="text-[10px] text-slate-400 group-hover:text-[--p] transition-colors font-light">
-              Volver
-            </span>
-          </button>
-
+    <div style={{ "--p": primary, "--pl": primaryLight } as React.CSSProperties}>
+      <ITPage
+        {...pageProps}
+        actions={
           <div className="flex items-center gap-3">
             <ITButton
               onClick={() => {
                 const token = store.getState().auth.token;
-                window.open(
-                  `${import.meta.env.VITE_BASE_URL}/rounds/${id}/report?token=${token}`,
-                  "_blank",
-                );
+                window.open(`${import.meta.env.VITE_BASE_URL}/rounds/${id}/report?token=${token}`, "_blank");
               }}
-              size="small"
-              className="px-5 whitespace-nowrap shadow shadow-slate-100"
+              size="sm"
             >
               <div className="flex items-center gap-1">
                 <FaFilePdf size={14} className="text-white" />
                 <span className="text-[10px]">Exportar PDF</span>
               </div>
             </ITButton>
-            <span className={`px-4 py-1.5 rounded-full text-[10px] font-medium tracking-wide border shadow-sm ${
-              data.round.status === "COMPLETED"
-                ? "bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/20"
-                : "bg-amber-50 text-amber-600 border-amber-200"
-            }`}>
-              {data.round.status === "COMPLETED" ? "COMPLETADA" : "EN CURSO"}
-            </span>
+            {statusBadge}
           </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6 md:space-y-10">
-        {/* Header Content */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-[--pl] text-[--p] flex items-center justify-center border border-[--pl] shadow-sm">
-                <FaRoute size={20} />
-              </div>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-medium text-slate-800">
-                {title}
-              </h1>
-            </div>
-
-            <div className="flex flex-wrap gap-6">
+        }
+      >
+      <div className="space-y-6 md:space-y-10 pb-20">
+        <div className="flex flex-wrap gap-6">
               <HeaderMetric
                 icon={<FaUserShield className="text-blue-500" />}
                 label="Guardia"
@@ -341,8 +301,6 @@ const RoundDetailPage = () => {
                 value={dayjs(data.round.startTime).format("DD/MM/YYYY")}
               />
             </div>
-          </div>
-        </div>
 
         {/* Dash Cards */}
         {metrics && (
@@ -380,7 +338,7 @@ const RoundDetailPage = () => {
             <div className="bg-white rounded-[24px] md:rounded-[40px] p-6 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/50 space-y-6 md:space-y-10">
             <div className="flex flex-wrap items-center justify-between gap-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-[--pl] text-[--p] flex items-center justify-center border border-[--pl] shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-(--pl) text-(--p) flex items-center justify-center border border-(--pl) shadow-sm">
                   <FaMapMarkedAlt size={22} />
                 </div>
                 <div>
@@ -394,7 +352,7 @@ const RoundDetailPage = () => {
               </div>
               <ITButton
                 onClick={handleOpenRouteMap}
-                size="small"
+                size="sm"
                 className="px-5 whitespace-nowrap shadow shadow-slate-100"
               >
                 <div className="flex items-center gap-1">
@@ -427,7 +385,7 @@ const RoundDetailPage = () => {
                     <div className="flex flex-col items-center w-32 group">
                       <div
                         className={`w-16 h-16 rounded-[24px] flex items-center justify-center shadow-xl transition-all duration-500 group-hover:scale-110 border-4 border-white
-                          ${node.status === "START" ? "bg-[--p] text-white shadow-emerald-200" : ""}
+                          ${node.status === "START" ? "bg-(--p) text-white shadow-emerald-200" : ""}
                           ${node.status === "END" ? "bg-slate-800 text-white shadow-slate-300" : ""}
                           ${node.status === "SUCCESS" ? "bg-emerald-500 text-white shadow-emerald-200" : ""}
                           ${node.status === "DUPLICATE" ? "bg-rose-500 text-white shadow-rose-200" : ""}
@@ -597,6 +555,7 @@ const RoundDetailPage = () => {
           </div>
         </div>
       </div>
+      </ITPage>
     </div>
   );
 };
@@ -619,7 +578,7 @@ const HeaderMetric = ({ icon, label, value }: any) => (
 
 const MetricCard = ({ icon, color, label, value, subValue }: any) => {
   const colors: any = {
-    indigo: "from-[--p] to-emerald-600",
+    indigo: "from-(--p) to-emerald-600",
     emerald: "from-emerald-500 to-emerald-600",
     amber: "from-amber-500 to-amber-600",
   };
@@ -628,7 +587,7 @@ const MetricCard = ({ icon, color, label, value, subValue }: any) => {
     <div className="bg-white rounded-[24px] md:rounded-[32px] p-5 md:p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
       <div className="space-y-4">
         <div
-          className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${colors[color]} flex items-center justify-center text-white shadow-sm`}
+          className={`w-12 h-12 rounded-2xl bg-linear-to-br ${colors[color]} flex items-center justify-center text-white shadow-sm`}
         >
           {icon}
         </div>
@@ -653,7 +612,7 @@ const TimelineIcon = ({ type }: { type: string }) => {
     START: {
       bg: "bg-[--pl]0",
       icon: <FaPlay className="ml-1" />,
-      border: "border-[--pl]",
+      border: "border-(--pl)",
     },
     SCAN: {
       bg: "bg-emerald-500",
@@ -675,7 +634,7 @@ const TimelineIcon = ({ type }: { type: string }) => {
 
   return (
     <div
-      className={`absolute -left-[19px] top-0 w-9 h-9 rounded-xl ${config.bg} ${config.border} border-4 text-white flex items-center justify-center z-10 shadow-sm text-xs transition-transform group-hover:scale-110`}
+      className={`absolute left-[-19px] top-0 w-9 h-9 rounded-xl ${config.bg} ${config.border} border-4 text-white flex items-center justify-center z-10 shadow-sm text-xs transition-transform group-hover:scale-110`}
     >
       {config.icon}
     </div>

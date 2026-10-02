@@ -2,7 +2,7 @@ import { setAuth } from "@app/core/store/auth/auth.slice";
 import { AppDispatch } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import { TResult } from "@app/core/types/TResult";
-import Logo from "@assets/logo.png";
+import Logo from "@assets/logo-mark.png";
 import { ITCard } from "@axzydev/axzy_ui_system";
 import { IAuthLogin } from "@core/types/auth.types";
 import { useState } from "react";
@@ -52,8 +52,8 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center   relative overflow-hidden">
       {/* Background decoration - Subtle and professional */}
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-50/50 via-transparent to-transparent z-0" />
-      <div className="absolute bottom-0 right-0 w-1/3 h-1/3 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-slate-100 via-transparent to-transparent z-0" />
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,var(--tw-gradient-stops))] from-emerald-50/50 via-transparent to-transparent z-0" />
+      <div className="absolute bottom-0 right-0 w-1/3 h-1/3 bg-[radial-gradient(circle_at_bottom_right,var(--tw-gradient-stops))] from-slate-100 via-transparent to-transparent z-0" />
 
       <div className="relative z-10 w-full max-w-[440px] px-6">
         {/* Logo Section */}
@@ -71,7 +71,7 @@ const LoginPage = () => {
 
         {/* Login Card - Ultra Clean */}
         <ITCard
-          className="!bg-white !border-slate-100 !rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.04)] animate-in fade-in zoom-in-95 duration-500 delay-150"
+          className="!bg-white !border-slate-100 rounded-[24px]! shadow-[0_20px_50px_rgba(0,0,0,0.04)] animate-in fade-in zoom-in-95 duration-500 delay-150"
           contentClassName="p-8 sm:p-10"
         >
           <div className="space-y-8">

@@ -1,5 +1,6 @@
 import { get } from "@app/core/axios/axios";
 import { TResult } from "@app/core/types/TResult";
+import { ILiveDashboard } from "@app/core/types/supervision.types";
 
 export interface IPendingCounts {
   incidents: number;
@@ -124,3 +125,7 @@ export const getDashboardPanicAlerts = async (
     params: { limit },
   });
 };
+
+/** Estado operativo en vivo (KPIs, alertas, rondas, mapa y cumplimiento del turno). */
+export const getLiveDashboard = (clientId?: string): Promise<TResult<ILiveDashboard>> =>
+  get<ILiveDashboard>(`/dashboard/live${clientId ? `?clientId=${encodeURIComponent(clientId)}` : ""}`);

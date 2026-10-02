@@ -129,7 +129,7 @@ export const ITMediaGrid: React.FC<ITMediaGridProps> = ({
             </div>
 
             {/* Overlay Hint */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
           </div>
         ))}
       </div>
@@ -138,7 +138,7 @@ export const ITMediaGrid: React.FC<ITMediaGridProps> = ({
       {selectedMediaIndex !== null &&
         createPortal(
           <div
-            className="fixed inset-0 z-[99999] flex items-center justify-center bg-white animate-in fade-in duration-300"
+            className="fixed inset-0 z-99999 flex items-center justify-center bg-white animate-in fade-in duration-300"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}

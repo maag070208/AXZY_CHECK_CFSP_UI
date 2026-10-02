@@ -1,4 +1,4 @@
-import { ModuleHeader } from "@app/core/components/ModuleHeader";
+import { ModulePage } from "@app/core/components/ModulePage";
 import { useCatalog } from "@app/core/hooks/catalog.hook";
 import { AppState } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
@@ -151,7 +151,7 @@ const MaintenancesPage = () => {
                   label={row.categoryRel?.name || row.category || "GENERAL"}
                   color="warning"
                   variant="outlined"
-                  className="!text-[8px] !px-1.5 !py-0.5 !h-auto"
+                  className="text-[8px]! !px-1.5 !py-0.5 h-auto!"
                 />
               </div>
             </div>
@@ -195,7 +195,7 @@ const MaintenancesPage = () => {
         render: (row: Maintenance) => (
           <ITBadget
             color={row.status === "ATTENDED" ? "success" : "danger"}
-            size="small"
+            size="sm"
           >
             {row.status === "ATTENDED" ? "ATENDIDA" : "PENDIENTE"}
           </ITBadget>
@@ -211,7 +211,7 @@ const MaintenancesPage = () => {
               variant="outlined"
               color="secondary"
               title="Ver detalle"
-              size="small"
+              size="sm"
             >
               <FaEye size={14} />
             </ITButton>
@@ -221,7 +221,7 @@ const MaintenancesPage = () => {
                 variant="outlined"
                 color="success"
                 title="Resolver"
-                size="small"
+                size="sm"
                 disabled={resolvingId === row.id}
               >
                 {resolvingId === row.id ? (
@@ -237,7 +237,7 @@ const MaintenancesPage = () => {
                 variant="outlined"
                 color="error"
                 title="Eliminar"
-                size="small"
+                size="sm"
               >
                 <FaTrash size={14} />
               </ITButton>
@@ -250,30 +250,29 @@ const MaintenancesPage = () => {
   );
 
   return (
-    <div className="p-4 md:p-6 min-h-screen font-sans">
-      <ModuleHeader
-        title="Gestión de Mantenimientos"
-        subtitle="Monitoreo y resolución de desperfectos en instalaciones"
-        icon={FaWrench}
-        search={{
-          value: searchTerm,
-          onChange: setSearchTerm,
-          placeholder: "BUSCAR REPORTE...",
-        }}
-        onRefresh={() => setRefreshKey((p) => p + 1)}
-        refreshKey={refreshKey}
-        extraFilter={
-          <ITTripleFilter
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              { label: "TODOS", value: "ALL" },
-              { label: "PENDIENTES", value: "PENDING" },
-              { label: "ATENDIDAS", value: "ATTENDED" },
-            ]}
-          />
-        }
-      />
+    <ModulePage
+      title="Gestión de Mantenimientos"
+      subtitle="Monitoreo y resolución de desperfectos en instalaciones"
+      icon={FaWrench}
+      search={{
+        value: searchTerm,
+        onChange: setSearchTerm,
+        placeholder: "BUSCAR REPORTE...",
+      }}
+      onRefresh={() => setRefreshKey((p) => p + 1)}
+      refreshKey={refreshKey}
+      extraFilter={
+        <ITTripleFilter
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { label: "TODOS", value: "ALL" },
+            { label: "PENDIENTES", value: "PENDING" },
+            { label: "ATENDIDAS", value: "ATTENDED" },
+          ]}
+        />
+      }
+    >
       <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-x-auto">
         <div className="min-w-[650px]">
           <ITDataTable<Maintenance & Record<string, unknown>>
@@ -301,7 +300,7 @@ const MaintenancesPage = () => {
         isOpen={!!maintenanceToResolveId}
         onClose={() => setMaintenanceToResolveId(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -326,7 +325,7 @@ const MaintenancesPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setMaintenanceToResolveId(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -334,7 +333,7 @@ const MaintenancesPage = () => {
             <ITButton
               variant="filled"
               color="primary"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-emerald-100"
               onClick={confirmResolve}
               disabled={!!resolvingId}
@@ -349,7 +348,7 @@ const MaintenancesPage = () => {
         isOpen={!!maintenanceToDelete}
         onClose={() => setMaintenanceToDelete(null)}
         title=""
-        className="!max-w-md !w-full"
+        className="!max-w-md w-full!"
       >
         <div className="flex flex-col bg-white overflow-hidden rounded-2xl">
           <div className="px-8 pt-8 pb-4 border-b border-slate-100">
@@ -374,7 +373,7 @@ const MaintenancesPage = () => {
             <ITButton
               variant="ghost"
               onClick={() => setMaintenanceToDelete(null)}
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-slate-100"
             >
               Cancelar
@@ -382,7 +381,7 @@ const MaintenancesPage = () => {
             <ITButton
               variant="filled"
               color="danger"
-              size="small"
+              size="sm"
               className="px-5 whitespace-nowrap shadow shadow-rose-100"
               onClick={confirmDelete}
               disabled={!!deletingId}
@@ -392,7 +391,7 @@ const MaintenancesPage = () => {
           </div>
         </div>
       </ITDialog>
-    </div>
+    </ModulePage>
   );
 };
 

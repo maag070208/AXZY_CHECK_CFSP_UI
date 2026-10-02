@@ -30,7 +30,7 @@ const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
       {children}
       {isVisible &&
         createPortal(
-          <div className="fixed inset-0 z-[99999] pointer-events-none">
+          <div className="fixed inset-0 z-99999 pointer-events-none">
             <ITToast
               message={message}
               type={type}
