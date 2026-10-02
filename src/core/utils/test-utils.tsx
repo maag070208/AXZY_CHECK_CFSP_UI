@@ -1,22 +1,13 @@
-import { ITThemeProvider } from "@axzydev/axzy_ui_system";
-import { render } from "@testing-library/react";
-import React from "react";
-import { Provider } from "react-redux";
-import { BrowserRouter } from "react-router-dom";
-import store from "../store/store";
-
-const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <ITThemeProvider>
-      <Provider store={store}>
-        <BrowserRouter>{children}</BrowserRouter>
-      </Provider>
-    </ITThemeProvider>
-  );
-};
-
-const customRender = (ui: React.ReactElement, options?: any) =>
-  render(ui, { wrapper: AllTheProviders, ...options });
-
+/**
+ * Punto de entrada legacy para tests. Mantiene el alias `render` para no
+ * romper los tests existentes, pero **ya usa el wrapper aislado**.
+ *
+ * Antes montaba el store singleton y `BrowserRouter`: el estado se filtraba
+ * entre archivos y `ClientsPage.test` fallaba de forma intermitente. Ahora
+ * delega en `renderWithProviders` (store nuevo por test + `MemoryRouter`).
+ *
+ * @deprecated Importa `renderWithProviders` de `app/testing/renderWithProviders`.
+ */
 export * from "@testing-library/react";
-export { customRender as render, store };
+export { renderWithProviders as render } from "../../app/testing/renderWithProviders";
+export { renderWithProviders } from "../../app/testing/renderWithProviders";

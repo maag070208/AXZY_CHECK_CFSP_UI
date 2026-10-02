@@ -37,8 +37,8 @@ import {
   getLocations,
   Location,
 } from "../../locations/service/locations.service";
-import { CreateUserWizard } from "../../users/components/CreateUserWizard";
-import { getUsers, User } from "../../users/services/UserService";
+import { CreateUserWizard } from "@features/create-user";
+import { listUsers, type User } from "@entities/user";
 import { getZonesByClient } from "../../zones/services/ZonesService";
 import {
   createRoute,
@@ -130,7 +130,7 @@ const CreateRoutePage = () => {
   };
 
   const fetchInitialData = async () => {
-    const [locRes, usersRes] = await Promise.all([getLocations(), getUsers()]);
+    const [locRes, usersRes] = await Promise.all([getLocations(), listUsers()]);
     if (locRes.success) setAllLocations(locRes.data);
     if (usersRes.success) {
       setAllGuards(

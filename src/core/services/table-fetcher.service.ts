@@ -1,25 +1,19 @@
 import { post } from "../axios/axios";
-import { ITDataTableFetchParams, ITDataTableResponse } from "../types/datatable.types";
-import { TResult } from "../types/TResult";
+import { ITDataTableFetchParams, ITDataTableResponse, Paginated, toTableResponse } from "@shared/api";
 
 /**
- * Generic function to fetch data for the ITDataTable component.
- * @param url The endpoint URL (e.g., "/users/datatable")
- * @param params The pagination, filtering, and sorting parameters
+ * Petición genérica para `ITDataTable`.
+ *
+ * El backend devuelve `{ rows, total }` y la tabla espera `{ data, total }`;
+ * la conversión la hace `toTableResponse` para no repetirla en cada página.
+ *
+ * @param url Endpoint de datatable (p. ej. "/users/datatable").
+ * @param params Paginación, filtros y orden vigentes.
  */
 export const fetchDataTable = async <T>(
   url: string,
-  params: ITDataTableFetchParams
+  params: ITDataTableFetchParams,
 ): Promise<ITDataTableResponse<T>> => {
-  const response: TResult<ITDataTableResponse<T>> = await post<ITDataTableResponse<T>>(url, params);
-  
-  if (response.success && response.data) {
-    return response.data;
-  }
-  
-  // Return empty structure in case of failure to prevent component crashes
-  return {
-    rows: [],
-    total: 0
-  };
+  const response = await post<Paginated<T>>(url, params);
+  return toTableResponse<T>(response);
 };

@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { ILiveAlert, LiveAlertSeverity, LiveAlertType } from "@app/core/types/supervision.types";
 import { timeAgo } from "@app/core/utils/supervision.utils";
+import { SURFACE, TONES } from "@shared/ui";
 
 const TYPE_META: Record<LiveAlertType, { label: string; icon: React.ReactNode; route: (a: ILiveAlert) => string }> = {
   PANIC: { label: "Pánico", icon: <FaBell />, route: () => "/panic-alerts" },
@@ -26,22 +27,22 @@ const TYPE_META: Record<LiveAlertType, { label: string; icon: React.ReactNode; r
 /** La severidad define color de fila, barra lateral, tile de icono y hora. */
 const SEVERITY_STYLE: Record<LiveAlertSeverity, { row: string; bar: string; icon: string; time: string }> = {
   critical: {
-    row: "bg-rose-50/70 border-rose-200/80 hover:border-rose-300 hover:bg-rose-50",
-    bar: "bg-rose-500",
-    icon: "bg-rose-600 text-white",
-    time: "text-rose-600",
+    row: `${TONES.danger.soft} border-danger-200 hover:border-danger-300 dark:hover:border-danger-700`,
+    bar: TONES.danger.bar,
+    icon: `${TONES.danger.solid}`,
+    time: TONES.danger.text,
   },
   high: {
-    row: "bg-amber-50/60 border-amber-200/80 hover:border-amber-300 hover:bg-amber-50",
-    bar: "bg-amber-500",
-    icon: "bg-amber-500 text-white",
-    time: "text-amber-700",
+    row: `${TONES.warning.soft} border-warning-200 hover:border-warning-300 dark:hover:border-warning-700`,
+    bar: TONES.warning.bar,
+    icon: TONES.warning.solid,
+    time: TONES.warning.text,
   },
   medium: {
-    row: "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/70",
-    bar: "bg-slate-300",
-    icon: "bg-slate-100 text-slate-500",
-    time: "text-slate-400",
+    row: "bg-white border-secondary-200 hover:border-secondary-300 hover:bg-secondary-50 dark:border-secondary-700 dark:bg-secondary-900 dark:hover:border-secondary-600 dark:hover:bg-secondary-800/60",
+    bar: TONES.neutral.bar,
+    icon: "bg-secondary-100 text-secondary-500 dark:bg-secondary-800 dark:text-secondary-300",
+    time: "text-secondary-400 dark:text-secondary-500",
   },
 };
 
@@ -61,11 +62,13 @@ export const LiveAlertsPanel = ({ alerts }: { alerts: ILiveAlert[] }) => {
   if (alerts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <span className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 ring-1 ring-emerald-100">
+        <span className={`mb-3 flex h-14 w-14 items-center justify-center rounded-2xl ring-1 ${TONES.success.soft} ${TONES.success.text} ${TONES.success.softRing}`}>
           <FaCheckCircle size={22} />
         </span>
-        <ITText className="text-sm font-black uppercase tracking-wider text-slate-700">Todo en orden</ITText>
-        <ITText className="mt-1 text-xs font-medium text-slate-400">
+        <ITText className="text-sm font-black uppercase tracking-wider text-secondary-700 dark:text-secondary-200">
+          Todo en orden
+        </ITText>
+        <ITText className="mt-1 text-xs font-medium text-secondary-400">
           No hay nada que requiera atención en este momento.
         </ITText>
       </div>
@@ -109,7 +112,7 @@ export const LiveAlertsPanel = ({ alerts }: { alerts: ILiveAlert[] }) => {
 
               <span className="min-w-0 flex-1">
                 <span className="mb-0.5 flex items-center gap-2">
-                  <ITText as="span" className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+                  <ITText as="span" className={SURFACE.microLabel}>
                     {meta.label}
                   </ITText>
                   {a.at && (
@@ -118,18 +121,18 @@ export const LiveAlertsPanel = ({ alerts }: { alerts: ILiveAlert[] }) => {
                     </ITText>
                   )}
                 </span>
-                <ITText as="span" className="block truncate text-[13px] font-bold leading-tight text-slate-800">
+                <ITText as="span" className={`block truncate text-[13px] font-bold leading-tight ${SURFACE.strong}`}>
                   {a.title}
                 </ITText>
                 {subtitle && (
-                  <ITText as="span" className="block truncate text-[11px] font-medium text-slate-500">
+                  <ITText as="span" className="block truncate text-[11px] font-medium text-secondary-500 dark:text-secondary-400">
                     {subtitle}
                   </ITText>
                 )}
               </span>
 
               <FaChevronRight
-                className="shrink-0 text-slate-300 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-slate-500"
+                className="shrink-0 text-secondary-300 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-secondary-500"
                 size={11}
               />
             </button>
@@ -146,8 +149,8 @@ const Chip = ({ label, active, onClick }: { label: string; active: boolean; onCl
     onClick={onClick}
     className={`rounded-full border px-2.5 py-1 text-[11px] font-bold transition-colors ${
       active
-        ? "border-slate-900 bg-slate-900 text-white"
-        : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700"
+        ? "border-primary-600 bg-primary-600 text-white"
+        : "border-secondary-200 bg-white text-secondary-500 hover:border-secondary-300 hover:text-secondary-700 dark:border-secondary-700 dark:bg-secondary-900 dark:text-secondary-400 dark:hover:text-secondary-200"
     }`}
   >
     {label}

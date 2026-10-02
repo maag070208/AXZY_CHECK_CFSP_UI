@@ -1,13 +1,13 @@
 import { ITButton, ITDialog, ITText } from "@axzydev/axzy_ui_system";
 import dayjs from "dayjs";
 import { FaBell, FaMapMarkerAlt, FaUserShield } from "react-icons/fa";
-import { IPanicAlert } from "../services/PanicAlertsService";
+import type { PanicAlert } from "@entities/panic-alert";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  alert: IPanicAlert | null;
-  onResolve: (alert: IPanicAlert) => void;
+  alert: PanicAlert | null;
+  onResolve: (alert: PanicAlert) => void;
 }
 
 const STATUS_LABEL: Record<string, string> = {

@@ -23,11 +23,7 @@ import {
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { getSchedules } from "../../schedules/SchedulesService";
-import {
-  getPaginatedUsers,
-  updateUser,
-  User,
-} from "../../users/services/UserService";
+import { fetchUsersTable, updateUser, type User } from "@entities/user";
 import { AssignmentModal } from "../components/AssignmentModal";
 import { ViewAssignmentsModal } from "../components/ViewAssignmentsModal";
 import { NotificationSender } from "../components/NotificationSender";
@@ -81,7 +77,7 @@ const GuardsPage = () => {
 
   const memoizedFetch = useCallback(
     (params: any) => {
-      return getPaginatedUsers({
+      return fetchUsersTable({
         ...params,
         filters: { ...params.filters, ...externalFilters },
       });

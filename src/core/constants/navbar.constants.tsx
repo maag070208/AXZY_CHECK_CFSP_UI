@@ -1,5 +1,5 @@
 import { AppState } from "@app/core/store/store";
-import LOGO from "@assets/logo.png";
+import { BRAND_LOGO_HORIZONTAL } from "@assets/brand";
 import {
   FaBook,
   FaBuilding,
@@ -267,33 +267,8 @@ export const useNavigationItems = (): any[] => {
     .filter(Boolean);
 };
 
-// ------------- NAVBAR (legacy) -----------------
-export const Navbar = () => {
-  const navigationItems = useNavigationItems();
-
-  return (
-    <div className="flex flex-row space-x-4">
-      {navigationItems.map((item) => (
-        <button
-          key={item.id}
-          onClick={item.action}
-          className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-            item.isActive
-              ? "bg-blue-100 text-blue-700"
-              : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-          }`}
-        >
-          {item.label}
-        </button>
-      ))}
-    </div>
-  );
-};
-
+// ------------- MARCA -----------------
+/** Lockup horizontal: símbolo + "CheckApp" (barra superior en escritorio). */
 export const NAVBAR_LOGO = () => (
-  <img src={LOGO} className="h-[40px] hidden md:flex" />
-);
-
-export const SIDEBAR_LOGO = () => (
-  <img src={LOGO} className="mt-5 h-[40px] flex md:hidden" />
+  <img src={BRAND_LOGO_HORIZONTAL} alt="CheckApp" className="hidden h-9 w-auto md:block" />
 );

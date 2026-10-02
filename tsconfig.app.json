@@ -2,6 +2,14 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
+      /* ── Capas FSD (destino) ─────────────────────────────────────────── */
+      "@shared/*": ["src/shared/*"],
+      "@entities/*": ["src/entities/*"],
+      "@features/*": ["src/features/*"],
+      "@widgets/*": ["src/widgets/*"],
+      "@pages/*": ["src/pages/*"],
+
+      /* ── Legado (se retira al terminar la migración) ─────────────────── */
       "@app/*": ["src/*"],
       "@core/*": ["src/core/*"],
       "@assets/*": ["src/assets/*"],

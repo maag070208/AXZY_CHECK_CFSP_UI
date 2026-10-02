@@ -3,13 +3,13 @@ import { GoogleMapComponent } from "@core/components/GoogleMapComponent";
 import { ITMediaGrid } from "@core/components/ITMediaGrid";
 import dayjs from "dayjs";
 import { FaCheck, FaCheckCircle, FaFileAlt, FaTrash } from "react-icons/fa";
-import { Incident } from "../services/IncidentService";
+import { Incident } from "@entities/incident";
 
 interface IncidentDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
   incident: Incident | null;
-  onResolve: (id: number) => void;
+  onResolve: (id: string) => void;
   onDelete: (incident: Incident) => void;
   isAdmin: boolean;
   isClient: boolean;

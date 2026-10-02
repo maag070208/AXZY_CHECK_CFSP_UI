@@ -1,16 +1,18 @@
 import { ITText } from "@axzydev/axzy_ui_system";
 import { ReactNode } from "react";
+import { SemanticTone, TONES } from "@shared/ui";
 
-export type PanelAccent = "emerald" | "rose" | "amber" | "sky" | "violet" | "slate" | "primary";
+/** El acento de un panel es un tono semántico: sin colores crudos. */
+export type PanelAccent = SemanticTone;
 
 const ACCENT_BAR: Record<PanelAccent, string> = {
-  emerald: "bg-emerald-500",
-  rose: "bg-rose-500",
-  amber: "bg-amber-500",
-  sky: "bg-sky-500",
-  violet: "bg-violet-500",
-  slate: "bg-slate-300",
-  primary: "bg-primary-500",
+  brand: TONES.brand.bar,
+  success: TONES.success.bar,
+  danger: TONES.danger.bar,
+  warning: TONES.warning.bar,
+  info: TONES.info.bar,
+  accent: TONES.accent.bar,
+  neutral: TONES.neutral.bar,
 };
 
 export interface PanelProps {
@@ -36,19 +38,19 @@ export const Panel = ({
   icon,
   badge,
   action,
-  accent = "slate",
+  accent = "neutral",
   children,
   className = "",
   bodyClassName = "",
 }: PanelProps) => (
   <section
-    className={`flex flex-col overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_30px_-18px_rgba(15,23,42,0.18)] ${className}`}
+    className={`flex flex-col overflow-hidden rounded-2xl border border-secondary-100 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_30px_-18px_rgba(15,23,42,0.18)] dark:border-secondary-800 dark:bg-secondary-900 ${className}`}
   >
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-3.5">
+    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-secondary-100 px-5 py-3.5 dark:border-secondary-800">
       <div className="flex min-w-0 items-center gap-2.5">
         <span className={`h-4 w-1.5 shrink-0 rounded-full ${ACCENT_BAR[accent]}`} />
-        {icon && <span className="shrink-0 text-slate-400">{icon}</span>}
-        <ITText className="truncate text-[11px] font-black uppercase tracking-[0.14em] text-slate-700">
+        {icon && <span className="shrink-0 text-secondary-400">{icon}</span>}
+        <ITText className="truncate text-[11px] font-black uppercase tracking-[0.14em] text-secondary-700 dark:text-secondary-300">
           {title}
         </ITText>
         {badge}

@@ -29,7 +29,7 @@ import {
 import { Assignment, AssignmentStatus } from "../types/guards.types";
 import dayjs from "dayjs";
 import { ITMediaGrid } from "@app/core/components/ITMediaGrid";
-import { User } from "../../users/services/UserService";
+import type { User } from "@entities/user";
 
 // Fallback for API Base URL if constant is missing
 const API_BASE_URL = "http://localhost:4444";

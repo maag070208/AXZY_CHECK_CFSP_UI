@@ -3,13 +3,13 @@ import { GoogleMapComponent } from "@core/components/GoogleMapComponent";
 import { ITMediaGrid } from "@core/components/ITMediaGrid";
 import dayjs from "dayjs";
 import { FaCheck, FaCheckCircle, FaFileAlt, FaTrash } from "react-icons/fa";
-import { Maintenance } from "../services/MaintenanceService";
+import { Maintenance } from "@entities/maintenance";
 
 interface MaintenanceDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
   maintenance: Maintenance | null;
-  onResolve: (id: number) => void;
+  onResolve: (id: string) => void;
   onDelete: (maintenance: Maintenance) => void;
   isAdmin: boolean;
   isClient: boolean;

@@ -27,6 +27,14 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      // Capas FSD (destino)
+      "@shared": path.resolve(__dirname, "./src/shared"),
+      "@entities": path.resolve(__dirname, "./src/entities"),
+      "@features": path.resolve(__dirname, "./src/features"),
+      "@widgets": path.resolve(__dirname, "./src/widgets"),
+      "@pages": path.resolve(__dirname, "./src/pages"),
+
+      // Legado (se retira al terminar la migración)
       "@app": path.resolve(__dirname, "./src"),
       "@core": path.resolve(__dirname, "./src/core"),
       "@assets": path.resolve(__dirname, "./src/assets"),

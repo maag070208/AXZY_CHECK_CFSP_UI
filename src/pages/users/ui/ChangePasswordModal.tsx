@@ -6,7 +6,7 @@ import React from "react";
 import { FaKey } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import * as Yup from "yup";
-import { resetPassword, User } from "../services/UserService";
+import { resetPassword, type User } from "@entities/user";
 
 interface Props {
   user: User;

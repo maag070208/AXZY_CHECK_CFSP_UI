@@ -10,11 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import { FaClock, FaSync, FaTimes, FaTrash } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { getSchedules } from "../../../schedules/SchedulesService";
-import {
-  getPaginatedUsers,
-  updateUser,
-  User,
-} from "../../../users/services/UserService";
+import { fetchUsersTable, updateUser, type User } from "@entities/user";
 import { TResult } from "@app/core/types/TResult";
 
 interface Props {
@@ -36,7 +32,7 @@ export const ClientGuardsTab = ({ clientId }: Props) => {
 
   const memoizedFetch = useCallback(
     (params: any) => {
-      return getPaginatedUsers({
+      return fetchUsersTable({
         ...params,
         filters: {
           ...params.filters,

@@ -1,6 +1,6 @@
 import LoginPage from "@app/modules/auth/pages/LoginPage";
 import RegisterPage from "@app/modules/auth/pages/RegisterPage";
-import { ITLoader } from "@axzydev/axzy_ui_system";
+import { BrandLoader } from "@shared/ui";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, Route, Routes } from "react-router-dom";
@@ -13,10 +13,10 @@ import LocationsPage from "./modules/locations/pages/LocationsPage";
 import ClientsPage from "./modules/clients/pages/ClientsPage";
 import ClientDetailsPage from "./modules/clients/pages/ClientDetailsPage";
 
-import UsersPage from "./modules/users/pages/UsersPage";
-import IncidentsPage from "./modules/incidents/pages/IncidentsPage";
-import MaintenancesPage from "./modules/maintenances/pages/MaintenancesPage";
-import KardexPage from "./modules/kardex/pages/KardexPage";
+import { UsersPage } from "@pages/users";
+import { IncidentsPage } from "@pages/incidents";
+import { MaintenancesPage } from "@pages/maintenances";
+import { KardexPage } from "@pages/kardex";
 import RoundsPage from "./modules/rounds/pages/RoundsPage";
 import RoundDetailPage from "./modules/rounds/pages/RoundDetailPage";
 import SchedulesPage from "./modules/schedules/pages/SchedulesPage";
@@ -26,9 +26,9 @@ import CreateRoutePage from "./modules/routes/pages/CreateRoutePage";
 import SettingsPage from "@app/modules/settings/pages/SettingsPage";
 import ReportsPage from "./modules/reports/pages/ReportsPage";
 import GuardDisciplinePage from "./modules/guard-discipline/pages/GuardDisciplinePage";
-import GuardLogsPage from "./modules/guard-logs/pages/GuardLogsPage";
-import NotificationsPage from "./modules/notifications/pages/NotificationsPage";
-import PanicAlertsPage from "./modules/panic-alerts/pages/PanicAlertsPage";
+import { GuardLogsPage } from "@pages/guard-logs";
+import { NotificationsPage } from "@pages/notifications";
+import { PanicAlertsPage } from "@pages/panic-alerts";
 import ShiftPlanningPage from "./modules/shift-plans/pages/ShiftPlanningPage";
 import ShiftHandoversPage from "./modules/shift-handovers/pages/ShiftHandoversPage";
 import NewShiftHandoverPage from "./modules/shift-handovers/pages/NewShiftHandoverPage";
@@ -65,11 +65,7 @@ function App() {
   const loading = useSelector((state: any) => state.loader.loading);
 
   if (!isAppReady) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-        <ITLoader size="lg" />
-      </div>
-    );
+    return <BrandLoader fullScreen size={120} label={null} />;
   }
 
   if (!token) {
@@ -122,17 +118,12 @@ function App() {
 
       {/* GLOBAL MODAL ACTION LOADER */}
       {loading && (
-        <div className="fixed inset-0 z-999999 flex items-center justify-center bg-slate-900/20 backdrop-blur-[2px] transition-all">
-          <div className="bg-white p-10 rounded-[32px] shadow-2xl border border-slate-100 flex flex-col items-center gap-6">
-            <ITLoader size="lg" />
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em]">
-                Procesando
-              </span>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                Por favor espere...
-              </span>
-            </div>
+        <div className="fixed inset-0 z-999999 flex items-center justify-center bg-secondary-900/20 backdrop-blur-[2px] transition-all">
+          <div className="flex flex-col items-center gap-5 rounded-[32px] border border-secondary-100 bg-white p-10 shadow-2xl dark:border-secondary-800 dark:bg-secondary-900">
+            <BrandLoader size={80} label="Procesando" />
+            <span className="text-[9px] font-bold uppercase tracking-widest text-secondary-400">
+              Por favor espere…
+            </span>
           </div>
         </div>
       )}

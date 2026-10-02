@@ -1,4 +1,4 @@
-import Logo from "@assets/logo-mark.png";
+import { BRAND_MARK } from "@assets/brand";
 import { IAuthRegister } from "@core/types/auth.types";
 import { ITCard } from "@axzydev/axzy_ui_system";
 import { useDispatch } from "react-redux";
@@ -46,7 +46,7 @@ const RegisterPage = () => {
         {/* Branding */}
         <div className="flex flex-col items-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-5">
-            <img src={Logo} alt="Logo" className="h-10 w-auto object-contain" />
+            <img src={BRAND_MARK} alt="CheckApp" className="h-10 w-auto object-contain" />
           </div>
           <h1 className="text-xl font-black text-slate-900 tracking-tight">
             Crear Cuenta

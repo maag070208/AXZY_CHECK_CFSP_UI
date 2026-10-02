@@ -1,5 +1,32 @@
 # WEB Design Standards — AXZY CHECK
 
+> ## ⚠️ Estado de este documento (leer antes de seguir)
+>
+> Quedó **desfasado respecto al código**. Las reglas vigentes son:
+>
+> 1. **El shell de página es `PageShell`** (`src/shared/ui/PageShell.tsx`), no
+>    `ModuleHeader` — ese componente **no existe** en el repo (0 referencias).
+>    `PageShell` sustituye a la vez al viejo `core/components/ModulePage` y a las
+>    páginas que montaban `ITPage` a mano. Expone `loading` / `error` / `empty`,
+>    que `ModulePage` no propagaba (por eso 16 páginas no mostraban carga).
+> 2. **El contenedor de tabla es `DataTableCard`** (`src/shared/ui/PageShell.tsx`).
+> 3. **Los diálogos son `FormDialog` y `ConfirmDialog`** (`src/shared/ui/`).
+>    `FormDialog` exige `title`; ya no se rearma el encabezado a mano en cada uno.
+> 4. **El color se expresa con tonos semánticos** (`src/shared/ui/tokens.ts`:
+>    `brand/success/danger/warning/info/accent/neutral`). **No** se usan colores
+>    crudos de Tailwind (`emerald`, `rose`, `sky`, `amber`, `violet`): no existen
+>    en la paleta del tema y no funcionan en modo oscuro.
+> 5. **`ITDataTable.fetchData` debe devolver `{ data, total }`** — la clave es
+>    `data`, **no** `rows`. La forma paginada del backend (`{ rows, total }`) se
+>    llama `Paginated<T>` y se convierte con `toTableResponse()` de `@shared/api`.
+>    El error de la sección 15 de este documento es la causa de los
+>    `fetchData={fn as any}` repartidos por el proyecto.
+> 6. La arquitectura objetivo es **FSD + MVVM**; la estructura
+>    `modules/<x>/{pages,components,services}` está en retirada.
+>
+> Lo que sigue se conserva como referencia de estilo (tipografía, densidades,
+> patrones de tabla). Ante cualquier duda, **manda el código**.
+
 ## Reference: GuardsPage
 
 Todas las pantallas deben seguir el diseño de `GuardsPage.tsx` como referencia absoluta. Layout, tipografía, espaciado, bordes, sombras y comportamiento deben ser idénticos.

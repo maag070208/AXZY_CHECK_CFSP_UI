@@ -1,7 +1,7 @@
 import { ITBadget, ITButton, ITDialog } from "@axzydev/axzy_ui_system";
 import { GoogleMapComponent } from "@core/components/GoogleMapComponent";
 import { ITMediaGrid } from "@core/components/ITMediaGrid";
-import { translateScanType } from "@core/utils/status.utils";
+import { translateScanType } from "@entities/kardex";
 import dayjs from "dayjs";
 import {
   FaCalendarAlt,
@@ -11,7 +11,7 @@ import {
   FaSync,
   FaTrash,
 } from "react-icons/fa";
-import { KardexEntry } from "../services/KardexService";
+import { KardexEntry } from "@entities/kardex";
 
 interface KardexDetailDialogProps {
   isOpen: boolean;

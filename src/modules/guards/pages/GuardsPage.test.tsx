@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@app/core/utils/test-utils";
 import GuardsPage from "./GuardsPage";
-import * as userService from "../../users/services/UserService";
+import * as userService from "@entities/user";
 import * as schedulesService from "../../schedules/SchedulesService";
 import { vi } from "vitest";
 import userEvent from "@testing-library/user-event";
@@ -17,8 +17,8 @@ vi.mock("react-router-dom", async (importOriginal) => {
 });
 
 // Mock UserService
-vi.mock("../../users/services/UserService", () => ({
-  getPaginatedUsers: vi.fn(),
+vi.mock("@entities/user", () => ({
+  fetchUsersTable: vi.fn(),
   updateUser: vi.fn(),
 }));
 
@@ -82,7 +82,7 @@ const mockSchedules = [
 describe("GuardsPage (Pruebas del módulo de Guardias)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(userService.getPaginatedUsers).mockResolvedValue({
+    vi.mocked(userService.fetchUsersTable).mockResolvedValue({
       data: mockGuards.rows,
       total: mockGuards.total,
     });
@@ -123,10 +123,15 @@ describe("GuardsPage (Pruebas del módulo de Guardias)", () => {
     await user.click(deactivateButtons[0]);
 
     // Verificar modal de confirmación
-    expect(screen.getByText(/¿Desactivar Guardia?/i)).toBeInTheDocument();
+    expect(screen.getByText("Desactivar Guardia")).toBeInTheDocument();
 
-    const confirmButton = screen.getByRole("button", { name: /confirmar acción/i });
-    await user.click(confirmButton);
+    // El botón de la fila se identifica por `title`; el del diálogo lleva texto
+    // visible, así que se distingue sin depender del orden del DOM.
+    const confirmButton = screen
+      .getAllByRole("button")
+      .find((button) => button.textContent?.trim().toLowerCase() === "desactivar");
+    expect(confirmButton).toBeDefined();
+    await user.click(confirmButton as HTMLElement);
 
     await waitFor(() => {
       expect(userService.updateUser).toHaveBeenCalledWith("guard-uuid-1", { active: false });

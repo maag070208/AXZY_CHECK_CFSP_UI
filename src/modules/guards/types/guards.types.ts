@@ -1,4 +1,4 @@
-import { User } from "../../users/services/UserService";
+import type { User } from "@entities/user";
 
 export interface Guard extends User {
   // Guard specific fields if any, otherwise it uses User fields

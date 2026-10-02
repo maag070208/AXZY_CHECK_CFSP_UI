@@ -2,7 +2,7 @@ import { setAuth } from "@app/core/store/auth/auth.slice";
 import { AppDispatch } from "@app/core/store/store";
 import { showToast } from "@app/core/store/toast/toast.slice";
 import { TResult } from "@app/core/types/TResult";
-import Logo from "@assets/logo-mark.png";
+import { BRAND_MARK } from "@assets/brand";
 import { ITCard } from "@axzydev/axzy_ui_system";
 import { IAuthLogin } from "@core/types/auth.types";
 import { useState } from "react";
@@ -59,7 +59,7 @@ const LoginPage = () => {
         {/* Logo Section */}
         <div className="flex flex-col items-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="w-20 h-20 bg-white rounded-3xl shadow-sm border border-slate-100 flex items-center justify-center mb-6">
-            <img src={Logo} alt="Logo" className="h-12 w-auto object-contain" />
+            <img src={BRAND_MARK} alt="CheckApp" className="h-12 w-auto object-contain" />
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             Check <span className="text-emerald-600">Web</span>

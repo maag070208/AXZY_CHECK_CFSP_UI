@@ -119,9 +119,58 @@
   border-radius: 4px;
 }
 
-body {
-  background-color: #f6fbf4;
+/* ─────────────────────────────────────────────────────────────────────────
+   Modo oscuro para las escalas semánticas.
+
+   `ITThemeProvider` genera las escalas `--color-<tono>-50..950` con
+   `color-mix()` UNA sola vez y no las regenera en oscuro: su bloque `.dark`
+   sólo sobrescribe tokens `--it-*` y algunas clases sueltas
+   (`text-slate-400..800`, `bg-white`, `bg-slate-50`). Por eso `bg-success-50`
+   se quedaba casi blanco sobre fondo oscuro.
+
+   Se remapea aquí, con selectores `.dark .<utilidad>` (especificidad 0,2,0)
+   que ganan de forma determinista sobre la utilidad base y sobre cualquier
+   variante `dark:` (0,1,0). Así los componentes pueden usar clases planas
+   (`bg-success-50`, `text-danger-700`) y funcionan en ambos modos.
+   ───────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .dark .bg-primary-50 { background-color: color-mix(in srgb, var(--color-primary) 18%, #0b1329); }
+  .dark .bg-success-50 { background-color: color-mix(in srgb, var(--color-success) 18%, #0b1329); }
+  .dark .bg-danger-50 { background-color: color-mix(in srgb, var(--color-danger) 18%, #0b1329); }
+  .dark .bg-warning-50 { background-color: color-mix(in srgb, var(--color-warning) 18%, #0b1329); }
+  .dark .bg-info-50 { background-color: color-mix(in srgb, var(--color-info) 18%, #0b1329); }
+  .dark .bg-purple-50 { background-color: color-mix(in srgb, var(--color-purple) 18%, #0b1329); }
+  .dark .bg-secondary-50 { background-color: #0f172a; }
+  .dark .bg-secondary-100 { background-color: #1e293b; }
+
+  .dark .text-primary-700, .dark .text-primary-800 { color: var(--color-primary-300); }
+  .dark .text-success-700, .dark .text-success-800 { color: var(--color-success-300); }
+  .dark .text-danger-700, .dark .text-danger-800 { color: var(--color-danger-300); }
+  .dark .text-warning-700, .dark .text-warning-800 { color: var(--color-warning-300); }
+  .dark .text-info-700, .dark .text-info-800 { color: var(--color-info-300); }
+  .dark .text-purple-700, .dark .text-purple-800 { color: var(--color-purple-300); }
+
+  .dark .text-secondary-900, .dark .text-slate-900 { color: #f1f5f9; }
+  .dark .text-secondary-800, .dark .text-slate-800 { color: #e2e8f0; }
+
+  .dark .border-primary-200 { border-color: color-mix(in srgb, var(--color-primary) 40%, #0b1329); }
+  .dark .border-success-200 { border-color: color-mix(in srgb, var(--color-success) 40%, #0b1329); }
+  .dark .border-danger-200 { border-color: color-mix(in srgb, var(--color-danger) 40%, #0b1329); }
+  .dark .border-warning-200 { border-color: color-mix(in srgb, var(--color-warning) 40%, #0b1329); }
+  .dark .border-info-200 { border-color: color-mix(in srgb, var(--color-info) 40%, #0b1329); }
+  .dark .border-purple-200 { border-color: color-mix(in srgb, var(--color-purple) 40%, #0b1329); }
+  .dark .border-secondary-100 { border-color: #1e293b; }
 }
+
+/* El fondo lo define el tema (`--it-layout-bg` = `--color-secondary-50`), no
+   la app. Antes había un `#f6fbf4` forzado que peleaba con el provider e
+   impedía que el modo oscuro y los cambios de tema se propagaran. */
+body {
+  background-color: var(--it-layout-bg, var(--color-secondary-50, #f8fafc));
+}
+
+/* TODO(Fase 3): mover a la migración de RoundsPage — hoy es CSS global de una
+   sola página. */
 .rounds-table td {
   padding: 0px 0px !important;
   vertical-align: middle !important;

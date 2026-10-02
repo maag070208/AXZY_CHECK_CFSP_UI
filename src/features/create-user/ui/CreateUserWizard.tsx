@@ -1,6 +1,3 @@
-import { useCatalog } from "@app/core/hooks/catalog.hook";
-import { hideLoader, showLoader } from "@app/core/store/loader/loader.slice";
-import { showToast } from "@app/core/store/toast/toast.slice";
 import {
   ITButton,
   ITInput,
@@ -8,13 +5,10 @@ import {
   ITSlideToggle,
   ITText,
 } from "@axzydev/axzy_ui_system";
-import { useFormik } from "formik";
-import React, { useEffect, useMemo, useState } from "react";
+import React from "react";
 import { FaShieldAlt } from "react-icons/fa";
-import { useDispatch } from "react-redux";
-import * as Yup from "yup";
-import { getSchedules, Schedule } from "../../schedules/SchedulesService";
-import { createUser, updateUser, User } from "../services/UserService";
+import type { User } from "@entities/user";
+import { useCreateUserForm } from "../model/useCreateUserForm";
 
 interface Props {
   userToEdit?: User;
@@ -22,135 +16,27 @@ interface Props {
   onSuccess: () => void;
 }
 
+/**
+ * Vista del formulario de usuario. Toda la lógica (catálogos, validación y
+ * envío) vive en `useCreateUserForm`.
+ */
 export const CreateUserWizard: React.FC<Props> = ({
   userToEdit,
   onCancel,
   onSuccess,
 }) => {
-  const isEditing = !!userToEdit;
-  const dispatch = useDispatch();
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const {
+    isEditing,
+    formik,
+    roleOptions,
+    clients,
+    schedules,
+    loadingRoles,
+    loadingClients,
+    loadingSchedules,
+    isOperationalRole,
+  } = useCreateUserForm({ userToEdit, onSuccess });
 
-  const { data: roles, loading: loadingRoles } = useCatalog("role");
-  const { data: clients, loading: loadingClients } = useCatalog("client");
-  const [loadingSchedules, setLoadingSchedules] = useState(true);
-
-  useEffect(() => {
-    getSchedules().then((data) => {
-      setSchedules(data);
-      setLoadingSchedules(false);
-    });
-  }, []);
-
-  const roleOptions = useMemo(
-    () =>
-      roles
-          .filter((r) => r.name !== "RESDN")
-          .map((r) => ({ label: r.value, value: String(r.id) })),
-    [roles],
-  );
-
-  const formik = useFormik({
-    enableReinitialize: true,
-    initialValues: {
-      name: userToEdit?.name || "",
-      lastName: userToEdit?.lastName || "",
-      username: userToEdit?.username || "",
-      password: "",
-      confirmPassword: "",
-      roleId: userToEdit?.roleId
-              ? String(userToEdit.roleId)
-              : userToEdit?.role?.id
-                      ? String(userToEdit.role.id)
-                      : "",
-      scheduleId: userToEdit?.scheduleId
-              ? String(userToEdit.scheduleId)
-              : userToEdit?.schedule?.id
-                      ? String(userToEdit.schedule.id)
-                      : "",
-      clientId: userToEdit?.clientId
-              ? String(userToEdit.clientId)
-              : userToEdit?.client?.id
-                      ? String(userToEdit.client.id)
-                      : "",
-      active: userToEdit ? userToEdit.active : true,
-    },
-    validationSchema: Yup.object({
-      name: Yup.string().required("Requerido"),
-      lastName: Yup.string().required("Requerido"),
-      username: Yup.string().required("Requerido"),
-      password: isEditing
-              ? Yup.string().min(6, "Mínimo 6")
-              : Yup.string().min(6, "Mínimo 6").required("Requerido"),
-      confirmPassword: Yup.string()
-              .oneOf([Yup.ref("password")], "No coinciden")
-              .when("password", {
-                is: (val: string) => val && val.length > 0,
-                then: (schema) => schema.required("Requerido"),
-              }),
-      roleId: Yup.string().required("Selecciona un rol"),
-      scheduleId: Yup.string().when("roleId", {
-        is: (roleId: string) => {
-          const role = roles.find((r) => String(r.id) === String(roleId));
-          return ["GUARD", "SHIFT", "MAINT"].includes(role?.name || "");
-        },
-        then: () => Yup.string().required("Horario obligatorio"),
-      }),
-      clientId: Yup.string().when("roleId", {
-        is: (roleId: string) => {
-          const role = roles.find((r) => String(r.id) === String(roleId));
-          return ["GUARD", "SHIFT", "MAINT"].includes(role?.name || "");
-        },
-        then: () => Yup.string().required("Cliente obligatorio"),
-      }),
-    }),
-    onSubmit: async (values) => {
-      dispatch(showLoader());
-      try {
-        const { confirmPassword, ...data } = values;
-        const payload = {
-          ...data,
-          password: data.password || undefined,
-          scheduleId: data.scheduleId || undefined,
-          clientId: data.clientId || undefined,
-        };
-        const res =
-                isEditing && userToEdit
-                        ? await updateUser(userToEdit.id, payload)
-                        : await createUser(payload);
-
-        if (res.success) {
-          dispatch(
-                  showToast({
-                    message: `Usuario ${isEditing ? "editado" : "creado"} con éxito`,
-                    type: "success",
-                  }),
-          );
-          onSuccess();
-        } else {
-          dispatch(
-                  showToast({ message: res.messages?.[0] || "Error", type: "error" }),
-          );
-        }
-      } catch (error: any) {
-        dispatch(
-                showToast({
-                  message: error?.messages?.[0] || "Error inesperado",
-                  type: "error",
-                }),
-        );
-      } finally {
-        dispatch(hideLoader());
-      }
-    },
-  });
-
-  const isOperationalRole = useMemo(() => {
-    const selectedRole = roles.find(
-            (r) => String(r.id) === String(formik.values.roleId),
-    );
-    return ["GUARD", "SHIFT", "MAINT"].includes(selectedRole?.name || "");
-  }, [roles, formik.values.roleId]);
 
   return (
           <div className="flex flex-col w-full bg-white max-h-[85vh]">
@@ -259,7 +145,7 @@ export const CreateUserWizard: React.FC<Props> = ({
           </section>
 
           {/* SECTION 3: OPERATIONAL ASSIGNMENT */}
-          {isOperationalRole && (
+          {isOperationalRole(formik.values.roleId) && (
             <section className="animate-in fade-in slide-in-from-top-4 duration-300">
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-1.5 h-4 bg-amber-500 rounded-full" />

@@ -101,10 +101,10 @@ describe("ClientsPage (Pruebas del módulo de Clientes)", () => {
     await user.click(deleteButtons[0]);
 
     // Verificar que se abra el modal de confirmación
-    expect(screen.getByText("Confirmar Eliminación")).toBeInTheDocument();
-    expect(screen.getByText(/¿Estás seguro de eliminar el cliente seleccionado?/i)).toBeInTheDocument();
+    expect(screen.getByText("¿Eliminar Cliente?")).toBeInTheDocument();
+    expect(screen.getByText(/Esta acción eliminará el cliente/i)).toBeInTheDocument();
 
-    const confirmButton = screen.getByRole("button", { name: /Eliminar Cliente/i });
+    const confirmButton = screen.getByRole("button", { name: /CONFIRMAR ACCIÓN/i });
     await user.click(confirmButton);
 
     await waitFor(() => {
