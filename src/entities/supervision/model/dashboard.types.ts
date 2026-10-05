@@ -85,6 +85,40 @@ export interface IActivityItem {
   createdAt: string;
 }
 
+/** Asistencia del personal contra su horario (endpoint /dashboard/attendance). */
+export type AttendanceStatus = "ON_TIME" | "LATE" | "ABSENT" | "PENDING";
+
+export interface IAttendanceItem {
+  guardId: string;
+  name: string;
+  lastName: string | null;
+  role: OperationalRole;
+  clientId: string | null;
+  clientName: string | null;
+  scheduleId: string | null;
+  scheduleName: string | null;
+  scheduledStart: string;
+  checkInAt: string | null;
+  status: AttendanceStatus;
+  minutesLate: number | null;
+}
+
+export interface IAttendanceTotals {
+  expected: number;
+  onTime: number;
+  late: number;
+  absent: number;
+  pending: number;
+}
+
+export interface IAttendanceReport {
+  generatedAt: string;
+  shiftDate: string;
+  scope: "ALL" | "CLIENT";
+  totals: IAttendanceTotals;
+  items: IAttendanceItem[];
+}
+
 export interface IPanicAlertListItem {
   id: string;
   title: string;

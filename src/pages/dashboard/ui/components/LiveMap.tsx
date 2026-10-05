@@ -41,7 +41,7 @@ export const LiveMap = ({ points, height = 340 }: { points: ILiveMapPoint[]; hei
   if (!apiKey) {
     return (
       <div
-        className="flex items-center justify-center rounded-xl border border-secondary-200 bg-secondary-50 text-sm text-secondary-400 dark:border-secondary-700 dark:bg-secondary-800/60"
+        className="flex items-center justify-center rounded-2xl border border-secondary-200 bg-secondary-50 text-sm text-secondary-400 dark:border-secondary-800 dark:bg-secondary-800/40 dark:text-secondary-500"
         style={{ height }}
       >
         Google Maps no está configurado
@@ -51,16 +51,16 @@ export const LiveMap = ({ points, height = 340 }: { points: ILiveMapPoint[]; hei
   if (points.length === 0) {
     return (
       <div
-        className="flex flex-col items-center justify-center rounded-xl border border-dashed border-secondary-200 bg-secondary-50 px-6 text-center dark:border-secondary-700 dark:bg-secondary-800/40"
+        className="flex flex-col items-center justify-center rounded-2xl border border-secondary-200 bg-secondary-50 px-6 text-center dark:border-secondary-800 dark:bg-secondary-800/40"
         style={{ height }}
       >
-        <span className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-secondary-300 ring-1 ring-secondary-100 dark:bg-secondary-900 dark:text-secondary-500 dark:ring-secondary-700">
-          <FaMapMarkerAlt size={22} />
+        <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-secondary-400 dark:bg-secondary-900 dark:text-secondary-500">
+          <FaMapMarkerAlt aria-hidden="true" size={16} />
         </span>
-        <ITText className="text-sm font-black uppercase tracking-wider text-secondary-600 dark:text-secondary-200">
+        <ITText as="p" className="text-[13px] font-semibold text-secondary-700 dark:text-secondary-200">
           Sin ubicaciones en vivo
         </ITText>
-        <ITText className="mx-auto mt-1.5 max-w-[280px] text-xs font-medium leading-relaxed text-secondary-400">
+        <ITText as="p" className="mx-auto mt-1 max-w-[280px] text-[11px] font-medium leading-relaxed text-secondary-500 dark:text-secondary-400">
           Aparecen cuando un guardia escanea un punto durante su ronda.
         </ITText>
       </div>
@@ -68,7 +68,7 @@ export const LiveMap = ({ points, height = 340 }: { points: ILiveMapPoint[]; hei
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-secondary-200 dark:border-secondary-700" style={{ height }}>
+    <div className="overflow-hidden rounded-2xl border border-secondary-200 dark:border-secondary-800" style={{ height }}>
       <APIProvider apiKey={apiKey}>
         <Map
           defaultCenter={{ lat: points[0].latitude, lng: points[0].longitude }}

@@ -9,6 +9,7 @@ import type { ILiveDashboard } from "../model/types";
 import type {
   IActiveGuard,
   IActivityItem,
+  IAttendanceReport,
   IDashboardOverview,
   IPanicAlertListItem,
   IPendingCounts,
@@ -32,3 +33,12 @@ export const getDashboardPanicAlerts = (limit = 10): Promise<TResult<IPanicAlert
 /** Estado operativo en vivo: KPIs, alertas, rondas, mapa y cumplimiento. */
 export const getLiveDashboard = (clientId?: string): Promise<TResult<ILiveDashboard>> =>
   get<ILiveDashboard>("/dashboard/live", clientId ? { params: { clientId } } : undefined);
+
+/** Asistencia del día: quién está en turno, tarde o ausente. */
+export const getDashboardAttendance = (
+  clientId?: string,
+  date?: string,
+): Promise<TResult<IAttendanceReport>> =>
+  get<IAttendanceReport>("/dashboard/attendance", {
+    params: { ...(clientId ? { clientId } : {}), ...(date ? { date } : {}) },
+  });

@@ -1,19 +1,9 @@
-import { ITText } from "@axzydev/axzy_ui_system";
 import { ReactNode } from "react";
 import { SemanticTone, TONES } from "@shared/ui";
+import { BOARD } from "./board";
 
 /** El acento de un panel es un tono semántico: sin colores crudos. */
 export type PanelAccent = SemanticTone;
-
-const ACCENT_BAR: Record<PanelAccent, string> = {
-  brand: TONES.brand.bar,
-  success: TONES.success.bar,
-  danger: TONES.danger.bar,
-  warning: TONES.warning.bar,
-  info: TONES.info.bar,
-  accent: TONES.accent.bar,
-  neutral: TONES.neutral.bar,
-};
 
 export interface PanelProps {
   title: string;
@@ -29,9 +19,8 @@ export interface PanelProps {
 }
 
 /**
- * Contenedor de sección del monitoreo. Unifica el header (barra de acento,
- * icono, título en micro-mayúsculas, contador y acción) para que todos los
- * bloques del home compartan la misma jerarquía visual.
+ * Tarjeta de sección del tablero. Título en eyebrow y tile de acento con el
+ * tinte del tono, a juego con el Centro de Reportes.
  */
 export const Panel = ({
   title,
@@ -43,21 +32,20 @@ export const Panel = ({
   className = "",
   bodyClassName = "",
 }: PanelProps) => (
-  <section
-    className={`flex flex-col overflow-hidden rounded-2xl border border-secondary-100 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_30px_-18px_rgba(15,23,42,0.18)] dark:border-secondary-800 dark:bg-secondary-900 ${className}`}
-  >
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-secondary-100 px-5 py-3.5 dark:border-secondary-800">
+  <section className={`${BOARD.frame} flex flex-col ${className}`}>
+    <header className={BOARD.header}>
       <div className="flex min-w-0 items-center gap-2.5">
-        <span className={`h-4 w-1.5 shrink-0 rounded-full ${ACCENT_BAR[accent]}`} />
-        {icon && <span className="shrink-0 text-secondary-400">{icon}</span>}
-        <ITText className="truncate text-[11px] font-black uppercase tracking-[0.14em] text-secondary-700 dark:text-secondary-300">
-          {title}
-        </ITText>
+        {icon ? (
+          <span className={`${BOARD.tile} ${TONES[accent].soft} ${TONES[accent].softText}`}>{icon}</span>
+        ) : (
+          <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${TONES[accent].dot}`} />
+        )}
+        <h3 className={BOARD.title}>{title}</h3>
         {badge}
       </div>
       {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
     </header>
 
-    <div className={`flex flex-1 flex-col px-5 py-4 ${bodyClassName}`}>{children}</div>
+    <div className={`${BOARD.body} ${bodyClassName}`}>{children}</div>
   </section>
 );

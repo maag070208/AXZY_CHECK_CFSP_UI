@@ -1,4 +1,4 @@
-import { ITSearchSelect, ITText } from "@axzydev/axzy_ui_system";
+import { ITSearchSelect } from "@axzydev/axzy_ui_system";
 import { FaSync } from "react-icons/fa";
 import { ICatalogItem } from "@app/core/types/catalog.types";
 import { TONES } from "@shared/ui";
@@ -17,8 +17,8 @@ export interface LiveControlsProps {
 }
 
 /**
- * Controles del monitoreo: alcance por cliente, indicador en vivo y refresco.
- * Se renderiza en el header en escritorio y en una barra propia en móvil.
+ * Controles del tablero: alcance por cliente, indicador en vivo y refresco.
+ * Estilo Reportes: pills redondeadas y superficies suaves.
  */
 export const LiveControls = ({
   isClient,
@@ -45,9 +45,7 @@ export const LiveControls = ({
       </div>
     )}
 
-    <span
-      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] ${TONES.success.soft} ${TONES.success.border} ${TONES.success.text}`}
-    >
+    <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] ${TONES.success.soft} ${TONES.success.border} ${TONES.success.text}`}>
       <span className="relative flex h-1.5 w-1.5">
         <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${TONES.success.dot}`} />
         <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${TONES.success.dot}`} />
@@ -56,18 +54,18 @@ export const LiveControls = ({
     </span>
 
     <div className="flex items-center gap-1 rounded-full border border-secondary-200 bg-white py-1 pl-3 pr-1 dark:border-secondary-700 dark:bg-secondary-900">
-      <ITText className="hidden text-[11px] font-bold tabular-nums text-secondary-400 md:block">
+      <span className="hidden text-[11px] font-bold tabular-nums text-secondary-400 md:block dark:text-secondary-500">
         {updatedAt ? `Actualizado ${updatedAt}` : "Sin datos"}
-      </ITText>
+      </span>
       <button
         type="button"
         onClick={onRefresh}
         disabled={refreshing}
         title="Refrescar"
         aria-label="Refrescar"
-        className="flex h-7 w-7 items-center justify-center rounded-full text-secondary-400 transition-colors hover:bg-secondary-100 hover:text-secondary-700 disabled:opacity-50 dark:hover:bg-secondary-800 dark:hover:text-secondary-200"
+        className="flex h-7 w-7 items-center justify-center rounded-full text-secondary-400 transition-colors hover:bg-secondary-100 hover:text-secondary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 disabled:opacity-50 dark:hover:bg-secondary-800 dark:hover:text-secondary-200"
       >
-        <FaSync size={11} className={refreshing ? "animate-spin" : ""} />
+        <FaSync size={11} aria-hidden="true" className={refreshing ? "animate-spin" : ""} />
       </button>
     </div>
   </>

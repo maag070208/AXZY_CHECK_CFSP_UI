@@ -93,11 +93,31 @@
 
 @theme {
   --animate-progress: progress 1.5s ease-in-out infinite;
+  --animate-rise: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 
   @keyframes progress {
     0% { width: 0%; }
     50% { width: 100%; }
     100% { width: 0%; margin-left: 100%; }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Accesibilidad: sin movimiento si el usuario lo pide. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-pulse {
+    animation: none !important;
   }
 }
 

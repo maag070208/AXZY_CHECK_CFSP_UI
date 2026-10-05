@@ -7,6 +7,7 @@
  * (botones, inputs, tablas, badges).
  */
 export * from "./tokens";
+export * from "./Detail";
 export * from "./PageShell";
 export * from "./FormDialog";
 export * from "./ConfirmDialog";

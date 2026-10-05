@@ -1,43 +1,20 @@
-import { ITBadget, ITText } from "@axzydev/axzy_ui_system";
-import { ReactNode } from "react";
+import { ITText } from "@axzydev/axzy_ui_system";
 import { useNavigate } from "react-router-dom";
-import {
-  FaBell,
-  FaChevronRight,
-  FaExclamationTriangle,
-  FaTools,
-  FaUserShield,
-} from "react-icons/fa";
+import { FaChevronRight } from "react-icons/fa";
 import { IActivityItem } from "@entities/supervision";
 import { activityItemToHref } from "./activityNavigation";
-import { SURFACE, TONES } from "@shared/ui";
+import { TONES } from "@shared/ui";
+import { BOARD } from "./board";
 
-const typeMeta: Record<
-  IActivityItem["type"],
-  {
-    icon: ReactNode;
-    color: "danger" | "warning" | "info" | "purple" | "primary" | "secondary";
-    label: string;
-  }
-> = {
-  panic: { icon: <FaBell />, color: "danger", label: "EMERGENCIA" },
-  incident: {
-    icon: <FaExclamationTriangle />,
-    color: "warning",
-    label: "INCIDENCIA",
-  },
-  maintenance: {
-    icon: <FaTools />,
-    color: "info",
-    label: "MANTENIMIENTO",
-  },
-  discipline: {
-    icon: <FaUserShield />,
-    color: "purple",
-    label: "DISCIPLINA",
-  },
-  round: { icon: <FaUserShield />, color: "primary", label: "RONDA" },
-  kardex: { icon: <FaUserShield />, color: "secondary", label: "KARDEX" },
+type ActivityType = IActivityItem["type"];
+
+const TYPE_META: Record<ActivityType, { label: string; rail: string; tint: string }> = {
+  panic: { label: "Pánico", rail: "border-l-danger-500", tint: TONES.danger.soft },
+  incident: { label: "Incidencia", rail: "border-l-warning-500", tint: "" },
+  maintenance: { label: "Mantenimiento", rail: "border-l-info-500", tint: "" },
+  discipline: { label: "Disciplina", rail: "border-l-purple-500", tint: "" },
+  round: { label: "Ronda", rail: "border-l-primary-500", tint: "" },
+  kardex: { label: "Kardex", rail: "border-l-secondary-300 dark:border-l-secondary-700", tint: "" },
 };
 
 interface ActivityItemRowProps {
@@ -50,30 +27,18 @@ const formatRelativeTime = (iso: string): string => {
   const diffMs = now.getTime() - date.getTime();
   const minutes = Math.floor(diffMs / 60000);
   if (minutes < 1) return "ahora";
-  if (minutes < 60) return `hace ${minutes} min`;
+  if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `hace ${hours} h`;
+  if (hours < 24) return `${hours} h`;
   const days = Math.floor(hours / 24);
-  if (days < 7) return `hace ${days} d`;
-  return date.toLocaleDateString("es-MX", {
-    day: "2-digit",
-    month: "short",
-  });
+  if (days < 7) return `${days} d`;
+  return date.toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
 };
 
-/** Barra de acento y tile del icono: mismo lenguaje visual que las alertas. */
-const iconWrapClass: Record<IActivityItem["type"], { tile: string; bar: string }> = {
-  panic: { tile: TONES.danger.solid, bar: TONES.danger.bar },
-  incident: { tile: `${TONES.warning.soft} ${TONES.warning.softText}`, bar: TONES.warning.bar },
-  maintenance: { tile: `${TONES.info.soft} ${TONES.info.softText}`, bar: TONES.info.bar },
-  discipline: { tile: `${TONES.accent.soft} ${TONES.accent.softText}`, bar: TONES.accent.bar },
-  round: { tile: `${TONES.brand.soft} ${TONES.brand.softText}`, bar: TONES.brand.bar },
-  kardex: { tile: `${TONES.neutral.soft} ${TONES.neutral.softText}`, bar: TONES.neutral.bar },
-};
-
+/** Fila del feed de actividad. Línea reglada, mismo lenguaje que las alertas. */
 export const ActivityItemRow = ({ item }: ActivityItemRowProps) => {
   const navigate = useNavigate();
-  const meta = typeMeta[item.type];
+  const meta = TYPE_META[item.type];
   const href = activityItemToHref(item);
   const clickable = href !== null;
 
@@ -89,8 +54,6 @@ export const ActivityItemRow = ({ item }: ActivityItemRowProps) => {
     }
   };
 
-  const isPanic = item.type === "panic";
-
   return (
     <div
       role={clickable ? "button" : undefined}
@@ -98,70 +61,48 @@ export const ActivityItemRow = ({ item }: ActivityItemRowProps) => {
       onClick={clickable ? handleClick : undefined}
       onKeyDown={handleKeyDown}
       aria-label={clickable ? `Ver detalle de ${meta.label}` : undefined}
-      className={`
-        group relative flex items-center gap-3 overflow-hidden rounded-xl border py-2.5 pl-4 pr-3
-        transition-all duration-200 ease-out
-        ${clickable ? "cursor-pointer hover:-translate-y-px focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300" : ""}
-        ${
-          isPanic
-            ? `${TONES.danger.soft} border-danger-200`
-            : "border-secondary-200 bg-white hover:border-secondary-300 hover:shadow-[0_10px_24px_-14px_rgba(15,23,42,0.25)] dark:border-secondary-700 dark:bg-secondary-900 dark:hover:border-secondary-600"
-        }
-      `}
+      className={`group flex items-center gap-3 border-l-2 py-3 pl-3 pr-1 transition-colors ${meta.rail} ${meta.tint} ${
+        clickable ? "cursor-pointer hover:bg-secondary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-400 dark:hover:bg-secondary-800/50" : ""
+      }`}
     >
-      <span className={`absolute inset-y-2 left-0 w-[3px] rounded-r-full ${iconWrapClass[item.type].bar}`} />
-
-      <div
-        className={`
-          flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[13px]
-          ring-1 ring-black/5 transition-transform duration-200
-          ${iconWrapClass[item.type].tile}
-          ${clickable ? "group-hover:scale-105" : ""}
-        `}
-      >
-        {meta.icon}
-      </div>
-
       <div className="min-w-0 flex-1">
-        <div className="mb-0.5 flex items-center gap-2">
-          <ITBadget label={meta.label} color={meta.color} size="sm" />
-          <span className="text-[10px] font-bold tracking-wide text-secondary-400">
-            {formatRelativeTime(item.createdAt)}
-          </span>
-        </div>
-        <ITText className={`truncate text-[13px] font-bold leading-tight ${SURFACE.strong}`}>
+        <ITText as="span" className={`block truncate text-[13px] font-semibold leading-tight ${BOARD.strong}`}>
           {item.title}
         </ITText>
-        {item.guardName && (
-          <ITText className="mt-0.5 truncate text-[11px] font-medium text-secondary-500 dark:text-secondary-400">
-            {item.guardName}
-            {item.clientName ? ` · ${item.clientName}` : ""}
+        {(item.guardName || item.clientName) && (
+          <ITText as="span" className={`block truncate ${BOARD.label}`}>
+            {[item.guardName, item.clientName].filter(Boolean).join(" · ")}
           </ITText>
         )}
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
-        {isPanic && item.latitude != null && item.longitude != null && (
-          <a
-            href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className={`hidden items-center gap-1 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-wider ring-1 transition-colors sm:inline-flex ${TONES.danger.soft} ${TONES.danger.text} ${TONES.danger.border} hover:bg-danger-600 hover:text-white`}
-          >
-            Ubicación
-          </a>
-        )}
+      <ITText as="span" className="hidden shrink-0 text-[11px] font-medium text-secondary-400 sm:block dark:text-secondary-500">
+        {meta.label}
+      </ITText>
 
-        {clickable && (
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-secondary-50 transition-colors group-hover:bg-primary-50 dark:bg-secondary-800 dark:group-hover:bg-primary-950/40">
-            <FaChevronRight
-              size={11}
-              className="text-secondary-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-primary-600"
-            />
-          </div>
-        )}
-      </div>
+      <ITText as="span" className="shrink-0 text-[11px] font-medium tabular-nums text-secondary-400 dark:text-secondary-500">
+        {formatRelativeTime(item.createdAt)}
+      </ITText>
+
+      {item.type === "panic" && item.latitude != null && item.longitude != null && (
+        <a
+          href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className={`hidden shrink-0 items-center px-2 py-1 text-[11px] font-semibold underline underline-offset-4 sm:inline-flex ${TONES.danger.text}`}
+        >
+          Ubicación
+        </a>
+      )}
+
+      {clickable && (
+        <FaChevronRight
+          aria-hidden="true"
+          size={11}
+          className="shrink-0 text-secondary-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-secondary-500"
+        />
+      )}
     </div>
   );
 };
