@@ -2,14 +2,10 @@ import { ModulePage } from "@app/core/components/ModulePage";
 import {
   ITBadget,
   ITButton,
-  ITCard,
   ITConfirmDialog,
   ITDataTable,
-  ITFlex,
-  ITGrid,
   ITLoader,
   ITSearchSelect,
-  ITStatCard,
   ITText,
   type Column,
 } from "@axzydev/axzy_ui_system";
@@ -18,7 +14,6 @@ import dayjs from "dayjs";
 import {
   FaArrowRight,
   FaChartBar,
-  FaChartLine,
   FaCheckCircle,
   FaEdit,
   FaExclamationTriangle,
@@ -27,21 +22,58 @@ import {
   FaTrash,
   FaUserShield,
 } from "react-icons/fa";
+import type { ReportConfigRow } from "@entities/report";
+import { DataTableCard, SURFACE, TONES } from "@shared/ui";
 import { AperturaCierreReportModal } from "./AperturaCierreReportModal";
 import { GuardPerformanceReportModal } from "./GuardPerformanceReportModal";
 import { IncidentsReportModal } from "./IncidentsReportModal";
-import type { ReportConfigRow } from "@entities/report";
 import { useReportsPage } from "../model/useReportsPage";
 
-
+type ReportTone = keyof typeof TONES;
 
 /**
- * Tarjeta de un tipo de reporte dentro del catálogo.
+ * Métrica compacta del resumen.
+ *
+ * Sustituye a las tres `ITStatCard` con fondo tintado: el bloque pasa de una
+ * fila de tarjetas altas a una tira delgada que no resta protagonismo al
+ * catálogo.
+ */
+const StatInline = ({
+  icon,
+  tone,
+  value,
+  label,
+}: {
+  icon: ReactNode;
+  tone: ReportTone;
+  value: number;
+  label: string;
+}) => {
+  const t = TONES[tone];
+  return (
+    <div className="flex flex-1 items-center gap-3 rounded-xl border border-secondary-100 bg-white px-4 py-3">
+      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${t.soft} ${t.text}`}>
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <ITText as="div" className={`text-lg leading-none font-black ${SURFACE.strong}`}>
+          {value}
+        </ITText>
+        <ITText as="div" className="mt-1 truncate text-[10px] font-black tracking-wider text-secondary-400 uppercase">
+          {label}
+        </ITText>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Fila compacta de un tipo de reporte del catálogo.
  * `available` controla si es accionable o un "próximamente".
  */
-const ReportTypeCard = ({
+const ReportTypeRow = ({
   icon,
-  iconClassName,
+  tone,
   title,
   description,
   available,
@@ -49,59 +81,50 @@ const ReportTypeCard = ({
   onClick,
 }: {
   icon: ReactNode;
-  iconClassName: string;
+  tone: ReportTone;
   title: string;
   description: string;
   available: boolean;
   ctaLabel: string;
   onClick?: () => void;
-}) => (
-  <ITCard
-    onClick={onClick}
-    className={`h-full ${available ? "" : "opacity-70"}`}
-  >
-    <ITFlex direction="column" gap={4} className="h-full">
-      <div
-        className={`w-12 h-12 rounded-2xl flex items-center justify-center ${iconClassName}`}
-      >
+}) => {
+  const t = TONES[tone];
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!available}
+      className={`group flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-primary-200 focus-visible:outline-none sm:px-5 ${
+        available ? "cursor-pointer hover:bg-secondary-50/70" : "cursor-not-allowed opacity-60"
+      }`}
+    >
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${t.soft} ${t.text}`}>
         {icon}
-      </div>
+      </span>
 
-      <ITFlex align="center" justify="between" gap={2} wrap="wrap">
-        <ITText
-          as="h3"
-          className="text-[13px] font-black uppercase tracking-widest text-slate-800"
-        >
-          {title}
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2">
+          <ITText as="span" className={`truncate text-[13px] font-black tracking-tight uppercase ${SURFACE.strong}`}>
+            {title}
+          </ITText>
+          {!available && (
+            <ITBadget color="gray" size="sm" variant="outlined">
+              PRÓXIMAMENTE
+            </ITBadget>
+          )}
+        </span>
+        <ITText as="span" className="mt-0.5 block truncate text-[11px] font-medium text-secondary-500">
+          {description}
         </ITText>
-        <ITBadget
-          color={available ? "success" : "gray"}
-          size="sm"
-          variant="outlined"
-        >
-          {available ? "DISPONIBLE" : "PRÓXIMAMENTE"}
-        </ITBadget>
-      </ITFlex>
+      </span>
 
-      <ITText className="text-xs text-slate-500 font-medium leading-relaxed">
-        {description}
-      </ITText>
-
-      <ITFlex
-        align="center"
-        gap={2}
-        className={`mt-auto text-[10px] font-black uppercase tracking-widest ${
-          available ? "text-sky-600" : "text-slate-400"
-        }`}
-      >
-        <ITText as="span" className="text-inherit">
-          {ctaLabel}
-        </ITText>
+      <span className="hidden shrink-0 items-center gap-1.5 text-[10px] font-black tracking-widest text-secondary-400 uppercase transition-colors group-hover:text-primary-600 sm:flex">
+        {ctaLabel}
         {available && <FaArrowRight size={10} />}
-      </ITFlex>
-    </ITFlex>
-  </ITCard>
-);
+      </span>
+    </button>
+  );
+};
 
 const ReportsPage = () => {
   const {
@@ -139,12 +162,12 @@ const ReportsPage = () => {
       type: "string",
       render: (row: ReportConfigRow) => (
         <div className="flex flex-col">
-          <span className="font-black text-slate-700 text-[11px] uppercase tracking-tight mb-1">
+          <span className={`mb-1 text-[11px] font-black tracking-tight uppercase ${SURFACE.strong}`}>
             {row.name}
           </span>
           <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">
+            <div className={`h-1.5 w-1.5 rounded-full ${TONES.success.dot}`} />
+            <span className="text-[9px] font-black tracking-widest text-secondary-400 uppercase">
               {row.client?.name || "GLOBAL"}
             </span>
           </div>
@@ -170,12 +193,12 @@ const ReportsPage = () => {
       render: (row: ReportConfigRow) => {
         const conf = row.configuration || {};
         return (
-          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+          <div className="text-[10px] font-bold tracking-widest text-secondary-500 uppercase">
             {conf.startDate && conf.endDate
               ? `${dayjs(conf.startDate).format("DD/MM/YY")} - ${dayjs(conf.endDate).format("DD/MM/YY")}`
               : "SIN RANGO"}
             {conf.recurringConfigurationIds && (
-              <span className="block mt-0.5 text-slate-400">
+              <span className="mt-0.5 block text-secondary-400">
                 {conf.recurringConfigurationIds.length} RUTAS
               </span>
             )}
@@ -251,97 +274,82 @@ const ReportsPage = () => {
       refreshKey={refreshKey}
     >
       {/* RESUMEN */}
-      <ITGrid container columns={12} spacing={4} className="mb-10">
-        <ITGrid item xs={12} md={4}>
-          <ITStatCard
-            label="Tipos de reporte"
-            value={3}
-            icon={<FaChartBar />}
-            color="bg-sky-50"
-          />
-        </ITGrid>
-        <ITGrid item xs={12} md={4}>
-          <ITStatCard
-            label="Disponibles ahora"
-            value={3}
-            icon={<FaCheckCircle />}
-            color="bg-emerald-50"
-          />
-        </ITGrid>
-        <ITGrid item xs={12} md={4}>
-          <ITStatCard
-            label="Configuraciones guardadas"
-            value={savedCount}
-            icon={<FaFilePdf />}
-            color="bg-violet-50"
-          />
-        </ITGrid>
-      </ITGrid>
+      <div className="mb-8 flex flex-wrap gap-3">
+        <StatInline
+          icon={<FaChartBar size={14} />}
+          tone="info"
+          value={3}
+          label="Tipos de reporte"
+        />
+        <StatInline
+          icon={<FaCheckCircle size={14} />}
+          tone="success"
+          value={3}
+          label="Disponibles ahora"
+        />
+        <StatInline
+          icon={<FaFilePdf size={14} />}
+          tone="accent"
+          value={savedCount}
+          label="Configuraciones guardadas"
+        />
+      </div>
 
       {/* CATÁLOGO DE REPORTES */}
-      <section className="mb-10">
+      <section className="mb-8">
         <ITText
           as="h2"
-          className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-5"
+          className="mb-3 text-[11px] font-black tracking-[0.2em] text-secondary-400 uppercase"
         >
           Reportes disponibles
         </ITText>
 
-        <ITGrid container columns={12} spacing={4}>
-          <ITGrid item xs={12} md={6} lg={4}>
-            <ReportTypeCard
-              icon={<FaLockOpen size={20} />}
-              iconClassName="bg-sky-50 text-sky-600"
-              title="Apertura / Cierre"
-              description="Matriz de asistencia por punto de control. Valida la evidencia obligatoria por día en un rango de fechas."
-              available
-              ctaLabel="Configurar reporte"
-              onClick={() => {
-                setConfigToEdit(null);
-                setAperturaCierreOpen(true);
-              }}
-            />
-          </ITGrid>
+        <div className="divide-y divide-secondary-100 overflow-hidden rounded-2xl border border-secondary-100 bg-white">
+          <ReportTypeRow
+            icon={<FaLockOpen size={17} />}
+            tone="info"
+            title="Apertura / Cierre"
+            description="Matriz de asistencia por punto de control, con evidencia obligatoria por día en un rango de fechas."
+            available
+            ctaLabel="Configurar reporte"
+            onClick={() => {
+              setConfigToEdit(null);
+              setAperturaCierreOpen(true);
+            }}
+          />
 
-          <ITGrid item xs={12} md={6} lg={4}>
-            <ReportTypeCard
-              icon={<FaExclamationTriangle size={20} />}
-              iconClassName="bg-amber-50 text-amber-500"
-              title="Incidencias"
-              description="Resumen analítico de incidencias por categoría y guardia durante el periodo seleccionado."
-              available
-              ctaLabel="Ver reporte"
-              onClick={() => setIncidentsOpen(true)}
-            />
-          </ITGrid>
+          <ReportTypeRow
+            icon={<FaExclamationTriangle size={17} />}
+            tone="warning"
+            title="Incidencias"
+            description="Resumen analítico de incidencias por categoría y guardia durante el periodo."
+            available
+            ctaLabel="Ver reporte"
+            onClick={() => setIncidentsOpen(true)}
+          />
 
-          <ITGrid item xs={12} md={6} lg={4}>
-            <ReportTypeCard
-              icon={<FaUserShield size={20} />}
-              iconClassName="bg-violet-50 text-violet-500"
-              title="Rendimiento Guardia"
-              description="Estadísticas de desempeño, puntualidad y carga de trabajo por cada elemento operativo."
-              available
-              ctaLabel="Ver reporte"
-              onClick={() => setPerformanceOpen(true)}
-            />
-          </ITGrid>
-        </ITGrid>
+          <ReportTypeRow
+            icon={<FaUserShield size={17} />}
+            tone="accent"
+            title="Rendimiento Guardia"
+            description="Desempeño, puntualidad y carga de trabajo por cada elemento operativo."
+            available
+            ctaLabel="Ver reporte"
+            onClick={() => setPerformanceOpen(true)}
+          />
+        </div>
       </section>
 
       {/* CONFIGURACIONES GUARDADAS */}
-      <section className="mb-10">
-        <ITFlex align="center" gap={2} className="mb-5">
-          <FaChartLine size={12} className="text-slate-400" />
-          <ITText
-            as="h2"
-            className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400"
-          >
-            Configuraciones guardadas
-          </ITText>
-        </ITFlex>
+      <section className="mb-8">
+        <ITText
+          as="h2"
+          className="mb-3 text-[11px] font-black tracking-[0.2em] text-secondary-400 uppercase"
+        >
+          Configuraciones guardadas
+        </ITText>
 
-        <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
+        <DataTableCard>
           <ITDataTable<ReportConfigRow>
             key={refreshKey}
             columns={columns}
@@ -349,7 +357,7 @@ const ReportsPage = () => {
             title=""
             defaultItemsPerPage={10}
           />
-        </div>
+        </DataTableCard>
       </section>
 
       {/* MODAL: CONFIGURACIÓN APERTURA / CIERRE */}
